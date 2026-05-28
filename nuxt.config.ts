@@ -2,6 +2,16 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-05-26',
   devtools: { enabled: false },
   css: ['~/assets/css/main.css'],
+  routeRules: {
+    '/transactions': { redirect: '/transactions/claims' },
+    '/purchasing': { redirect: '/purchasing/purchases' },
+    '/approval': { redirect: '/approval/claims' },
+    '/policies': { redirect: '/policies/claims' },
+    '/cards': { redirect: '/cards/virtual-cards' },
+    '/workflows': { redirect: '/workflows/claims' },
+    '/integrations': { redirect: '/integrations/add-ons' },
+    '/settings': { redirect: '/settings/custom-fields' },
+  },
   postcss: {
     plugins: {
       '@mekari/pixel3-postcss': {
@@ -18,8 +28,7 @@ export default defineNuxtConfig({
     head: {
       title: 'Mekari Expense',
       htmlAttrs: {
-        'data-theme': 'light',
-        'data-token-version': '2.4',
+        'data-panda-theme': 'next',
       },
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
