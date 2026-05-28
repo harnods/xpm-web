@@ -232,7 +232,7 @@ const itemClassRail = (item: NavItem) => cx(isItemActive(item) ? railActive : ra
       <MpFlex as="nav" direction="column" flex="1" overflowY="auto" overflowX="hidden" minHeight="0" aria-label="Main">
         <template v-for="(group, gi) in allGroups" :key="gi">
           <div v-if="gi > 0" :class="groupDivider" />
-          <div :class="navGroup">
+          <div :class="navGroup" :style="gi === 0 ? { paddingTop: '16px' } : {}">
             <NuxtLink
               v-for="item in group"
               :key="item.label"
@@ -265,7 +265,7 @@ const itemClassRail = (item: NavItem) => cx(isItemActive(item) ? railActive : ra
         <MpFlex direction="column" flex="1" align="center" paddingInline="1" overflowY="auto" overflowX="hidden" minHeight="0">
           <template v-for="(group, gi) in allGroups" :key="gi">
             <div v-if="gi > 0" :class="groupDivider" style="width: 40px" />
-            <div :class="railGroup">
+            <div :class="railGroup" :style="gi === 0 ? { paddingTop: '16px' } : {}">
               <NuxtLink
                 v-for="item in group"
                 :key="item.label"
