@@ -24,7 +24,7 @@ const group1: NavItem[] = [
     ],
   },
   {
-    icon: 'expense', label: 'Purchasing',
+    icon: 'expenses', label: 'Purchasing',
     children: [
       { label: 'Purchases', path: '/purchasing/purchases' },
       { label: 'Products', path: '/purchasing/products' },
