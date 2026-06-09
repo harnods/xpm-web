@@ -2,11 +2,13 @@
 import { MpFlex, MpText, MpIcon, css, cx, token } from '@mekari/pixel3'
 
 interface NavChild { label: string; path: string }
+interface NavGroup { title: string; children: NavChild[] }
 interface NavItem {
   icon: string
   label: string
   path?: string
   children?: NavChild[]
+  groups?: NavGroup[]
 }
 
 const group1: NavItem[] = [
@@ -38,10 +40,28 @@ const group1: NavItem[] = [
 const group2: NavItem[] = [
   {
     icon: 'protection', label: 'Approvals',
-    children: [
-      { label: 'Claims', path: '/approval/claims' },
-      { label: 'Trips', path: '/approval/trips' },
-      { label: 'Purchases', path: '/approval/purchases' },
+    groups: [
+      {
+        title: 'Approvals',
+        children: [
+          { label: 'Claims', path: '/approval/claims' },
+          { label: 'Trips', path: '/approval/trips' },
+          { label: 'Purchases', path: '/approval/purchases' },
+        ],
+      },
+      {
+        title: 'Payments',
+        children: [
+          { label: 'Payment requests', path: '/approval/payment-requests' },
+          { label: 'Payment approvals', path: '/approval/payment-approvals' },
+        ],
+      },
+      {
+        title: 'Authorization',
+        children: [
+          { label: 'Payment authorization', path: '/approval/payment-authorization' },
+        ],
+      },
     ],
   },
   { icon: 'voucher', label: 'Travel arrangements', path: '/travel-arrangement' },
@@ -98,17 +118,20 @@ const allGroups = [group1, group2, group3]
 const allItems = [...group1, ...group2, ...group3]
 
 const route = useRoute()
+const allChildren = (item: NavItem): NavChild[] =>
+  item.children ?? item.groups?.flatMap(g => g.children) ?? []
+
 const hasActiveChild = (item: NavItem) =>
-  !!item.children?.some(c => route.path === c.path || route.path.startsWith(c.path + '/'))
+  allChildren(item).some(c => route.path === c.path || route.path.startsWith(c.path + '/'))
 const isItemActive = (item: NavItem) =>
   item.path ? route.path === item.path : hasActiveChild(item)
-const itemTarget = (item: NavItem) => item.path ?? item.children?.[0]?.path ?? '/'
+const itemTarget = (item: NavItem) => item.path ?? allChildren(item)[0]?.path ?? '/'
 
 const activeParent = computed<NavItem | undefined>(() => allItems.find(hasActiveChild))
 const isSubmenuMode = computed(() => !!activeParent.value)
 
 const isMainNavCollapsed = useState('sidebar-main-collapsed', () => false)
-watch(isSubmenuMode, (open) => { if (open) isMainNavCollapsed.value = true }, { immediate: true })
+watch(isSubmenuMode, (open) => { isMainNavCollapsed.value = open }, { immediate: true })
 
 const isPanelCollapsed = useState('sidebar-panel-collapsed', () => false)
 
@@ -128,7 +151,7 @@ onMounted(() => window.addEventListener('keydown', onKeydown))
 onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 
 const panelStyle = computed(() => ({
-  width: isPanelCollapsed.value ? '16px' : '208px',
+  width: isPanelCollapsed.value ? '16px' : '240px',
   marginRight: isPanelCollapsed.value ? '16px' : '8px',
   borderColor: isPanelCollapsed.value ? token.var('colors.gray.100') : 'transparent',
   boxShadow: isPanelCollapsed.value
@@ -155,7 +178,7 @@ const panelBase = css({
   transitionDuration: '200ms', transitionTimingFunction: 'ease',
 })
 const panelInner = css({
-  display: 'flex', flexDirection: 'column', w: '208px', h: '100%', flexShrink: 0,
+  display: 'flex', flexDirection: 'column', w: '240px', h: '100%', flexShrink: 0,
   transition: 'opacity 150ms ease',
 })
 
@@ -188,10 +211,10 @@ const itemActive = css({ ...itemBase, bg: 'background.brand.selected', color: 't
 const itemLabel = css({ flex: '1 1 auto', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' })
 
 const railGroup = css({
-  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5', py: '2', w: 'full',
+  display: 'flex', flexDirection: 'column', gap: '0.5', py: '2', w: 'full',
 })
 const railBase = {
-  display: 'flex', alignItems: 'center', justifyContent: 'center', w: '40px', h: '36px',
+  display: 'flex', alignItems: 'center', justifyContent: 'flex-start', w: 'full', h: '36px', pl: '4',
   border: 'none', borderRadius: 'md', cursor: 'pointer', flexShrink: 0,
   textDecoration: 'none',
   transition: 'background-color 120ms ease',
@@ -200,7 +223,7 @@ const railDefault = css({ ...railBase, bg: 'transparent', color: 'dark', _hover:
 const railActive = css({ ...railBase, bg: 'background.brand.selected', _hover: { bg: 'background.brand.selected' } })
 
 const childBase = {
-  display: 'flex', alignItems: 'center', w: 'full', height: '36px', px: '3',
+  display: 'flex', alignItems: 'center', w: 'full', minHeight: '36px', px: '3', py: '2',
   border: 'none', cursor: 'pointer', borderRadius: 'md',
   textDecoration: 'none',
   fontFamily: 'body', fontSize: 'md', lineHeight: 'md',
@@ -216,7 +239,7 @@ const ghostBtn = css({
 })
 
 const sectionTitle = css({
-  display: 'flex', alignItems: 'center', h: '36px', mt: '4', px: '4',
+  display: 'flex', alignItems: 'center', h: '36px', mt: '4', px: '3',
   fontSize: 'sm', fontWeight: 'semiBold', letterSpacing: 'wider',
   textTransform: 'uppercase', color: 'text.link', whiteSpace: 'nowrap',
 })
@@ -262,7 +285,7 @@ const itemClassRail = (item: NavItem) => cx(isItemActive(item) ? railActive : ra
     <!-- ============ RAIL + SUBMENU ============ -->
     <template v-else>
       <div :class="mode === 'submenu' ? railBoxSubmenu : railBoxOnly">
-        <MpFlex direction="column" flex="1" align="center" paddingInline="1" overflowY="auto" overflowX="hidden" minHeight="0">
+        <MpFlex direction="column" flex="1" paddingInline="1" overflowY="auto" overflowX="hidden" minHeight="0">
           <template v-for="(group, gi) in allGroups" :key="gi">
             <div v-if="gi > 0" :class="groupDivider" style="width: 40px" />
             <div :class="railGroup" :style="gi === 0 ? { paddingTop: '16px' } : {}">
@@ -293,17 +316,34 @@ const itemClassRail = (item: NavItem) => cx(isItemActive(item) ? railActive : ra
 
       <div v-if="mode === 'submenu'" :class="panelBase" :style="panelStyle">
         <div :class="panelInner" :style="{ opacity: isPanelCollapsed ? 0 : 1, pointerEvents: isPanelCollapsed ? 'none' : 'auto' }">
-          <div :class="sectionTitle">{{ activeParent?.label }}</div>
           <MpFlex direction="column" gap="0.5" flex="1" paddingInline="2" overflowY="auto" minHeight="0">
-            <NuxtLink
-              v-for="child in activeParent?.children"
-              :key="child.path"
-              :to="child.path"
-              :class="route.path === child.path ? childActive : childDefault"
-              :aria-current="route.path === child.path ? 'page' : undefined"
-            >
-              {{ child.label }}
-            </NuxtLink>
+            <div v-if="!activeParent?.groups" :class="sectionTitle">{{ activeParent?.label }}</div>
+            <template v-if="activeParent?.groups">
+              <template v-for="(group, gi) in activeParent.groups" :key="group.title">
+                <div v-if="gi > 0" style="height:1px;background:var(--mp-colors-gray-100);margin:4px 4px;" />
+                <div :class="sectionTitle">{{ group.title }}</div>
+                <NuxtLink
+                  v-for="child in group.children"
+                  :key="child.path"
+                  :to="child.path"
+                  :class="(route.path === child.path || route.path.startsWith(child.path + '/')) ? childActive : childDefault"
+                  :aria-current="(route.path === child.path || route.path.startsWith(child.path + '/')) ? 'page' : undefined"
+                >
+                  {{ child.label }}
+                </NuxtLink>
+              </template>
+            </template>
+            <template v-else>
+              <NuxtLink
+                v-for="child in activeParent?.children"
+                :key="child.path"
+                :to="child.path"
+                :class="(route.path === child.path || route.path.startsWith(child.path + '/')) ? childActive : childDefault"
+                :aria-current="(route.path === child.path || route.path.startsWith(child.path + '/')) ? 'page' : undefined"
+              >
+                {{ child.label }}
+              </NuxtLink>
+            </template>
           </MpFlex>
           <MpFlex align="center" justify="flex-end" height="68px" paddingInline="3" flexShrink="0">
             <button type="button" :class="ghostBtn" aria-label="Collapse submenu" @click="isPanelCollapsed = true">
