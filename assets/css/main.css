@@ -9,6 +9,24 @@ html, body, #__nuxt {
   height: 100%;
 }
 
+/* Modal — top-centered with 80px from top, no transition */
+.mp-modal__rootChild {
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding-top: 80px !important;
+}
+.mp-modal__root,
+.mp-modal__rootChild,
+.mp-modal__rootChild * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Center toast on the content area (to the right of the sidebar) */
+#__nuxt > section > ol {
+  left: calc(50% + var(--sidebar-w, 0px) / 2) !important;
+}
+
 .mp-icon-box {
   display: inline-flex;
   align-items: center;
