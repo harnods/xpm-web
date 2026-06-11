@@ -2,7 +2,7 @@
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Mekari Expense — Workflows › Claims
   Token mode: Pixel 2.4
-  Patterns used: index-view, data-table, filter-toolbar
+  Patterns used: index-view, data-table, filter-toolbar, tabs
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 -->
 <script setup lang="ts">
@@ -16,24 +16,71 @@ import {
 
 definePageMeta({ title: 'Claims' })
 
+const route = useRoute()
+
 // ─── Types & mock data ────────────────────────────────────────────
 
-type Status = 'Active' | 'Inactive'
+type Status   = 'Active' | 'Inactive'
+type TabKey   = 'reimbursement' | 'cash-advance' | 'international' | 'custom'
 
 interface WorkflowRow {
   id: number
   name: string
-  transactionType: 'Domestic' | 'International'
   status: Status
+  currencies: string[]
 }
 
-const rows = ref<WorkflowRow[]>([
-  { id: 1, name: 'Domestic Category Workflow',      transactionType: 'Domestic',      status: 'Active'   },
-  { id: 2, name: 'International Category Workflow', transactionType: 'International', status: 'Active'   },
-  { id: 3, name: 'Legacy Reimbursement Workflow',   transactionType: 'Domestic',      status: 'Inactive' },
-  { id: 4, name: 'Old Expense Workflow',            transactionType: 'Domestic',      status: 'Inactive' },
-  { id: 5, name: 'Archived International Flow',     transactionType: 'International', status: 'Inactive' },
+// ── Tab data ──────────────────────────────────────────────────────
+const reimbursementRows = ref<WorkflowRow[]>([
+  { id: 1, name: 'Standard Reimbursement Workflow',    status: 'Active',   currencies: ['IDR']           },
+  { id: 2, name: 'Manager Approval Flow',              status: 'Active',   currencies: ['IDR', 'USD']    },
+  { id: 3, name: 'Finance Review Workflow',            status: 'Inactive', currencies: ['IDR']           },
 ])
+
+const cashAdvanceRows = ref<WorkflowRow[]>([
+  { id: 1, name: 'Cash Advance Standard Flow',         status: 'Active',   currencies: ['IDR']           },
+  { id: 2, name: 'CA Finance Approval Workflow',       status: 'Active',   currencies: ['IDR', 'USD']    },
+  { id: 3, name: 'Legacy Cash Advance Flow',           status: 'Inactive', currencies: ['IDR']           },
+])
+
+const internationalRows = ref<WorkflowRow[]>([
+  { id: 1, name: 'Domestic Category Workflow',         status: 'Active',   currencies: ['IDR']                    },
+  { id: 2, name: 'International Category Workflow',    status: 'Active',   currencies: ['JPY', 'HKD', 'USD', 'SGD'] },
+  { id: 3, name: 'Legacy Reimbursement Workflow',      status: 'Inactive', currencies: ['USD', 'EUR']             },
+  { id: 4, name: 'Old Expense Workflow',               status: 'Inactive', currencies: ['IDR']                    },
+  { id: 5, name: 'Archived International Flow',        status: 'Inactive', currencies: ['JPY', 'USD']             },
+])
+
+const customRows = ref<WorkflowRow[]>([
+  { id: 1, name: 'Custom Approval Chain',              status: 'Active',   currencies: ['IDR', 'USD', 'EUR'] },
+  { id: 2, name: 'Multi-Level Review Workflow',        status: 'Inactive', currencies: ['IDR']               },
+])
+
+// ── Active tab ────────────────────────────────────────────────────
+const activeTab = ref<TabKey>('international')
+
+function setTab(t: TabKey) {
+  activeTab.value = t
+  activeActionId.value = null
+  statusFilter.value = 'All status'
+  searchQuery.value  = ''
+}
+
+// Restore tab from ?tab= query param (e.g. returning from detail page)
+watch(() => route.query.tab, (tab) => {
+  if (tab === 'reimbursement' || tab === 'cash-advance' || tab === 'international' || tab === 'custom') {
+    activeTab.value = tab as TabKey
+  }
+}, { immediate: true })
+
+const activeRows = computed((): WorkflowRow[] => {
+  switch (activeTab.value) {
+    case 'reimbursement':  return reimbursementRows.value
+    case 'cash-advance':   return cashAdvanceRows.value
+    case 'international':  return internationalRows.value
+    case 'custom':         return customRows.value
+  }
+})
 
 // ─── Filter & search ──────────────────────────────────────────────
 
@@ -42,7 +89,7 @@ const statusFilter = ref('All status')
 const searchQuery  = ref('')
 
 const filteredRows = computed(() => {
-  return rows.value.filter(row => {
+  return activeRows.value.filter(row => {
     const matchesStatus = statusFilter.value === 'All status' || row.status === statusFilter.value
     const matchesSearch = !searchQuery.value ||
       row.name.toLowerCase().includes(searchQuery.value.toLowerCase())
@@ -109,7 +156,7 @@ function handleAction(value: string, row: WorkflowRow) {
   } else if (value === 'edit') {
     navigateTo(`/workflows/claims/create?mode=edit&id=${row.id}`)
   } else if (value === 'deactivate') {
-    const isInactive = rows.value.find(r => r.id === row.id)?.status === 'Inactive'
+    const isInactive = activeRows.value.find(r => r.id === row.id)?.status === 'Inactive'
     pendingAction.value = { type: isInactive ? 'activate' : 'deactivate', row }
   } else if (value === 'delete') {
     pendingAction.value = { type: 'delete', row }
@@ -121,16 +168,22 @@ function confirmAction() {
   const { type, row } = pendingAction.value
   pendingAction.value = null
 
+  // Mutate the currently active tab's array
+  const tabRef = activeTab.value === 'reimbursement' ? reimbursementRows
+               : activeTab.value === 'cash-advance'  ? cashAdvanceRows
+               : activeTab.value === 'custom'        ? customRows
+               : internationalRows
+
   if (type === 'deactivate') {
-    const target = rows.value.find(r => r.id === row.id)
+    const target = tabRef.value.find(r => r.id === row.id)
     if (target) target.status = 'Inactive'
     toast.notify({ variant: 'success', title: 'Workflow deactivated', position: 'top-center' })
   } else if (type === 'activate') {
-    const target = rows.value.find(r => r.id === row.id)
+    const target = tabRef.value.find(r => r.id === row.id)
     if (target) target.status = 'Active'
     toast.notify({ variant: 'success', title: 'Workflow activated', position: 'top-center' })
   } else if (type === 'delete') {
-    rows.value = rows.value.filter(r => r.id !== row.id)
+    tabRef.value = tabRef.value.filter(r => r.id !== row.id)
     toast.notify({ variant: 'success', title: 'Workflow deleted', position: 'top-center' })
   }
 }
@@ -155,6 +208,25 @@ onMounted(() => {
 onBeforeUnmount(() => document.removeEventListener('mousedown', onDocumentMousedown))
 
 // ─── CSS classes ──────────────────────────────────────────────────
+
+const tabActive = css({
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  paddingBlock: '13px',
+  background: 'transparent', border: 'none', cursor: 'pointer',
+  fontFamily: 'body', fontSize: 'md', lineHeight: 'lg',
+  color: 'text.link',
+  borderBottom: '2px solid', borderBottomColor: 'blue.400',
+})
+
+const tabInactive = css({
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  paddingBlock: '13px',
+  background: 'transparent', border: 'none', cursor: 'pointer',
+  fontFamily: 'body', fontSize: 'md', lineHeight: 'lg',
+  color: 'gray.600',
+  borderBottom: '2px solid transparent',
+  _hover: { color: 'text.link' },
+})
 
 const tblWrap = css({ w: 'full', overflowX: 'auto' })
 
@@ -183,6 +255,15 @@ const td = css({
 const metaText = css({
   fontFamily: 'body', fontSize: 'md', lineHeight: 'lg',
   color: 'gray.600', whiteSpace: 'nowrap',
+})
+
+const currencyTag = css({
+  display: 'inline-flex', alignItems: 'center',
+  paddingInline: '1.5', paddingBlock: '0.5',
+  borderRadius: 'sm',
+  background: 'gray.100',
+  fontFamily: 'body', fontSize: 'sm', lineHeight: 'lg', color: 'dark',
+  whiteSpace: 'nowrap',
 })
 
 // Action dropdown — plain list, no input field
@@ -222,6 +303,16 @@ const actionItemDanger = css({
     </MpButton>
   </Teleport>
 
+  <!-- ═════ Tabs ═════ -->
+  <Teleport to="#layout-tabs">
+    <MpFlex gap="6" paddingInline="6" style="line-height: normal;">
+      <button :class="activeTab === 'reimbursement' ? tabActive : tabInactive" @click="setTab('reimbursement')">Reimbursement</button>
+      <button :class="activeTab === 'cash-advance'  ? tabActive : tabInactive" @click="setTab('cash-advance')">Cash advance</button>
+      <button :class="activeTab === 'international' ? tabActive : tabInactive" @click="setTab('international')">International</button>
+      <button :class="activeTab === 'custom'        ? tabActive : tabInactive" @click="setTab('custom')">Custom</button>
+    </MpFlex>
+  </Teleport>
+
   <!-- ═════ Stage content ═════ -->
   <MpFlex direction="column" gap="4" width="full" style="min-width:0;">
 
@@ -258,8 +349,8 @@ const actionItemDanger = css({
         <thead>
           <tr>
             <th :class="th">Workflow name</th>
-            <th :class="th">Transaction type</th>
             <th :class="th">Status</th>
+            <th :class="th">Currency</th>
             <th :class="th"></th>
           </tr>
         </thead>
@@ -276,11 +367,6 @@ const actionItemDanger = css({
               >{{ row.name }}</MpTextlink>
             </td>
 
-            <!-- Transaction type -->
-            <td :class="td" style="white-space:nowrap;">
-              <MpText size="body" color="dark">{{ row.transactionType }}</MpText>
-            </td>
-
             <!-- Status badge -->
             <td :class="td" style="white-space:nowrap;">
               <MpBadge
@@ -288,6 +374,13 @@ const actionItemDanger = css({
                 variant="subtle"
                 :variantColor="row.status === 'Active' ? 'green' : 'gray'"
               >{{ row.status }}</MpBadge>
+            </td>
+
+            <!-- Currency tags -->
+            <td :class="td">
+              <MpFlex wrap="wrap" gap="1">
+                <span v-for="cur in row.currencies" :key="cur" :class="currencyTag">{{ cur }}</span>
+              </MpFlex>
             </td>
 
             <!-- Actions -->
@@ -329,7 +422,7 @@ const actionItemDanger = css({
           <span :class="metaText">Rows per page</span>
           <MpButton variant="ghost" size="sm" rightIcon="caret-down">10</MpButton>
         </MpFlex>
-        <span :class="metaText">Showing 1–{{ filteredRows.length }} of {{ rows.length }}</span>
+        <span :class="metaText">Showing 1–{{ filteredRows.length }} of {{ activeRows.length }}</span>
       </MpFlex>
 
       <MpFlex align="center" gap="4">

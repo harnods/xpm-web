@@ -47,6 +47,8 @@ import {
 
 definePageMeta({ title: 'Claims' })
 
+const route = useRoute()
+
 // ─── Types & data ────────────────────────────────────────────────
 
 type Status = 'Active' | 'Inactive'
@@ -67,7 +69,7 @@ const rows = ref<Row[]>([
   { id: 4, name: 'Entertainment Claim', description: 'For reimbursement of costs from business-related entertainment.', categoryType: 'International', categoryUsage: ['Reimbursement','Cash advance'],                                 status: 'Inactive' },
 ])
 
-const activeTab    = ref<'categories' | 'custom'>('categories')
+const activeTab    = ref<'categories' | 'custom'>(route.query.tab === 'custom' ? 'custom' : 'categories')
 const statusFilter = ref<string[]>([])   // [] = All
 const typeFilter   = ref<string[]>([])   // [] = All
 const usageFilter  = ref<string[]>([])   // [] = All
@@ -161,6 +163,12 @@ function setTab(t: 'categories' | 'custom') {
   activeTab.value = t
   activeActionId.value = null
 }
+
+// Restore active tab from ?tab= query param (e.g. when returning from a detail page)
+watch(() => route.query.tab, (tab) => {
+  if (tab === 'custom') activeTab.value = 'custom'
+  else if (tab === 'categories') activeTab.value = 'categories'
+}, { immediate: true })
 
 // ─── Blank slate (empty states) ──────────────────────────────────
 // Copy adapts per tab + per reason (no data yet vs. filter/search returned nothing).

@@ -32,7 +32,7 @@ import {
 } from '@mekari/pixel3'
 
 definePageMeta({
-  title: 'Office Tools',
+  title: 'Category detail',
   breadcrumbParent: { label: 'Claims', path: '/policies/claims' },
 })
 
@@ -145,6 +145,10 @@ const category = computed<Category | undefined>(() =>
   MOCK_CATEGORIES.find(c => c.id === Number(route.params.id))
 )
 
+// Set H1 synchronously so the layout renders the category name on first paint
+const _found = MOCK_CATEGORIES.find(c => c.id === Number(route.params.id))
+if (_found) route.meta.title = _found.name
+
 // ─── Styles ───────────────────────────────────────────────────────
 
 const kvGrid = css({
@@ -204,7 +208,7 @@ const td = css({
     <MpBadge
       v-if="category"
       for="additionalInformation"
-      type="completed"
+      :type="category.status === 'Active' ? 'completed' : 'announcement'"
     >
       {{ category.status }}
     </MpBadge>

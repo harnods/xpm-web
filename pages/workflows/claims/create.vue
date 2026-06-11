@@ -24,8 +24,8 @@ import {
   MpFlex, MpText,
   MpButton, MpTextlink,
   MpFormControl, MpFormLabel, MpFormHelpText,
-  MpInput, MpInputGroup, MpInputLeftAddon,
-  MpTextarea, MpAutocomplete, MpRadio, MpToggle, MpTooltip,
+  MpInput, MpInputGroup, MpInputLeftAddon, MpInputRightAddon,
+  MpTextarea, MpAutocomplete, MpToggle, MpCheckbox,
   MpBadge,
   css, toast,
 } from '@mekari/pixel3'
@@ -61,13 +61,6 @@ interface ApprovalStep {
   additionalApprovers: Approver[]
 }
 
-interface WorkflowRule {
-  id: number
-  toAmount: string
-  then: 'no-approval' | 'needs-approval'
-  steps: ApprovalStep[]
-}
-
 // ─── Constants ────────────────────────────────────────────────────
 
 const MAX_WORKFLOW_NAME  = 60
@@ -90,27 +83,60 @@ const APPROVER_TYPE_OPTIONS = [
   { value: 'approval-line', label: 'Approval line' },
   { value: 'employee-id',   label: 'Employee ID' },
 ]
-const RULE_THEN_OPTIONS = [
-  { value: 'no-approval',    label: "Doesn't require approval" },
-  { value: 'needs-approval', label: 'Needs approval' },
-]
-
 let _uid = 1
 const uid = () => _uid++
 
 // ─── Form state ───────────────────────────────────────────────────
 
-const workflowName    = ref('Domestic Category Workflow')
-const description     = ref('This is default approval for category')
-const transactionType = ref('domestic')   // 'domestic' | 'international'
-const approvalBasis   = ref('any')        // 'any' | 'specific'
+const workflowName = ref('Domestic Category Workflow')
+const description  = ref('This is default approval for category')
 
-// Reset to "any" when switching to international — specific ranges don't apply
-watch(transactionType, (val) => {
-  if (val === 'international') approvalBasis.value = 'any'
-})
+// ─── Currency picker ──────────────────────────────────────────────
+const ALL_CURRENCIES = [
+  { code: 'AUD', name: 'Australian dollar' },
+  { code: 'CAD', name: 'Canadian dollar' },
+  { code: 'CNY', name: 'Renminbi' },
+  { code: 'EUR', name: 'Euro' },
+  { code: 'GBP', name: 'British pound' },
+  { code: 'HKD', name: 'Hong Kong dollar' },
+  { code: 'JPY', name: 'Japanese yen' },
+  { code: 'MYR', name: 'Malaysian ringgit' },
+  { code: 'SGD', name: 'Singapore dollar' },
+  { code: 'USD', name: 'US dollar' },
+]
+const MAX_CURRENCIES     = 5
+const selectedCurrencies = ref<string[]>(['HKD', 'MYR', 'JPY', 'SGD', 'USD'])
+const currencySearch     = ref('')
+const currencyPickerOpen = ref(false)
+const pickerRef          = ref<HTMLElement | null>(null)
 
-// ─── "Any claim amount" state ─────────────────────────────────────
+const filteredCurrencies = computed(() =>
+  ALL_CURRENCIES.filter(c =>
+    c.code.toLowerCase().includes(currencySearch.value.toLowerCase()) ||
+    c.name.toLowerCase().includes(currencySearch.value.toLowerCase())
+  )
+)
+const currencyHelpText = computed(() =>
+  selectedCurrencies.value.length
+    ? `Including ${selectedCurrencies.value.join(', ')}`
+    : 'No currencies selected'
+)
+
+function toggleCurrency(code: string) {
+  const idx = selectedCurrencies.value.indexOf(code)
+  if (idx >= 0) selectedCurrencies.value.splice(idx, 1)
+  else if (selectedCurrencies.value.length < MAX_CURRENCIES) selectedCurrencies.value.push(code)
+}
+
+// Close currency picker when clicking outside
+function onDocumentMousedownCurrency(e: MouseEvent) {
+  if (pickerRef.value && !pickerRef.value.contains(e.target as Node))
+    currencyPickerOpen.value = false
+}
+onMounted(() => document.addEventListener('mousedown', onDocumentMousedownCurrency))
+onBeforeUnmount(() => document.removeEventListener('mousedown', onDocumentMousedownCurrency))
+
+// ─── Approval state ───────────────────────────────────────────────
 
 const anyDoesntRequireApproval = ref(false)  // false = requires approval → steps shown
 
@@ -137,125 +163,6 @@ function addAnyStep() {
 
 function removeAnyStep(i: number) {
   anySteps.value.splice(i, 1)
-}
-
-// Rules: always first ("≤ X") + middle ("between") + last ("> Y", auto-computed)
-const rules = ref<WorkflowRule[]>([
-  {
-    id: uid(), toAmount: '1000000',
-    then: 'no-approval', steps: [],
-  },
-  {
-    id: uid(), toAmount: '999999999999',
-    then: 'needs-approval',
-    steps: [
-      {
-        id: uid(), approverType: 'approval-line', lineCount: '1 upper line',
-        additionalApprovers: [],
-      },
-    ],
-  },
-])
-
-// ─── Helpers ─────────────────────────────────────────────────────
-
-const fmt = (n: string | number) => {
-  const num = typeof n === 'string' ? parseFloat(n.replace(/\./g, '')) : n
-  if (isNaN(num)) return n as string
-  return new Intl.NumberFormat('id-ID').format(num)
-}
-
-// Strip non-digits from input, store raw digits in rule.toAmount
-function onAmountUpdate(rule: WorkflowRule, val: string) {
-  rule.toAmount = val.replace(/\D/g, '')
-}
-
-// Display formatted value (with separators); show empty string when blank
-function displayAmount(toAmount: string) {
-  return toAmount ? fmt(toAmount) : ''
-}
-
-// Auto-insert a default step when a rule switches to "needs-approval" with no steps
-watch(rules, (current) => {
-  for (const rule of current) {
-    if (rule.then === 'needs-approval' && rule.steps.length === 0) {
-      rule.steps.push({
-        id: uid(),
-        approverType: 'approval-line',
-        lineCount: '1 upper line',
-        employeeId: '',
-        additionalApprovers: [],
-      })
-    }
-  }
-}, { deep: true })
-
-// First rule = "≤ rules[0].toAmount"
-// Middle rules (index 1..n-2) = "between rules[i-1].toAmount+1 and rules[i].toAmount"
-// Last rule = "> rules[n-2].toAmount" (auto-computed, readonly)
-
-function isFirst(i: number) { return i === 0 }
-function isLast(i: number)  { return i === rules.value.length - 1 }
-
-function rangeHelper(i: number): string {
-  if (isFirst(i)) {
-    const to = parseFloat(rules.value[i].toAmount) || 0
-    return `Rp1 - Rp${fmt(to)}`
-  }
-  if (isLast(i)) {
-    const from = (parseFloat(rules.value[i - 1].toAmount) || 0) + 1
-    return `Rp${fmt(from)} - ∞`
-  }
-  const from = (parseFloat(rules.value[i - 1].toAmount) || 0) + 1
-  const to   = parseFloat(rules.value[i].toAmount) || 0
-  return `Rp${fmt(from)} - Rp${fmt(to)}`
-}
-
-// Last rule disabled input — shows raw boundary (same number as prev rule's toAmount)
-const lastRuleDisplay = computed(() => {
-  if (rules.value.length < 2) return '0'
-  return fmt(rules.value[rules.value.length - 2].toAmount || '0')
-})
-
-// Last rule help text — shows range start (prev + 1)
-const lastRuleHelpFrom = computed(() => {
-  if (rules.value.length < 2) return '1'
-  const prev = parseFloat(rules.value[rules.value.length - 2].toAmount) || 0
-  return fmt(prev + 1)
-})
-
-// ─── Rule mutations ──────────────────────────────────────────────
-
-function addMiddleRule() {
-  const lastIdx = rules.value.length - 1
-  const newRule: WorkflowRule = {
-    id: uid(), toAmount: '',
-    then: 'needs-approval',
-    steps: [
-      {
-        id: uid(), approverType: 'approval-line', lineCount: '1 upper line', employeeId: '',
-        additionalApprovers: [],
-      },
-    ],
-  }
-  rules.value.splice(lastIdx, 0, newRule)
-}
-
-function removeMiddleRule(i: number) {
-  rules.value.splice(i, 1)
-}
-
-// ─── Step mutations ──────────────────────────────────────────────
-
-function addStep(rule: WorkflowRule) {
-  rule.steps.push({
-    id: uid(), approverType: 'employee-id', lineCount: '1 upper line', employeeId: '',
-    additionalApprovers: [],
-  })
-}
-
-function removeStep(rule: WorkflowRule, stepIdx: number) {
-  rule.steps.splice(stepIdx, 1)
 }
 
 // ─── Approver mutations ──────────────────────────────────────────
@@ -286,6 +193,23 @@ async function save() {
 // ─── CSS classes ─────────────────────────────────────────────────
 
 const page = css({ maxWidth: '780px' })
+
+const currencyDropdown = css({
+  position: 'absolute', top: 'calc(100% + 4px)', left: '0', zIndex: 50,
+  width: '280px', background: 'white',
+  borderRadius: 'var(--Radius-pxl-radius-md, 8px)',
+  boxShadow: 'var(--Shadow-pxl-shadow-md, 0 4px 16px rgba(0,0,0,.12))',
+  border: '1px solid var(--Color-pxl-border-subtle, #E4E7EC)',
+  padding: 'var(--Spacing-pxl-space-xs, 8px) 0',
+})
+
+const currencyItem = css({
+  display: 'flex', width: '100%', boxSizing: 'border-box',
+  padding: 'var(--Spacing-pxl-space-xs, 8px) var(--Spacing-pxl-space-sm, 12px)',
+  alignItems: 'center', gap: 'var(--Spacing-pxl-space-xs, 8px)',
+  cursor: 'pointer', borderRadius: '0',
+  _hover: { background: 'var(--Color-pxl-bg-subtle, #F5F6F8)' },
+})
 
 const sectionHeader = css({
   fontFamily: 'body', fontSize: 'h2', fontWeight: 'semiBold',
@@ -402,13 +326,41 @@ const subLabel = css({
           </MpFlex>
         </MpFormControl>
 
-        <!-- Transaction type -->
-        <MpFormControl id="wf-tx-type" isRequired>
-          <MpFormLabel>Transaction type</MpFormLabel>
-          <MpFlex gap="6" marginTop="1">
-            <MpRadio id="tx-domestic"      name="transactionType" value="domestic"      v-model="transactionType">Domestic</MpRadio>
-            <MpRadio id="tx-international" name="transactionType" value="international" v-model="transactionType">International</MpRadio>
-          </MpFlex>
+        <!-- Currencies -->
+        <MpFormControl id="wf-currencies" isRequired>
+          <MpFormLabel>Currencies</MpFormLabel>
+          <MpFormHelpText>{{ currencyHelpText }}</MpFormHelpText>
+          <div ref="pickerRef" style="position:relative; width:280px; margin-top:4px;">
+            <MpInputGroup @click="currencyPickerOpen = !currencyPickerOpen" style="cursor:pointer;">
+              <MpInput
+                :modelValue="selectedCurrencies.length ? `Selected (${selectedCurrencies.length})` : ''"
+                placeholder="Select currencies"
+                isReadOnly
+                :isFullWidth="true"
+                style="cursor:pointer;"
+              />
+              <MpInputRightAddon>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="color:inherit;">
+                  <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </MpInputRightAddon>
+            </MpInputGroup>
+            <div v-if="currencyPickerOpen" :class="currencyDropdown">
+              <div style="padding:0 8px 8px;">
+                <MpInput v-model="currencySearch" placeholder="Search..." :isFullWidth="true" />
+              </div>
+              <div style="max-height:220px; overflow-y:auto; display:flex; flex-direction:column;">
+                <div v-for="c in filteredCurrencies" :key="c.code" :class="currencyItem">
+                  <MpCheckbox
+                    :id="`cur-${c.code}`"
+                    :isChecked="selectedCurrencies.includes(c.code)"
+                    :isDisabled="!selectedCurrencies.includes(c.code) && selectedCurrencies.length >= MAX_CURRENCIES"
+                    @change="toggleCurrency(c.code)"
+                  >({{ c.code }}) {{ c.name }}</MpCheckbox>
+                </div>
+              </div>
+            </div>
+          </div>
         </MpFormControl>
       </MpFlex>
 
@@ -417,39 +369,12 @@ const subLabel = css({
         <MpFlex direction="column" gap="1">
           <MpText as="h2" size="h2" weight="semiBold" color="dark">Claim approval rule</MpText>
           <MpText size="body" color="gray.600">
-            Set a rule for any purchase amount or a specific one, then decide if the vendor needs approval and choose the approval steps.
+            Decide if claims require approval and configure the approval steps.
           </MpText>
         </MpFlex>
 
-        <!-- Claim approval based on -->
-        <MpFormControl id="wf-basis">
-          <MpFormLabel>Claim approval based on</MpFormLabel>
-          <MpFlex gap="6" marginTop="1">
-            <MpRadio id="basis-any"      name="approvalBasis" value="any"      v-model="approvalBasis">Any claim amount</MpRadio>
-            <MpTooltip
-              id="tooltip-basis-specific"
-              label="Amount-based rules aren't available for international transactions."
-              placement="top"
-              :is-manual="transactionType !== 'international'"
-              :is-open="false"
-            >
-              <div :style="transactionType === 'international' ? 'cursor: not-allowed; display: inline-flex;' : 'display: inline-flex;'">
-                <MpRadio
-                  id="basis-specific"
-                  name="approvalBasis"
-                  value="specific"
-                  v-model="approvalBasis"
-                  :isDisabled="transactionType === 'international'"
-                  :style="transactionType === 'international' ? 'pointer-events: none;' : ''"
-                >Specific claim amount</MpRadio>
-              </div>
-            </MpTooltip>
-          </MpFlex>
-        </MpFormControl>
-
-        <!-- ═════ Any claim amount: approval section ═════ -->
-        <template v-if="approvalBasis === 'any'">
-          <MpFlex direction="column" gap="4">
+        <!-- ═════ Claim approval ═════ -->
+        <MpFlex direction="column" gap="4">
 
             <!-- Header row: label + toggle -->
             <MpFlex justify="space-between" align="flex-start">
@@ -535,220 +460,6 @@ const subLabel = css({
             </template>
 
           </MpFlex>
-        </template>
-
-        <!-- ═════ Rules section (only when specific) ═════ -->
-        <template v-if="approvalBasis === 'specific'">
-          <MpFlex direction="column" gap="1">
-            <MpText size="body" weight="semiBold" color="dark">Claim approval</MpText>
-            <MpText size="body" color="gray.600">Approval rule when user has submitted claims.</MpText>
-          </MpFlex>
-
-          <MpFlex direction="column" gap="4">
-
-            <!-- ── Rule cards ── -->
-            <template v-for="(rule, ri) in rules" :key="rule.id">
-            <div
-              :class="ruleCard"
-            >
-              <!-- Rule header row -->
-              <div :class="ruleCardHeader">
-                <MpFlex justify="space-between" align="center">
-                  <span :class="ruleTitle">Rule {{ ri + 1 }}</span>
-                  <!-- Remove link for middle rules only -->
-                  <button
-                    v-if="!isFirst(ri) && !isLast(ri)"
-                    :class="removeLink"
-                    @click="removeMiddleRule(ri)"
-                  >Remove</button>
-                </MpFlex>
-
-                <!-- Amount fields -->
-                <!-- First rule: ≤ amount -->
-                <template v-if="isFirst(ri)">
-                  <MpFormControl :id="`rule-${rule.id}-to`">
-                    <MpFormLabel>Any amount less than or equal to</MpFormLabel>
-                    <div style="width:264px;">
-                      <MpInputGroup>
-                        <MpInputLeftAddon hasBackground>Rp</MpInputLeftAddon>
-                        <MpInput
-                          :modelValue="displayAmount(rule.toAmount)"
-                          @update:modelValue="(v) => onAmountUpdate(rule, v)"
-                          placeholder="0"
-                          :isFullWidth="true"
-                        />
-                      </MpInputGroup>
-                    </div>
-                    <MpFormHelpText>{{ rangeHelper(ri) }}</MpFormHelpText>
-                  </MpFormControl>
-                </template>
-
-                <!-- Middle rules: between amounts -->
-                <template v-else-if="!isLast(ri)">
-                  <MpFormControl :id="`rule-${rule.id}-between`">
-                    <MpFormLabel>Any amount between</MpFormLabel>
-                    <MpFlex align="center" gap="2">
-                      <div style="width:264px;">
-                        <MpInputGroup>
-                          <MpInputLeftAddon hasBackground>Rp</MpInputLeftAddon>
-                          <MpInput
-                            :modelValue="fmt(parseFloat(rules[ri-1]?.toAmount) || 0)"
-                            :isFullWidth="true"
-                            isDisabled
-                          />
-                        </MpInputGroup>
-                      </div>
-                      <MpText size="body" color="gray.600">to</MpText>
-                      <div style="width:264px;">
-                        <MpInputGroup>
-                          <MpInputLeftAddon hasBackground>Rp</MpInputLeftAddon>
-                          <MpInput
-                              :modelValue="displayAmount(rule.toAmount)"
-                              @update:modelValue="(v) => onAmountUpdate(rule, v)"
-                              placeholder="0"
-                              :isFullWidth="true"
-                            />
-                        </MpInputGroup>
-                      </div>
-                    </MpFlex>
-                    <MpFormHelpText>{{ rangeHelper(ri) }}</MpFormHelpText>
-                  </MpFormControl>
-                </template>
-
-                <!-- Last rule: > amount (auto) -->
-                <template v-else>
-                  <MpFormControl :id="`rule-${rule.id}-gt`">
-                    <MpFormLabel>Any amount greater than</MpFormLabel>
-                    <div style="width:264px;">
-                      <MpInputGroup>
-                        <MpInputLeftAddon hasBackground>Rp</MpInputLeftAddon>
-                        <MpInput :modelValue="lastRuleDisplay" :isFullWidth="true" isDisabled />
-                      </MpInputGroup>
-                    </div>
-                    <MpFormHelpText>Rp{{ lastRuleHelpFrom }} - Unlimited</MpFormHelpText>
-                  </MpFormControl>
-                </template>
-
-                <!-- then select — inside gray header, below amount -->
-                <div style="width:264px;">
-                  <MpFormControl :id="`rule-${rule.id}-then`">
-                    <MpFormLabel>then</MpFormLabel>
-                    <MpAutocomplete :id="`rule-then-${rule.id}`" v-model="rule.then" :data="RULE_THEN_OPTIONS" value-prop="value" label-prop="label" />
-                  </MpFormControl>
-                </div>
-              </div>
-
-              <!-- Rule body: approval steps only — hidden when no approval needed -->
-              <div v-if="rule.then === 'needs-approval'" :class="ruleBody">
-
-                <!-- ── Approval steps (only when needs-approval) ── -->
-                <template v-if="rule.then === 'needs-approval'">
-                  <div :class="stepsContainer">
-
-                    <div
-                      v-for="(step, si) in rule.steps"
-                      :key="step.id"
-                      :class="stepRow"
-                    >
-                      <!-- Numbered badge -->
-                      <MpBadge for="tableStatus" variant="solid" variantColor="blue">{{ si + 1 }}</MpBadge>
-
-                      <!-- Step content -->
-                      <MpFlex direction="column" gap="3" style="flex:1; min-width:0;">
-
-                        <!-- Step header -->
-                        <MpFlex justify="space-between" align="center">
-                          <MpText size="body" weight="semiBold" color="dark">Approval step {{ si + 1 }}</MpText>
-                          <button :class="removeLink" @click="removeStep(rule, si)">Remove</button>
-                        </MpFlex>
-
-                        <!-- Approver type + line count -->
-                        <MpFlex gap="2" align="flex-start">
-                          <div style="flex:1;">
-                            <MpAutocomplete :id="`rule-step-type-${step.id}`" v-model="step.approverType" :data="APPROVER_TYPE_OPTIONS" value-prop="value" label-prop="label" />
-                          </div>
-                          <div v-if="step.approverType === 'approval-line'" style="flex:1;">
-                            <MpAutocomplete :id="`rule-step-line-${step.id}`" v-model="step.lineCount" :data="LINE_COUNTS" />
-                          </div>
-                          <div v-else-if="step.approverType === 'employee-id'" style="flex:1;">
-                            <MpAutocomplete :id="`rule-step-emp-${step.id}`" v-model="step.employeeId" :data="MOCK_EMPLOYEES" value-prop="id" label-prop="name" placeholder="Select employee" />
-                          </div>
-                        </MpFlex>
-
-                        <!-- Helper text for approval line -->
-                        <MpText
-                          v-if="step.approverType === 'approval-line'"
-                          size="body"
-                          color="gray.600"
-                        >{{ APPROVAL_HELPER }}</MpText>
-
-                        <!-- Additional approvers -->
-                        <MpFlex direction="column" gap="2">
-                          <MpText v-if="step.additionalApprovers.length > 0" size="body" weight="semiBold" color="dark">Any of these approver can also approve</MpText>
-
-                          <MpFlex
-                            v-for="(approver, ai) in step.additionalApprovers"
-                            :key="approver.id"
-                            :class="approverRow"
-                          >
-                            <div style="flex:1;">
-                              <MpAutocomplete :id="`rule-approver-type-${step.id}-${approver.id}`" v-model="approver.type" :data="APPROVER_TYPE_OPTIONS" value-prop="value" label-prop="label" />
-                            </div>
-                            <div v-if="approver.type === 'approval-line'" style="flex:1;">
-                              <MpAutocomplete :id="`rule-approver-line-${step.id}-${approver.id}`" v-model="approver.lineCount" :data="LINE_COUNTS" />
-                            </div>
-                            <div v-else style="flex:1;">
-                              <MpAutocomplete :id="`rule-approver-emp-${step.id}-${approver.id}`" v-model="approver.employeeId" :data="MOCK_EMPLOYEES" value-prop="id" label-prop="name" placeholder="Select employee" />
-                            </div>
-                            <MpButton
-                              variant="ghost"
-                              size="md"
-                              leftIcon="minus-circular"
-                              aria-label="Remove approver"
-                              @click="removeApprover(step, ai)"
-                            />
-                          </MpFlex>
-
-                          <!-- Add more approver -->
-                          <MpButton
-                            variant="textLink"
-                            size="md"
-                            leftIcon="add-circular"
-                            @click="addApprover(step)"
-                          >Add more approver</MpButton>
-                        </MpFlex>
-
-                      </MpFlex>
-                    </div>
-
-                    <!-- Add approval step -->
-                    <div style="padding-top: var(--Spacing-pxl-space-md, 16px);">
-                      <MpButton
-                        variant="secondary"
-                        size="md"
-                        leftIcon="add-circular"
-                        @click="addStep(rule)"
-                      >Add approval step</MpButton>
-                    </div>
-                  </div>
-                </template>
-
-              </div>
-            </div>
-
-            <!-- Add another rule — appears between last middle rule and last rule -->
-            <MpButton
-              v-if="ri === rules.length - 2"
-              variant="secondary"
-              size="md"
-              leftIcon="add-circular"
-              @click="addMiddleRule"
-            >Add another rule</MpButton>
-
-            </template>
-
-          </MpFlex>
-        </template>
 
       </MpFlex>
 

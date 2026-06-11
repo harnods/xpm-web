@@ -133,7 +133,7 @@ function emptyRule(): CustomRule {
   return { category: '', profile: '', currency: '', amount: '', frequency: '', noLimit: false }
 }
 const rules    = ref<CustomRule[]>([emptyRule()])
-const ruleType = ref<'with-limit' | 'no-limit'>('with-limit')
+const ruleType = ref('with-limit')
 
 // Frequency uniqueness — each Category+Profile+Currency can use a frequency once
 function availableFrequencies(i: number): string[] {
@@ -171,7 +171,8 @@ function addRule() { rules.value.push(emptyRule()) }
 function removeRule(i: number) { rules.value.splice(i, 1) }
 
 // ─── Limit per transaction (same block as standard category) ──────
-// Currencies offered = those actually used across the rule rows (fallback Rp).
+// Currencies offered = those used across the rule rows.
+// When ruleType === 'no-limit' there are no rule rows, so fall back to Rp.
 const ruleCurrencies = computed(() => {
   const s = new Set<string>()
   for (const r of rules.value) if (r.currency) s.add(r.currency)
@@ -203,8 +204,12 @@ watch(ruleCurrencies, (next) => {
     perTxLimits.value.push({ currency: next[0], amount: '' })
 })
 
-// At least one rule must have a category before per-transaction limits are allowed
-const anyCategorySelected = computed(() => rules.value.some(r => !!r.category))
+// Per-transaction limit is available when:
+//   · with-limit mode → at least one rule row has a category selected
+//   · no-limit mode   → always enabled (no rule rows exist by design)
+const anyCategorySelected = computed(() =>
+  ruleType.value === 'no-limit' || rules.value.some(r => !!r.category)
+)
 
 // ─── Members (employees) ──────────────────────────────────────────
 interface Employee {
@@ -339,17 +344,27 @@ function confirmMembers() {
 
 // ─── Submit ───────────────────────────────────────────────────────
 const saving = ref(false)
-function cancel() { router.push('/policies/claims') }
+function cancel() {
+  if (isEditMode.value && route.query.id) {
+    router.push(`/policies/claims/custom/${route.query.id}`)
+  } else {
+    router.push('/policies/claims?tab=custom')
+  }
+}
 async function save() {
   saving.value = true
   await new Promise(r => setTimeout(r, 600))
   saving.value = false
   toast.notify({
     variant: 'success',
-    title: isEditMode.value ? 'Custom category saved' : 'Custom category created',
+    title: isEditMode.value ? 'Custom category changes saved' : 'Custom category created',
     position: 'top-center',
   })
-  router.push('/policies/claims')
+  if (isEditMode.value && route.query.id) {
+    router.push(`/policies/claims/custom/${route.query.id}`)
+  } else {
+    router.push('/policies/claims?tab=custom')
+  }
 }
 
 // ─── Styles ───────────────────────────────────────────────────────
@@ -475,7 +490,7 @@ const sortCaret = css({ color: 'gray.400', fontSize: 'sm' })
 
       <!-- No limit — inline description -->
       <MpText v-if="ruleType === 'no-limit'" size="body" color="dark">
-        All categories have no spending limit for any frequency for members assigned to this custom policy.
+        Members assigned to this custom category have no spending limit for any frequency.
       </MpText>
 
       <!-- Rule table — Max amount BEFORE Frequency (scrolls horizontally on narrow viewports) -->
@@ -745,7 +760,9 @@ const sortCaret = css({ color: 'gray.400', fontSize: 'sm' })
   <!-- Footer -->
   <div :class="stickyFooter">
     <MpButton variant="ghost" size="md" @click="cancel">Cancel</MpButton>
-    <MpButton variant="primary" size="md" :isLoading="saving" @click="save">Save</MpButton>
+    <MpButton variant="primary" size="md" :isLoading="saving" @click="save">
+      {{ isEditMode ? 'Save changes' : 'Save' }}
+    </MpButton>
   </div>
 
   <!-- ═══ Add member drawer ═══ -->
