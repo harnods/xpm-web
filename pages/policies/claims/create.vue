@@ -847,6 +847,11 @@ const selectLabel = css({
         </MpFlex>
 
       </template>
+
+      <!-- No limit message -->
+      <template v-else>
+        <MpText size="body" color="dark">Members assigned to this category have no spending limit for any frequency.</MpText>
+      </template>
     </MpFlex>
 
     <!-- ══ 4. Additional rules ══ -->

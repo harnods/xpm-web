@@ -65,7 +65,7 @@ const group2: NavItem[] = [
     ],
   },
   { icon: 'voucher', label: 'Travel arrangements', path: '/travel-arrangement' },
-  { icon: 'reimbursement', label: 'My expenses', path: '/my-expense' },
+  { icon: 'reimbursement', label: 'My claims', path: '/my-claims' },
   { icon: 'business-trip', label: 'My trips', path: '/my-trip' },
   { icon: 'billing', label: 'My cards', path: '/my-card' },
 ]
@@ -124,7 +124,9 @@ const allChildren = (item: NavItem): NavChild[] =>
 const hasActiveChild = (item: NavItem) =>
   allChildren(item).some(c => route.path === c.path || route.path.startsWith(c.path + '/'))
 const isItemActive = (item: NavItem) =>
-  item.path ? route.path === item.path : hasActiveChild(item)
+  item.path
+    ? route.path === item.path || route.path.startsWith(item.path + '/')
+    : hasActiveChild(item)
 const itemTarget = (item: NavItem) => item.path ?? allChildren(item)[0]?.path ?? '/'
 
 const activeParent = computed<NavItem | undefined>(() => allItems.find(hasActiveChild))
