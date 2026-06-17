@@ -95,8 +95,24 @@ const dropdownPos    = ref({ top: '0px', right: '0px' })
 const ACTION_OPTIONS = [
   { value: 'view',   label: 'View details' },
   { value: 'edit',   label: 'Edit'         },
-  { value: 'delete', label: 'Delete', danger: true },
 ]
+
+// Known category slugs on the claim form; fall back to a populated one so the
+// requester edit view always renders a complete claim for the prototype.
+const FORM_CATEGORY_SLUGS = ['transportation', 'entertainment', 'equipment', 'office-supplies', 'software']
+
+function onAction(value: string, row: ClaimRow) {
+  activeActionId.value = null
+  if (value === 'view') {
+    navigateTo(`/my-claims/${row.id}`)
+  } else if (value === 'edit') {
+    const slug = row.claimCategory.toLowerCase().replace(/\s+/g, '-')
+    const category = FORM_CATEGORY_SLUGS.includes(slug) ? slug : 'transportation'
+    const type = row.claimType === 'Cash advance' ? 'cash-advance' : 'reimbursement'
+    navigateTo(`/my-claims/${row.id}/edit?category=${category}&type=${type}`)
+  }
+  // 'delete' is out of scope for this prototype
+}
 
 function toggleActionMenu(id: string, event: MouseEvent) {
   if (activeActionId.value === id) { activeActionId.value = null; return }
@@ -123,13 +139,11 @@ onMounted(() => {
 onBeforeUnmount(() => document.removeEventListener('mousedown', onDocumentMousedown))
 
 // ─── Status helpers ──────────────────────────────────────────────────
-function statusColor(s: ClaimStatus): string {
-  if (s === 'Awaiting approval')    return 'blue'
-  if (s === 'Awaiting disbursement') return 'orange'
-  if (s === 'Awaiting settlement')  return 'yellow'
-  if (s === 'Disbursed')            return 'green'
-  if (s === 'Settled')              return 'green'
-  return 'gray'
+// MpBadge type per status: anything "Awaiting …" is a warning, settled/disbursed are completed
+function statusType(s: ClaimStatus): string {
+  if (s.includes('Awaiting')) return 'warning'
+  if (s === 'Disbursed' || s === 'Settled') return 'completed'
+  return 'information'
 }
 
 // ─── CSS ────────────────────────────────────────────────────────────
@@ -198,6 +212,13 @@ const actionItemDanger = css({
   fontFamily: 'body', fontSize: 'md', lineHeight: 'lg', color: 'red.500',
   _hover: { background: 'red.25' },
 })
+const bannerBtn = css({
+  display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
+  paddingInline: '3', paddingBlock: '2', borderRadius: 'md', border: 'none', cursor: 'pointer',
+  background: 'yellow.300', color: 'dark',
+  fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold',
+  _hover: { background: 'yellow.400' },
+})
 </script>
 
 <template>
@@ -239,7 +260,7 @@ const actionItemDanger = css({
         1,271 claims are awaiting refund or settlement and need your action.
       </MpBannerDescription>
       <MpBannerLink id="banner-wtm-link">
-        <MpButton variant="secondary" size="sm">View</MpButton>
+        <button :class="bannerBtn">View</button>
       </MpBannerLink>
     </MpBanner>
 
@@ -396,7 +417,7 @@ const actionItemDanger = css({
 
             <!-- Status -->
             <td :class="td" style="white-space:nowrap;">
-              <MpBadge for="claimStatus" variant="subtle" :variantColor="statusColor(row.status)">
+              <MpBadge for="tableStatus" :type="statusType(row.status)">
                 {{ row.status }}
               </MpBadge>
             </td>
@@ -417,7 +438,7 @@ const actionItemDanger = css({
                   data-action-dropdown>
                   <button v-for="opt in ACTION_OPTIONS" :key="opt.value"
                     :class="opt.danger ? actionItemDanger : actionItem"
-                    @click.stop="activeActionId = null">
+                    @click.stop="onAction(opt.value, row)">
                     {{ opt.label }}
                   </button>
                 </div>

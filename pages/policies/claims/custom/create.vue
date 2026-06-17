@@ -646,7 +646,7 @@ const sortCaret = css({ color: 'gray.400', fontSize: 'sm' })
     </MpFlex>
 
     <!-- ══ 3. Additional rules (limit per transaction) ══ -->
-    <MpFlex direction="column" gap="3" marginBottom="16">
+    <MpFlex v-if="ruleType !== 'no-limit'" direction="column" gap="3" marginBottom="16">
       <MpFlex direction="column" gap="1">
         <MpText size="h2" weight="semiBold" color="dark">Additional rules</MpText>
         <MpText size="body" color="gray.600">Additional rule that will limit amount per transaction.</MpText>

@@ -8,7 +8,7 @@
 <script setup lang="ts">
 import {
   MpFlex, MpText, MpTextlink,
-  MpButton, MpBadge, MpAutocomplete,
+  MpButton, MpBadge, MpTag, MpTooltip, MpAutocomplete,
   MpInputGroup, MpInputLeftAddon, MpInput,
   MpModal, MpModalOverlay, MpModalContent, MpModalHeader, MpModalBody, MpModalFooter, MpModalCloseButton,
   css, toast,
@@ -26,34 +26,35 @@ type TabKey   = 'reimbursement' | 'cash-advance' | 'international' | 'custom'
 interface WorkflowRow {
   id: number
   name: string
+  description: string
   status: Status
   currencies: string[]
 }
 
 // ── Tab data ──────────────────────────────────────────────────────
 const reimbursementRows = ref<WorkflowRow[]>([
-  { id: 1, name: 'Standard Reimbursement Workflow',    status: 'Active',   currencies: ['IDR']           },
-  { id: 2, name: 'Manager Approval Flow',              status: 'Active',   currencies: ['IDR', 'USD']    },
-  { id: 3, name: 'Finance Review Workflow',            status: 'Inactive', currencies: ['IDR']           },
+  { id: 1, name: 'Standard Reimbursement Workflow',    description: 'Default approval flow for all reimbursement requests.',          status: 'Active',   currencies: ['IDR']           },
+  { id: 2, name: 'Manager Approval Flow',              description: 'Requires direct manager sign-off before finance review.',        status: 'Active',   currencies: ['IDR', 'USD']    },
+  { id: 3, name: 'Finance Review Workflow',            description: 'Routes all submissions through the finance team for auditing.',  status: 'Inactive', currencies: ['IDR']           },
 ])
 
 const cashAdvanceRows = ref<WorkflowRow[]>([
-  { id: 1, name: 'Cash Advance Standard Flow',         status: 'Active',   currencies: ['IDR']           },
-  { id: 2, name: 'CA Finance Approval Workflow',       status: 'Active',   currencies: ['IDR', 'USD']    },
-  { id: 3, name: 'Legacy Cash Advance Flow',           status: 'Inactive', currencies: ['IDR']           },
+  { id: 1, name: 'Cash Advance Standard Flow',         description: 'Standard two-step approval for cash advance requests.',         status: 'Active',   currencies: ['IDR']           },
+  { id: 2, name: 'CA Finance Approval Workflow',       description: 'Finance-gated flow for high-value cash advance disbursements.',  status: 'Active',   currencies: ['IDR', 'USD']    },
+  { id: 3, name: 'Legacy Cash Advance Flow',           description: 'Deprecated single-approver flow, replaced by standard flow.',   status: 'Inactive', currencies: ['IDR']           },
 ])
 
 const internationalRows = ref<WorkflowRow[]>([
-  { id: 1, name: 'Domestic Category Workflow',         status: 'Active',   currencies: ['IDR']                    },
-  { id: 2, name: 'International Category Workflow',    status: 'Active',   currencies: ['JPY', 'HKD', 'USD', 'SGD'] },
-  { id: 3, name: 'Legacy Reimbursement Workflow',      status: 'Inactive', currencies: ['USD', 'EUR']             },
-  { id: 4, name: 'Old Expense Workflow',               status: 'Inactive', currencies: ['IDR']                    },
-  { id: 5, name: 'Archived International Flow',        status: 'Inactive', currencies: ['JPY', 'USD']             },
+  { id: 1, name: 'Domestic Category Workflow',         description: 'Handles IDR-only claims within the domestic expense policy.',                  status: 'Active',   currencies: ['IDR']                      },
+  { id: 2, name: 'International Category Workflow',    description: 'Multi-currency flow for cross-border reimbursements and travel expenses.',    status: 'Active',   currencies: ['JPY', 'HKD', 'USD', 'SGD'] },
+  { id: 3, name: 'Legacy Reimbursement Workflow',      description: 'Original international flow before the multicurrency policy migration.',      status: 'Inactive', currencies: ['USD', 'EUR']               },
+  { id: 4, name: 'Old Expense Workflow',               description: 'Archived single-level flow superseded by the standard domestic workflow.',    status: 'Inactive', currencies: ['IDR']                      },
+  { id: 5, name: 'Archived International Flow',        description: 'Deprecated flow for JPY/USD claims, no longer accepting new submissions.',    status: 'Inactive', currencies: ['JPY', 'USD']               },
 ])
 
 const customRows = ref<WorkflowRow[]>([
-  { id: 1, name: 'Custom Approval Chain',              status: 'Active',   currencies: ['IDR', 'USD', 'EUR'] },
-  { id: 2, name: 'Multi-Level Review Workflow',        status: 'Inactive', currencies: ['IDR']               },
+  { id: 1, name: 'Custom Approval Chain',              description: 'Configurable multi-level chain for specialized expense categories.',          status: 'Active',   currencies: ['IDR', 'USD', 'EUR'] },
+  { id: 2, name: 'Multi-Level Review Workflow',        description: 'Three-tier review process for high-value or sensitive claims.',               status: 'Inactive', currencies: ['IDR']               },
 ])
 
 // ── Active tab ────────────────────────────────────────────────────
@@ -257,14 +258,6 @@ const metaText = css({
   color: 'gray.600', whiteSpace: 'nowrap',
 })
 
-const currencyTag = css({
-  display: 'inline-flex', alignItems: 'center',
-  paddingInline: '1.5', paddingBlock: '0.5',
-  borderRadius: 'sm',
-  background: 'gray.100',
-  fontFamily: 'body', fontSize: 'sm', lineHeight: 'lg', color: 'dark',
-  whiteSpace: 'nowrap',
-})
 
 // Action dropdown — plain list, no input field
 const actionMenu = css({
@@ -349,6 +342,7 @@ const actionItemDanger = css({
         <thead>
           <tr>
             <th :class="th">Workflow name</th>
+            <th :class="th">Description</th>
             <th :class="th">Status</th>
             <th :class="th">Currency</th>
             <th :class="th"></th>
@@ -367,6 +361,13 @@ const actionItemDanger = css({
               >{{ row.name }}</MpTextlink>
             </td>
 
+            <!-- Description -->
+            <td :class="td" style="max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              <MpTooltip :id="`tooltip-desc-${row.id}`" :label="row.description" placement="bottom" use-portal>
+                <span style="cursor:default;">{{ row.description }}</span>
+              </MpTooltip>
+            </td>
+
             <!-- Status badge -->
             <td :class="td" style="white-space:nowrap;">
               <MpBadge
@@ -379,7 +380,7 @@ const actionItemDanger = css({
             <!-- Currency tags -->
             <td :class="td">
               <MpFlex wrap="wrap" gap="1">
-                <span v-for="cur in row.currencies" :key="cur" :class="currencyTag">{{ cur }}</span>
+                <MpTag v-for="cur in row.currencies" :key="cur" id="tag-wtm" style="flex-shrink:0; white-space:nowrap;">{{ cur }}</MpTag>
               </MpFlex>
             </td>
 
