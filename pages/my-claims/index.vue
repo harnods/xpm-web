@@ -78,6 +78,9 @@ const statusFilter   = ref('All status')
 const searchQuery    = ref('')
 const selectedMonth  = ref('Jun 2026')
 
+// My limits drawer
+const showLimits = ref(false)
+
 const filteredRows = computed(() =>
   rows.value.filter(row => {
     const matchStatus = statusFilter.value === 'All status' || row.status === statusFilter.value
@@ -225,7 +228,7 @@ const bannerBtn = css({
   <!-- ═════ Header CTAs ═════ -->
   <Teleport to="#layout-header-actions">
     <MpFlex align="center" gap="2">
-      <MpButton variant="secondary" size="md" left-icon="policy">My limits</MpButton>
+      <MpButton variant="secondary" size="md" left-icon="policy" @click="showLimits = true">My limits</MpButton>
       <MpPopover id="request-claim-menu" use-portal placement="bottom-end" is-close-on-select>
         <MpPopoverTrigger>
           <MpButton variant="primary" size="md" right-icon="caret-down">Request claim</MpButton>
@@ -475,4 +478,7 @@ const bannerBtn = css({
     </MpFlex>
 
   </MpFlex>
+
+  <!-- ═════ My limits drawer ═════ -->
+  <MyLimitsDrawer :is-open="showLimits" @close="showLimits = false" />
 </template>
