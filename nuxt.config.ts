@@ -3,14 +3,8 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   css: ['~/assets/css/main.css'],
   routeRules: {
-    '/transactions': { redirect: '/transactions/claims' },
     '/purchasing': { redirect: '/purchasing/purchases' },
-    '/approval': { redirect: '/approval/claims' },
-    '/policies': { redirect: '/policies/claims' },
-    '/cards': { redirect: '/cards/virtual-cards' },
-    '/workflows': { redirect: '/workflows/claims' },
-    '/integrations': { redirect: '/integrations/add-ons' },
-    '/settings': { redirect: '/settings/custom-fields' },
+    '/settings': { redirect: '/settings/users' },
   },
   postcss: {
     plugins: {

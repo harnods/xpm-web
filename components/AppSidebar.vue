@@ -13,109 +13,48 @@ interface NavItem {
 
 const group1: NavItem[] = [
   { icon: 'home', label: 'Home', path: '/' },
+  { icon: 'reports', label: 'Reports', path: '/reports' },
+]
+
+const group2: NavItem[] = [
   { icon: 'wallet', label: 'Accounts', path: '/accounts' },
-  {
-    icon: 'log', label: 'Transactions',
-    children: [
-      { label: 'Claims', path: '/transactions/claims' },
-      { label: 'Benefit reimbursements', path: '/transactions/benefit-reimbursements' },
-      { label: 'Trips', path: '/transactions/trips' },
-      { label: 'Virtual cards', path: '/transactions/virtual-cards' },
-      { label: 'Physical cards', path: '/transactions/physical-cards' },
-      { label: 'Purchases', path: '/transactions/purchases' },
-    ],
-  },
+  { icon: 'log', label: 'Transactions', path: '/transactions' },
+  { icon: 'finance', label: 'Budgeting', path: '/budgeting' },
+]
+
+const group3: NavItem[] = [
   {
     icon: 'expenses', label: 'Purchasing',
     children: [
       { label: 'Purchases', path: '/purchasing/purchases' },
       { label: 'Products', path: '/purchasing/products' },
-      { label: 'Vendors', path: '/purchasing/vendors' },
       { label: 'Warehouses', path: '/purchasing/warehouses' },
     ],
   },
-  { icon: 'finance', label: 'Balances', path: '/balance' },
+  { icon: 'voucher', label: 'Trips', path: '/trips' },
+  { icon: 'protection', label: 'Claims', path: '/claims' },
+  { icon: 'billing', label: 'Cards', path: '/cards' },
 ]
 
-const group2: NavItem[] = [
-  {
-    icon: 'protection', label: 'Approvals',
-    groups: [
-      {
-        title: 'Approvals',
-        children: [
-          { label: 'Claims', path: '/approval/claims' },
-          { label: 'Trips', path: '/approval/trips' },
-          { label: 'Purchases', path: '/approval/purchases' },
-        ],
-      },
-      {
-        title: 'Payments',
-        children: [
-          { label: 'Payment requests', path: '/approval/payment-requests' },
-          { label: 'Payment approvals', path: '/approval/payment-approvals' },
-        ],
-      },
-      {
-        title: 'Authorization',
-        children: [
-          { label: 'Payment authorization', path: '/approval/payment-authorization' },
-        ],
-      },
-    ],
-  },
-  { icon: 'voucher', label: 'Travel arrangements', path: '/travel-arrangement' },
+const group4: NavItem[] = [
   { icon: 'reimbursement', label: 'My claims', path: '/my-claims' },
   { icon: 'business-trip', label: 'My trips', path: '/my-trip' },
-  { icon: 'billing', label: 'My cards', path: '/my-card' },
 ]
 
-const group3: NavItem[] = [
-  { icon: 'employee', label: 'Users', path: '/users' },
-  {
-    icon: 'policy', label: 'Policies',
-    children: [
-      { label: 'Claims', path: '/policies/claims' },
-      { label: 'Trips', path: '/policies/trips' },
-    ],
-  },
-  {
-    icon: 'billing', label: 'Cards',
-    children: [
-      { label: 'Virtual cards', path: '/cards/virtual-cards' },
-      { label: 'Physical cards', path: '/cards/physical-cards' },
-    ],
-  },
-  {
-    icon: 'workflow', label: 'Workflows',
-    children: [
-      { label: 'Claims', path: '/workflows/claims' },
-      { label: 'Trips', path: '/workflows/trips' },
-      { label: 'Purchases', path: '/workflows/purchases' },
-      { label: 'Expenses', path: '/workflows/expenses' },
-    ],
-  },
-  {
-    icon: 'application', label: 'Integrations',
-    children: [
-      { label: 'Add-ons', path: '/integrations/add-ons' },
-      { label: 'Sync to Jurnal', path: '/integrations/sync-to-jurnal' },
-    ],
-  },
+const group5: NavItem[] = [
   {
     icon: 'settings', label: 'Settings',
     children: [
-      { label: 'Custom fields', path: '/settings/custom-fields' },
-      { label: 'Virtual card credits', path: '/settings/virtual-card-credits' },
-      { label: 'OCR credits', path: '/settings/ocr-credits' },
-      { label: 'Purchase request access', path: '/settings/purchase-request-access' },
-      { label: 'Scheduler', path: '/settings/scheduler' },
+      { label: 'Users', path: '/settings/users' },
+      { label: 'Vendors', path: '/settings/vendors' },
+      { label: 'Policy', path: '/settings/policy' },
+      { label: 'Integration', path: '/settings/integration' },
     ],
   },
 ]
 
-const allGroups = [group1, group2, group3]
-const allItems = [...group1, ...group2, ...group3]
+const allGroups = [group1, group2, group3, group4, group5]
+const allItems = [...group1, ...group2, ...group3, ...group4, ...group5]
 
 const route = useRoute()
 const allChildren = (item: NavItem): NavChild[] =>

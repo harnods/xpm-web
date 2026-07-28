@@ -3,6 +3,7 @@ import { MpFlex, MpText } from '@mekari/pixel3'
 
 const route = useRoute()
 const pageTitle = computed(() => (route.meta.title as string) || 'Page Title')
+const subtitle = computed(() => (route.meta.subtitle as string) || '')
 const breadcrumbParent = computed(() => (route.meta.breadcrumbParent as any)?.path ? (route.meta.breadcrumbParent as any) : null)
 
 // Mirror sidebar state to compute width for toast centering
@@ -11,8 +12,7 @@ const isPanelCollapsed   = useState('sidebar-panel-collapsed', () => false)
 
 // Static nav children paths to detect submenu mode (mirrors AppSidebar logic)
 const SUBMENU_PATHS = [
-  '/transactions/', '/purchasing/', '/approval/', '/policies/',
-  '/cards/', '/workflows/', '/integrations/', '/settings/',
+  '/purchasing/', '/settings/',
 ]
 const isSubmenu = computed(() => SUBMENU_PATHS.some(p => route.path.startsWith(p)))
 
@@ -41,7 +41,7 @@ if (import.meta.client) {
         <MpFlex
           align="center"
           justify="space-between"
-          :height="breadcrumbParent ? '100px' : '72px'"
+          :height="(breadcrumbParent || subtitle) ? '100px' : '72px'"
           paddingInline="6"
           flexShrink="0"
         >
@@ -61,6 +61,9 @@ if (import.meta.client) {
               </MpText>
               <div id="layout-title-suffix" />
             </MpFlex>
+            <MpText v-if="subtitle" as="p" size="body" color="text.secondary">
+              {{ subtitle }}
+            </MpText>
           </MpFlex>
           <div id="layout-header-actions" />
         </MpFlex>

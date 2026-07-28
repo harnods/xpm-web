@@ -18,11 +18,11 @@ const launcherButton = css({
 const avatarStyle = css({
   w: '8', h: '8',
   borderRadius: 'full',
-  bg: 'background.neutral.bold',
+  bg: 'background.brand.selected',
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  color: 'text.secondary',
+  color: 'text.link',
   fontWeight: 'semiBold',
   fontSize: 'sm',
   overflow: 'hidden',
@@ -80,9 +80,15 @@ const brandLink = css({
     </a>
 
     <MpFlex align="center" gap="4">
-      <button type="button" :class="launcherButton" aria-label="App launcher">
-        <PxIcon name="shortcuts" :size="20" />
-      </button>
+      <MpFlex align="center" gap="2">
+        <button type="button" :class="launcherButton" aria-label="Inbox" @click="navigateTo('/inbox')">
+          <PxIcon name="inbox" :size="20" />
+        </button>
+
+        <button type="button" :class="launcherButton" aria-label="App launcher">
+          <PxIcon name="shortcuts" :size="20" />
+        </button>
+      </MpFlex>
 
       <MpFlex align="center" gap="2">
         <div :class="avatarStyle" aria-hidden="true">RC</div>
