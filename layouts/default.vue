@@ -30,7 +30,7 @@ if (import.meta.client) {
 </script>
 
 <template>
-  <MpFlex direction="column" height="100vh" background="background" :style="`--sidebar-w: ${sidebarWidth}px`">
+  <MpFlex direction="column" height="100vh" background="background.surface" :style="`--sidebar-w: ${sidebarWidth}px`">
     <AppHeader />
 
     <MpFlex flex="1" minHeight="0">
@@ -56,7 +56,7 @@ if (import.meta.client) {
               </MpText>
             </NuxtLink>
             <MpFlex align="center" gap="2">
-              <MpText as="h1" size="h1" weight="semiBold" color="dark">
+              <MpText as="h1" size="h1" weight="semiBold" color="text.default">
                 {{ pageTitle }}
               </MpText>
               <div id="layout-title-suffix" />
@@ -73,14 +73,14 @@ if (import.meta.client) {
         <MpFlex
           direction="column"
           flex="1"
-          background="white"
+          background="background.neutral"
           paddingInline="6"
           paddingBlock="6"
           borderTopLeftRadius="md"
           borderTop="1px solid"
-          borderTopColor="gray.100"
+          borderTopColor="border.default"
           borderLeft="1px solid"
-          borderLeftColor="gray.100"
+          borderLeftColor="border.default"
         >
           <slot />
         </MpFlex>

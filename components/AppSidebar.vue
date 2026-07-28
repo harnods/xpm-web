@@ -155,7 +155,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 const panelStyle = computed(() => ({
   width: isPanelCollapsed.value ? '16px' : '240px',
   marginRight: isPanelCollapsed.value ? '16px' : '8px',
-  borderColor: isPanelCollapsed.value ? token.var('colors.gray.100') : 'transparent',
+  borderColor: isPanelCollapsed.value ? token.var('colors.border.default') : 'transparent',
   boxShadow: isPanelCollapsed.value
     ? '6px 0 15px -3px rgba(0, 0, 0, 0.10) inset, 4px 0 6px -2px rgba(0, 0, 0, 0.05) inset'
     : 'none',
@@ -167,8 +167,8 @@ const rootRailOrSubmenu = css({ display: 'flex', flexDirection: 'row', h: '100%'
 
 const railBoxBase = { display: 'flex', flexDirection: 'column', w: '56px', h: '100%', flexShrink: 0 } as const
 const railBoxSubmenu = css({
-  ...railBoxBase, bg: 'ash.100', position: 'relative', zIndex: 1,
-  borderRightWidth: '1px', borderRightStyle: 'solid', borderRightColor: 'gray.100',
+  ...railBoxBase, bg: 'background.surface', position: 'relative', zIndex: 1,
+  borderRightWidth: '1px', borderRightStyle: 'solid', borderRightColor: 'border.default',
 })
 const railBoxOnly = css({ ...railBoxBase, bg: 'transparent' })
 
@@ -187,19 +187,19 @@ const panelInner = css({
 const halfCircleExpand = css({
   position: 'absolute', bottom: '5', left: '72px', zIndex: 30,
   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-  w: '24px', h: '36px', bg: 'white', color: 'gray.600',
+  w: '24px', h: '36px', bg: 'background.neutral', color: 'text.secondary',
   borderTopWidth: '1px', borderRightWidth: '1px', borderBottomWidth: '1px',
-  borderStyle: 'solid', borderColor: 'gray.100',
+  borderStyle: 'solid', borderColor: 'border.default',
   borderTopRightRadius: 'full', borderBottomRightRadius: 'full',
   boxShadow: 'sm', cursor: 'pointer',
   transition: 'opacity 150ms ease',
-  _hover: { bg: 'gray.50' },
+  _hover: { bg: 'background.neutral.hovered' },
 })
 
 const navGroup = css({
   display: 'flex', flexDirection: 'column', gap: '0.5', py: '2', px: '2',
 })
-const groupDivider = css({ marginInline: '3', height: '1px', background: 'gray.100' })
+const groupDivider = css({ marginInline: '3', height: '1px', background: 'border.default' })
 
 const itemBase = {
   display: 'flex', alignItems: 'center', gap: '2', w: 'full', height: '36px', px: '3',
@@ -208,7 +208,7 @@ const itemBase = {
   transition: 'background-color 120ms ease',
   fontFamily: 'body', fontSize: 'md', lineHeight: 'lg',
 } as const
-const itemDefault = css({ ...itemBase, bg: 'transparent', color: 'dark', fontWeight: 'regular', _hover: { bg: 'gray.50' } })
+const itemDefault = css({ ...itemBase, bg: 'transparent', color: 'text.default', fontWeight: 'regular', _hover: { bg: 'background.neutral.hovered' } })
 const itemActive = css({ ...itemBase, bg: 'background.brand.selected', color: 'text.link', fontWeight: 'semiBold', _hover: { bg: 'background.brand.selected' } })
 const itemLabel = css({ flex: '1 1 auto', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' })
 
@@ -221,7 +221,7 @@ const railBase = {
   textDecoration: 'none',
   transition: 'background-color 120ms ease',
 } as const
-const railDefault = css({ ...railBase, bg: 'transparent', color: 'dark', _hover: { bg: 'gray.50' } })
+const railDefault = css({ ...railBase, bg: 'transparent', color: 'text.default', _hover: { bg: 'background.neutral.hovered' } })
 const railActive = css({ ...railBase, bg: 'background.brand.selected', _hover: { bg: 'background.brand.selected' } })
 
 const childBase = {
@@ -231,13 +231,13 @@ const childBase = {
   fontFamily: 'body', fontSize: 'md', lineHeight: 'md',
   transition: 'background-color 120ms ease',
 } as const
-const childDefault = css({ ...childBase, bg: 'transparent', color: 'dark', fontWeight: 'regular', _hover: { bg: 'ash.100' } })
+const childDefault = css({ ...childBase, bg: 'transparent', color: 'text.default', fontWeight: 'regular', _hover: { bg: 'background.surface' } })
 const childActive = css({ ...childBase, bg: 'background.brand.selected', color: 'text.link', fontWeight: 'semiBold', _hover: { bg: 'background.brand.selected' } })
 
 const ghostBtn = css({
   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', w: '36px', h: '36px',
-  border: 'none', bg: 'transparent', borderRadius: 'md', cursor: 'pointer', flexShrink: 0, color: 'gray.600',
-  transition: 'background-color 120ms ease', _hover: { bg: 'gray.100' },
+  border: 'none', bg: 'transparent', borderRadius: 'md', cursor: 'pointer', flexShrink: 0, color: 'text.secondary',
+  transition: 'background-color 120ms ease', _hover: { bg: 'background.neutral.hovered' },
 })
 
 const sectionTitle = css({
@@ -272,7 +272,7 @@ const itemClassRail = (item: NavItem) => cx(isItemActive(item) ? railActive : ra
         </template>
       </MpFlex>
 
-      <MpFlex align="center" gap="0.5" paddingInline="3" height="68px" borderTop="1px solid" borderTopColor="gray.100" flexShrink="0">
+      <MpFlex align="center" gap="0.5" paddingInline="3" height="68px" borderTop="1px solid" borderTopColor="border.default" flexShrink="0">
         <button type="button" :class="ghostBtn"
           :aria-label="`Collapse sidebar (${shortcutLabel})`"
           :title="`Collapse sidebar · ${shortcutLabel}`"
@@ -280,7 +280,7 @@ const itemClassRail = (item: NavItem) => cx(isItemActive(item) ? railActive : ra
         >
           <MpIcon name="chevrons-left" />
         </button>
-        <MpText as="span" size="body-small" color="gray.600">Company ID : 102938</MpText>
+        <MpText as="span" size="body-small" color="text.secondary">Company ID : 102938</MpText>
       </MpFlex>
     </template>
 
@@ -305,7 +305,7 @@ const itemClassRail = (item: NavItem) => cx(isItemActive(item) ? railActive : ra
           </template>
         </MpFlex>
 
-        <MpFlex v-if="mode === 'rail'" align="center" justify="center" height="68px" flexShrink="0" borderTop="1px solid" borderTopColor="gray.100">
+        <MpFlex v-if="mode === 'rail'" align="center" justify="center" height="68px" flexShrink="0" borderTop="1px solid" borderTopColor="border.default">
           <button type="button" :class="ghostBtn"
             :aria-label="`Expand sidebar (${shortcutLabel})`"
             :title="`Expand sidebar · ${shortcutLabel}`"

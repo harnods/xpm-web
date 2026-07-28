@@ -4,7 +4,7 @@ definePageMeta({ title: 'Users', navKey: 'users' })
 </script>
 
 <template>
-  <MpText as="p" size="body" color="gray.600">
+  <MpText as="p" size="body" color="text.secondary">
     Placeholder content for Users.
   </MpText>
 </template>

@@ -8,21 +8,21 @@ const launcherButton = css({
   w: '8',
   h: '8',
   borderRadius: 'md',
-  color: 'gray.600',
+  color: 'text.secondary',
   cursor: 'pointer',
   background: 'transparent',
   border: 'none',
-  _hover: { bg: 'background' },
+  _hover: { bg: 'background.surface' },
 })
 
 const avatarStyle = css({
   w: '8', h: '8',
   borderRadius: 'full',
-  bg: 'gray.100',
+  bg: 'background.neutral.bold',
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  color: 'gray.600',
+  color: 'text.secondary',
   fontWeight: 'semiBold',
   fontSize: 'sm',
   overflow: 'hidden',
@@ -31,12 +31,12 @@ const avatarStyle = css({
 
 const profileName = css({
   fontFamily: 'body', fontSize: 'md', lineHeight: 'lg',
-  fontWeight: 'semiBold', color: 'dark',
+  fontWeight: 'semiBold', color: 'text.default',
 })
 
 const profileCompany = css({
   fontFamily: 'body', fontSize: 'sm', lineHeight: 'xl',
-  color: 'gray.600',
+  color: 'text.secondary',
 })
 
 const brandLink = css({
@@ -54,9 +54,9 @@ const brandLink = css({
     justify="space-between"
     height="56px"
     paddingInline="6"
-    background="white"
+    background="background.neutral"
     borderBottom="1px solid"
-    borderBottomColor="gray.100"
+    borderBottomColor="border.default"
   >
     <a :class="brandLink" href="/" aria-label="Mekari Expense home">
       <svg width="145" height="40" viewBox="0 0 145 40" style="display:block" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
