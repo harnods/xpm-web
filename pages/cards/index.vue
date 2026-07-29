@@ -8,7 +8,9 @@
 <script setup lang="ts">
 import {
   MpFlex, MpText, MpButton, MpBadge,
+  MpTableContainer, MpTable, MpTableHead, MpTableBody, MpTableRow, MpTableCell,
   MpInputGroup, MpInputLeftAddon, MpInput,
+  MpPopover, MpPopoverTrigger, MpPopoverContent, MpPopoverList, MpPopoverListItem,
   MpDrawer, MpDrawerOverlay, MpDrawerContent, MpDrawerHeader,
   MpDrawerCloseButton, MpDrawerBody, MpDrawerFooter,
   MpFormControl, MpFormLabel, MpFormHelpText,
@@ -18,7 +20,6 @@ import {
 
 definePageMeta({
   title: 'Cards',
-  subtitle: "Cards management — issue, fund and control the company's virtual and physical cards.",
 })
 
 // ─── Data ────────────────────────────────────────────────────────────
@@ -61,6 +62,21 @@ const rows = computed(() => (activeTab.value === 'virtual' ? virtualRows : physi
 
 const searchQuery = ref('')
 
+// ─── Status badge mapping ────────────────────────────────────────────
+function badgeType(status: string): 'completed' | 'announcement' | 'warning' {
+  if (status === 'Active') return 'completed'
+  if (status === 'Frozen') return 'warning'
+  return 'announcement'
+}
+
+// ─── Filter dropdowns (select-like → MpPopover) ──────────────────────
+const STATUS_OPTIONS  = ['All status', 'Active', 'Inactive', 'Frozen']
+const ACCOUNT_OPTIONS = ['All accounts', 'Main account', 'Reimbursement pool', 'Card float']
+const SORT_OPTIONS    = ['Oldest first', 'Newest first', 'Name (A–Z)', 'Balance (high–low)']
+const statusFilter  = ref('All status')
+const accountFilter = ref('All accounts')
+const sortOrder     = ref('Oldest first')
+
 // ─── Create card drawer ──────────────────────────────────────────────
 // NOTE: the reference "Create card" CTA is unwired; this drawer + form is
 // inferred to be reference-consistent (mirrors ClaimForm drawer patterns).
@@ -99,48 +115,28 @@ const summaryLabelRow = css({ display: 'flex', alignItems: 'center', gap: '2' })
 const summaryLabel    = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
 const summaryValue    = css({ fontFamily: 'body', fontSize: '2xl', fontWeight: 'bold', color: 'text.default', lineHeight: 'xs' })
 
+// Tabs strip (teleported into #layout-tabs)
 const tabStrip = css({
-  display: 'flex', alignItems: 'center', gap: '4',
+  display: 'flex', alignItems: 'center', gap: '5', paddingInline: '6', height: '44px',
   borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
+  background: 'background.neutral',
 })
-const tabItem = css({
-  fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.secondary',
-  paddingBlock: '2', cursor: 'pointer', background: 'transparent', border: 'none',
-  borderBottomWidth: '2px', borderBottomStyle: 'solid', borderBottomColor: 'transparent',
-  marginBottom: '-1px',
+const tabBtn = css({
+  display: 'inline-flex', alignItems: 'center', gap: '2', height: '44px',
+  background: 'transparent', border: 'none', cursor: 'pointer',
+  fontFamily: 'body', fontSize: 'md',
+  borderBottom: '2px solid transparent',
 })
-const tabItemActive = css({
-  fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.link',
-  paddingBlock: '2', cursor: 'pointer', background: 'transparent', border: 'none',
-  borderBottomWidth: '2px', borderBottomStyle: 'solid', borderBottomColor: 'border.brand',
-  marginBottom: '-1px',
-})
+const tabActive   = css({ color: 'text.default', fontWeight: 'semiBold', borderBottomColor: 'border.brand' })
+const tabInactive = css({ color: 'text.secondary' })
 
-const tblWrap = css({ w: 'full', overflowX: 'auto' })
-const tbl = css({ w: 'full', tableLayout: 'auto', borderCollapse: 'collapse' })
-const th = css({
-  bg: 'background.neutral.subtle',
-  fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'text.secondary',
-  paddingInline: '3', paddingBlock: '3', h: '44px',
-  borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
-  textAlign: 'left', whiteSpace: 'nowrap', verticalAlign: 'middle', textTransform: 'uppercase', letterSpacing: '0.02em',
-})
-const td = css({
-  fontFamily: 'body', fontSize: 'md', color: 'text.default',
-  paddingInline: '3', paddingBlock: '3',
-  borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
-  verticalAlign: 'middle',
-})
 const cellName = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.link', textDecoration: 'none', cursor: 'pointer', _hover: { textDecoration: 'underline' } })
 const cellPrimary = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default' })
 const cellSub  = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
-const statusCell = css({ display: 'inline-flex', alignItems: 'center', gap: '2', whiteSpace: 'nowrap' })
-const dot = css({ w: '8px', h: '8px', borderRadius: 'full', flexShrink: 0 })
-const dotActive   = css({ background: 'icon.success' })
-const dotInactive = css({ background: 'icon.default' })
 
 const alignRight = css({ textAlign: 'right' })
 const nowrap = css({ whiteSpace: 'nowrap' })
+const tblWrap = css({ width: 'full' })
 
 const footer = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
 </script>
@@ -149,6 +145,17 @@ const footer = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary'
   <!-- ═════ Header CTA ═════ -->
   <Teleport to="#layout-header-actions">
     <MpButton variant="primary" size="md" left-icon="add" @click="openCreate">Create card</MpButton>
+  </Teleport>
+
+  <!-- ═════ Tabs strip (into layout title bar area) ═════ -->
+  <Teleport to="#layout-tabs">
+    <div :class="tabStrip">
+      <button
+        v-for="t in tabs" :key="t.key" type="button"
+        :class="[tabBtn, activeTab === t.key ? tabActive : tabInactive]"
+        @click="activeTab = t.key"
+      >{{ t.label }}</button>
+    </div>
   </Teleport>
 
   <!-- ═════ Stage content ═════ -->
@@ -165,21 +172,41 @@ const footer = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary'
       </div>
     </div>
 
-    <!-- ── Tabs ── -->
-    <div :class="tabStrip">
-      <button v-for="t in tabs" :key="t.key" type="button" :class="activeTab === t.key ? tabItemActive : tabItem" @click="activeTab = t.key">
-        {{ t.label }}
-      </button>
-    </div>
-
     <!-- ── Toolbar ── -->
     <MpFlex align="center" justify="space-between" gap="3" wrap="wrap">
       <MpFlex align="center" gap="2" wrap="wrap">
-        <MpButton variant="secondary" size="sm" right-icon="caret-down">All status</MpButton>
-        <MpButton variant="secondary" size="sm" right-icon="caret-down">All accounts</MpButton>
+        <MpPopover id="filter-status" use-portal placement="bottom-start" is-close-on-select>
+          <MpPopoverTrigger>
+            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ statusFilter }}</MpButton>
+          </MpPopoverTrigger>
+          <MpPopoverContent :class="css({ marginTop: '2px', minWidth: '180px' })">
+            <MpPopoverList>
+              <MpPopoverListItem v-for="o in STATUS_OPTIONS" :key="o" @click="statusFilter = o">{{ o }}</MpPopoverListItem>
+            </MpPopoverList>
+          </MpPopoverContent>
+        </MpPopover>
+        <MpPopover id="filter-account" use-portal placement="bottom-start" is-close-on-select>
+          <MpPopoverTrigger>
+            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ accountFilter }}</MpButton>
+          </MpPopoverTrigger>
+          <MpPopoverContent :class="css({ marginTop: '2px', minWidth: '200px' })">
+            <MpPopoverList>
+              <MpPopoverListItem v-for="o in ACCOUNT_OPTIONS" :key="o" @click="accountFilter = o">{{ o }}</MpPopoverListItem>
+            </MpPopoverList>
+          </MpPopoverContent>
+        </MpPopover>
       </MpFlex>
       <MpFlex align="center" gap="2" wrap="wrap">
-        <MpButton variant="ghost" size="sm" right-icon="caret-down">Sort: Oldest first</MpButton>
+        <MpPopover id="filter-sort" use-portal placement="bottom-end" is-close-on-select>
+          <MpPopoverTrigger>
+            <MpButton variant="ghost" size="sm" right-icon="caret-down">Sort: {{ sortOrder }}</MpButton>
+          </MpPopoverTrigger>
+          <MpPopoverContent :class="css({ marginTop: '2px', minWidth: '200px' })">
+            <MpPopoverList>
+              <MpPopoverListItem v-for="o in SORT_OPTIONS" :key="o" @click="sortOrder = o">{{ o }}</MpPopoverListItem>
+            </MpPopoverList>
+          </MpPopoverContent>
+        </MpPopover>
         <MpButton variant="secondary" size="sm" left-icon="download">Export</MpButton>
         <MpInputGroup width="260px" flex-shrink="0">
           <MpInputLeftAddon>
@@ -191,41 +218,38 @@ const footer = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary'
     </MpFlex>
 
     <!-- ── Table ── -->
-    <div :class="tblWrap">
-      <table :class="tbl">
-        <thead>
-          <tr>
-            <th :class="th">Card name</th>
-            <th :class="th">Cardholder</th>
-            <th :class="th">Expiration</th>
-            <th :class="[th, alignRight]">Card balance</th>
-            <th :class="th">Account</th>
-            <th :class="th">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in rows" :key="row.id">
-            <td :class="td">
+    <MpTableContainer :class="tblWrap">
+      <MpTable>
+        <MpTableHead>
+          <MpTableRow>
+            <MpTableCell scope="col">Card name</MpTableCell>
+            <MpTableCell scope="col">Cardholder</MpTableCell>
+            <MpTableCell scope="col">Expiration</MpTableCell>
+            <MpTableCell scope="col" :class="alignRight">Card balance</MpTableCell>
+            <MpTableCell scope="col">Account</MpTableCell>
+            <MpTableCell scope="col">Status</MpTableCell>
+          </MpTableRow>
+        </MpTableHead>
+        <MpTableBody>
+          <MpTableRow v-for="row in rows" :key="row.id">
+            <MpTableCell as="td" scope="row">
               <NuxtLink :to="`/cards/${row.id}`" :class="cellName">{{ row.name }}</NuxtLink>
               <div :class="cellSub">{{ row.nameSub }}</div>
-            </td>
-            <td :class="td">
+            </MpTableCell>
+            <MpTableCell as="td">
               <div :class="cellPrimary">{{ row.holder }}</div>
               <div :class="cellSub">{{ row.holderSub }}</div>
-            </td>
-            <td :class="[td, nowrap]">{{ row.exp }}</td>
-            <td :class="[td, alignRight, nowrap]">{{ row.balance }}</td>
-            <td :class="[td, nowrap]">{{ row.account }}</td>
-            <td :class="td">
-              <span :class="statusCell">
-                <span :class="[dot, row.status === 'Active' ? dotActive : dotInactive]" />
-                {{ row.status }}
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+            </MpTableCell>
+            <MpTableCell as="td" :class="nowrap">{{ row.exp }}</MpTableCell>
+            <MpTableCell as="td" :class="[alignRight, nowrap]">{{ row.balance }}</MpTableCell>
+            <MpTableCell as="td" :class="nowrap">{{ row.account }}</MpTableCell>
+            <MpTableCell as="td">
+              <MpBadge for="tableStatus" :type="badgeType(row.status)">{{ row.status }}</MpBadge>
+            </MpTableCell>
+          </MpTableRow>
+        </MpTableBody>
+      </MpTable>
+    </MpTableContainer>
 
     <!-- ── Footer ── -->
     <span :class="footer">Showing {{ rows.length }} of {{ rows.length }} · Rows per page: 10 · Page 1 of 1</span>

@@ -69,6 +69,14 @@ const DOT: Record<string, string> = {
   danger:  token.var('colors.icon.danger'),
 }
 
+// Map waiting-row kind → MpBadge type
+type BadgeType = 'warning' | 'critical' | 'announcement'
+function flagType(kind: string): BadgeType {
+  if (kind === 'warning') return 'warning'
+  if (kind === 'danger') return 'critical'
+  return 'announcement'
+}
+
 // ─── Static option lists (reference-consistent) ───────────────────────
 const CLAIM_CATEGORIES = ['Meals & entertainment', 'Transportation', 'Accommodation', 'Software', 'Office supplies']
 const ACCOUNTS         = ['Company IDR — 1234567890', 'Company USD — 9876543210', 'Petty cash — Jakarta HQ']
@@ -252,10 +260,7 @@ const reviewMeta = css({
             <MpAvatar :id="`av-${r.name}`" :name="r.name" size="sm" variant-color="gray" />
             <span :class="rowName">{{ r.name }}</span>
             <span :class="rowMemo">{{ r.memo }}</span>
-            <span :class="rowFlag">
-              <span :class="dot" :style="{ background: DOT[r.kind] }" />
-              {{ r.flag }}
-            </span>
+            <MpBadge for="tableStatus" :type="flagType(r.kind)">{{ r.flag }}</MpBadge>
             <span :class="rowAmount">{{ r.amount }}</span>
             <MpButton variant="secondary" size="sm" @click="openReview(r)">Review</MpButton>
           </div>

@@ -14,6 +14,7 @@
 <script setup lang="ts">
 import {
   MpFlex, MpText, MpButton, MpBadge, MpToggle,
+  MpTableContainer, MpTable, MpTableHead, MpTableBody, MpTableRow, MpTableCell,
   MpDrawer, MpDrawerOverlay, MpDrawerContent, MpDrawerHeader,
   MpDrawerCloseButton, MpDrawerBody, MpDrawerFooter,
   css, token,
@@ -21,7 +22,6 @@ import {
 
 definePageMeta({
   title: 'Accounts',
-  subtitle: 'Manage company wallets, balances and money movement.',
   navKey: 'accounts',
 })
 
@@ -355,29 +355,8 @@ const searchBox = css({
 const searchText = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
 
 // Table
-const tbl = css({ w: 'full', tableLayout: 'auto', borderCollapse: 'collapse' })
-const th = css({
-  fontFamily: 'body', fontSize: 'xs', fontWeight: 'semiBold', letterSpacing: 'wide',
-  textTransform: 'uppercase', color: 'text.secondary',
-  px: '3', py: '2.5', textAlign: 'left', whiteSpace: 'nowrap', verticalAlign: 'middle',
-  borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
-})
-const thNum = css({
-  fontFamily: 'body', fontSize: 'xs', fontWeight: 'semiBold', letterSpacing: 'wide',
-  textTransform: 'uppercase', color: 'text.secondary',
-  px: '3', py: '2.5', textAlign: 'right', whiteSpace: 'nowrap', verticalAlign: 'middle',
-  borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
-})
-const td = css({
-  fontFamily: 'body', fontSize: 'md', color: 'text.default',
-  px: '3', py: '3', verticalAlign: 'middle', whiteSpace: 'nowrap',
-  borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
-})
-const tdNum = css({
-  fontFamily: 'body', fontSize: 'md', color: 'text.default',
-  px: '3', py: '3', verticalAlign: 'middle', whiteSpace: 'nowrap', textAlign: 'right',
-  borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
-})
+const tblWrap = css({ width: 'full' })
+const alignRight = css({ textAlign: 'right' })
 const dashCell = css({ color: 'text.secondary' })
 
 // ─── Wallet settings panel ─────────────────────────────────────────────
@@ -564,32 +543,34 @@ const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
           </MpFlex>
 
           <!-- Transactions table -->
-          <table :class="tbl">
-            <thead>
-              <tr>
-                <th :class="th">Date</th>
-                <th :class="th">Description</th>
-                <th :class="thNum">Money in</th>
-                <th :class="thNum">Money out</th>
-                <th :class="thNum">Balance</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(r, i) in cur.txns" :key="i">
-                <td :class="td">{{ r.date }}</td>
-                <td :class="td">{{ r.desc }}</td>
-                <td :class="tdNum">
-                  <span v-if="r.in" :class="moneyIn">{{ r.in }}</span>
-                  <span v-else :class="dashCell">—</span>
-                </td>
-                <td :class="tdNum">
-                  <span v-if="r.out">{{ r.out }}</span>
-                  <span v-else :class="dashCell">—</span>
-                </td>
-                <td :class="tdNum">{{ r.balance }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <MpTableContainer :class="tblWrap">
+            <MpTable>
+              <MpTableHead>
+                <MpTableRow>
+                  <MpTableCell scope="col">Date</MpTableCell>
+                  <MpTableCell scope="col">Description</MpTableCell>
+                  <MpTableCell scope="col" :class="alignRight">Money in</MpTableCell>
+                  <MpTableCell scope="col" :class="alignRight">Money out</MpTableCell>
+                  <MpTableCell scope="col" :class="alignRight">Balance</MpTableCell>
+                </MpTableRow>
+              </MpTableHead>
+              <MpTableBody>
+                <MpTableRow v-for="(r, i) in cur.txns" :key="i">
+                  <MpTableCell as="td" scope="row">{{ r.date }}</MpTableCell>
+                  <MpTableCell as="td">{{ r.desc }}</MpTableCell>
+                  <MpTableCell as="td" :class="alignRight">
+                    <span v-if="r.in" :class="moneyIn">{{ r.in }}</span>
+                    <span v-else :class="dashCell">—</span>
+                  </MpTableCell>
+                  <MpTableCell as="td" :class="alignRight">
+                    <span v-if="r.out">{{ r.out }}</span>
+                    <span v-else :class="dashCell">—</span>
+                  </MpTableCell>
+                  <MpTableCell as="td" :class="alignRight">{{ r.balance }}</MpTableCell>
+                </MpTableRow>
+              </MpTableBody>
+            </MpTable>
+          </MpTableContainer>
         </template>
 
         <!-- ─── Wallet settings tab ─── -->

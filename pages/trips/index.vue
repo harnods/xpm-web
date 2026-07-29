@@ -8,16 +8,35 @@
 -->
 <script setup lang="ts">
 import {
-  MpFlex, MpButton, MpText, MpTextlink,
+  MpFlex, MpButton, MpText, MpTextlink, MpBadge,
+  MpPopover, MpPopoverTrigger, MpPopoverContent, MpPopoverList, MpPopoverListItem,
   MpDrawer, MpDrawerOverlay, MpDrawerContent, MpDrawerHeader,
   MpDrawerCloseButton, MpDrawerBody, MpDrawerFooter,
-  css, token,
+  MpTableContainer, MpTable, MpTableHead, MpTableBody, MpTableRow, MpTableCell,
+  css,
 } from '@mekari/pixel3'
 
 definePageMeta({
   title: 'Trips',
-  subtitle: 'All submitted trips across the company — monitor bookings, approvals and travelers.',
 })
+
+// ─── Status → badge type ─────────────────────────────────────────────
+function badgeType(s: string): 'completed' | 'warning' | 'critical' | 'information' | 'announcement' {
+  if (['Settled', 'Disbursed', 'Booked', 'Completed', 'Approved', 'Paid'].includes(s)) return 'completed'
+  if (['Awaiting approval', 'Awaiting disburse', 'Awaiting payment', 'Booking pending'].includes(s)) return 'warning'
+  if (['Declined', 'Rejected', 'Overdue'].includes(s)) return 'critical'
+  if (['Trip done · awaiting report', 'Sent', 'Requested'].includes(s)) return 'information'
+  if (['Draft', 'Inactive'].includes(s)) return 'announcement'
+  return 'announcement'
+}
+
+// ─── Toolbar dropdowns ───────────────────────────────────────────────
+const TRIP_TYPE_OPTIONS = ['All trip type', 'Domestic', 'International']
+const STATUS_OPTIONS = ['All status', 'Booking pending', 'Booked', 'Trip done', 'Completed']
+const SORT_OPTIONS = ['Sort: Oldest first', 'Sort: Newest first']
+const tripType = ref('All trip type')
+const statusFilter = ref('All status')
+const sortBy = ref('Sort: Oldest first')
 
 // ─── Drawer state ────────────────────────────────────────────────────
 const filtersOpen = ref(false)
@@ -69,13 +88,6 @@ const rows: TripRow[] = [
   { name: 'Test budget 1',           code: 'BT20260751030', reqBy: 'XM punya 3', reqSub: 'BUATXM3', dest: 'Semarang',  destSub: 'Jawa Tengah dan DIY', reqDate: '21 Jul 2026', tripDate: '27 – 30 Jul 2026', dur: '3 days', status: 'Booking pending',              kind: 'pending' },
 ]
 
-const DOT: Record<StatusKind, string> = {
-  pending:   token.var('colors.icon.warning'),
-  awaiting:  token.var('colors.icon.information'),
-  completed: token.var('colors.icon.default'),
-  booked:    token.var('colors.icon.success'),
-}
-
 // ─── CSS ─────────────────────────────────────────────────────────────
 const toolbarBtnRow = css({ display: 'flex', alignItems: 'center', gap: '2', flexWrap: 'wrap' })
 
@@ -91,30 +103,9 @@ const searchInput = css({
   _placeholder: { color: 'text.secondary' },
 })
 
-const tblWrap = css({ w: 'full', overflowX: 'auto', borderWidth: '1px', borderStyle: 'solid', borderColor: 'border.default', borderRadius: 'lg' })
-const tbl = css({ w: 'full', tableLayout: 'auto', borderCollapse: 'collapse' })
-const th = css({
-  bg: 'background.neutral.subtle',
-  fontFamily: 'body', fontSize: 'xs', fontWeight: 'semiBold', letterSpacing: 'wide',
-  color: 'text.secondary', textTransform: 'uppercase',
-  paddingInline: '4', paddingBlock: '3', h: '40px',
-  borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
-  textAlign: 'left', whiteSpace: 'nowrap', verticalAlign: 'middle',
-})
-const td = css({
-  paddingInline: '4', paddingBlock: '3',
-  borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
-  verticalAlign: 'middle',
-})
-const tdActions = css({ textAlign: 'right', whiteSpace: 'nowrap' })
-
 const cellMain = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.default', whiteSpace: 'nowrap' })
 const cellLink = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'text.link', textDecoration: 'none', whiteSpace: 'nowrap', _hover: { textDecoration: 'underline' } })
 const cellSub  = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.secondary', whiteSpace: 'nowrap' })
-
-const statusCell = css({ display: 'inline-flex', alignItems: 'center', gap: '2', whiteSpace: 'nowrap' })
-const dot        = css({ w: '8px', h: '8px', borderRadius: 'full', flexShrink: 0 })
-const statusText = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.default' })
 
 const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
 
@@ -156,12 +147,39 @@ const policyBox  = css({ borderWidth: '1px', borderStyle: 'solid', borderColor: 
     <!-- ═════ Toolbar ═════ -->
     <MpFlex align="center" justify="space-between" gap="3" wrap="wrap">
       <div :class="toolbarBtnRow">
-        <MpButton variant="secondary" size="sm" right-icon="caret-down">All trip type</MpButton>
-        <MpButton variant="secondary" size="sm" right-icon="caret-down">All status</MpButton>
+        <MpPopover id="trips-type" placement="bottom-start" is-close-on-select>
+          <MpPopoverTrigger>
+            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ tripType }}</MpButton>
+          </MpPopoverTrigger>
+          <MpPopoverContent :class="css({ minWidth: '180px' })">
+            <MpPopoverList>
+              <MpPopoverListItem v-for="o in TRIP_TYPE_OPTIONS" :key="o" :is-active="tripType === o" @click="tripType = o">{{ o }}</MpPopoverListItem>
+            </MpPopoverList>
+          </MpPopoverContent>
+        </MpPopover>
+        <MpPopover id="trips-status" placement="bottom-start" is-close-on-select>
+          <MpPopoverTrigger>
+            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ statusFilter }}</MpButton>
+          </MpPopoverTrigger>
+          <MpPopoverContent :class="css({ minWidth: '180px' })">
+            <MpPopoverList>
+              <MpPopoverListItem v-for="o in STATUS_OPTIONS" :key="o" :is-active="statusFilter === o" @click="statusFilter = o">{{ o }}</MpPopoverListItem>
+            </MpPopoverList>
+          </MpPopoverContent>
+        </MpPopover>
         <MpButton variant="secondary" size="sm" left-icon="filter" @click="filtersOpen = true">Filters</MpButton>
       </div>
       <div :class="toolbarBtnRow">
-        <MpButton variant="secondary" size="sm" right-icon="caret-down">Sort: Oldest first</MpButton>
+        <MpPopover id="trips-sort" placement="bottom-start" is-close-on-select>
+          <MpPopoverTrigger>
+            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ sortBy }}</MpButton>
+          </MpPopoverTrigger>
+          <MpPopoverContent :class="css({ minWidth: '180px' })">
+            <MpPopoverList>
+              <MpPopoverListItem v-for="o in SORT_OPTIONS" :key="o" :is-active="sortBy === o" @click="sortBy = o">{{ o }}</MpPopoverListItem>
+            </MpPopoverList>
+          </MpPopoverContent>
+        </MpPopover>
         <MpButton variant="secondary" size="sm" left-icon="download">Export</MpButton>
         <label :class="searchBox">
           <PxIcon name="search" :size="16" color="icon.default" />
@@ -171,59 +189,58 @@ const policyBox  = css({ borderWidth: '1px', borderStyle: 'solid', borderColor: 
     </MpFlex>
 
     <!-- ═════ Data table ═════ -->
-    <div :class="tblWrap">
-      <table :class="tbl">
-        <thead>
-          <tr>
-            <th :class="th">Trip name</th>
-            <th :class="th">Request by</th>
-            <th :class="th">Destination</th>
-            <th :class="th">Request date</th>
-            <th :class="th">Trip date</th>
-            <th :class="th">Booking status</th>
-            <th :class="th" />
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="r in rows" :key="r.code">
+    <MpTableContainer :class="css({ width: 'full' })">
+      <MpTable>
+        <MpTableHead>
+          <MpTableRow>
+            <MpTableCell scope="col">Trip name</MpTableCell>
+            <MpTableCell scope="col">Request by</MpTableCell>
+            <MpTableCell scope="col">Destination</MpTableCell>
+            <MpTableCell scope="col">Request date</MpTableCell>
+            <MpTableCell scope="col">Trip date</MpTableCell>
+            <MpTableCell scope="col">Booking status</MpTableCell>
+            <MpTableCell scope="col" />
+          </MpTableRow>
+        </MpTableHead>
+        <MpTableBody>
+          <MpTableRow v-for="r in rows" :key="r.code">
             <!-- Trip name -->
-            <td :class="td">
+            <MpTableCell as="td" scope="row">
               <div><NuxtLink :to="`/trips/${r.code}`" :class="cellLink">{{ r.name }}</NuxtLink></div>
               <div :class="cellSub">{{ r.code }}</div>
-            </td>
+            </MpTableCell>
             <!-- Request by -->
-            <td :class="td">
+            <MpTableCell as="td" scope="row">
               <div :class="cellMain">{{ r.reqBy }}</div>
               <div :class="cellSub">{{ r.reqSub }}</div>
-            </td>
+            </MpTableCell>
             <!-- Destination -->
-            <td :class="td">
+            <MpTableCell as="td" scope="row">
               <div :class="cellMain">{{ r.dest }}</div>
               <div :class="cellSub">{{ r.destSub }}</div>
-            </td>
+            </MpTableCell>
             <!-- Request date -->
-            <td :class="td"><span :class="cellMain">{{ r.reqDate }}</span></td>
+            <MpTableCell as="td" scope="row"><span :class="cellMain">{{ r.reqDate }}</span></MpTableCell>
             <!-- Trip date -->
-            <td :class="td">
+            <MpTableCell as="td" scope="row">
               <div :class="cellMain">{{ r.tripDate }}</div>
               <div :class="cellSub">{{ r.dur }}</div>
-            </td>
+            </MpTableCell>
             <!-- Booking status -->
-            <td :class="td">
-              <span :class="statusCell">
-                <span :class="dot" :style="{ background: DOT[r.kind] }" />
-                <PxIcon v-if="r.kind === 'pending'" name="warning-triangle" :size="16" color="icon.warning" />
-                <span :class="statusText">{{ r.status }}</span>
-              </span>
-            </td>
+            <MpTableCell as="td" scope="row">
+              <MpFlex direction="column" gap="1" align="flex-start">
+                <MpBadge for="tableStatus" :type="badgeType(r.status)">{{ r.status.split(' · ')[0] }}</MpBadge>
+                <span v-if="r.status.includes(' · ')" :class="cellSub">{{ r.status.split(' · ')[1] }}</span>
+              </MpFlex>
+            </MpTableCell>
             <!-- Actions -->
-            <td :class="[td, tdActions]">
+            <MpTableCell as="td" scope="row" :class="css({ textAlign: 'right' })">
               <MpButton variant="ghost" size="sm" left-icon="menu-meatball" aria-label="Row actions" />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+            </MpTableCell>
+          </MpTableRow>
+        </MpTableBody>
+      </MpTable>
+    </MpTableContainer>
 
     <!-- ═════ Footer ═════ -->
     <span :class="footNote">Showing 7 of 7 · Rows per page: 10 · Page 1 of 1</span>

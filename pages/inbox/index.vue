@@ -15,6 +15,7 @@
 <script setup lang="ts">
 import {
   MpFlex, MpButton, MpAvatar, MpText, MpBadge,
+  MpTableContainer, MpTable, MpTableHead, MpTableBody, MpTableRow, MpTableCell,
   MpDrawer, MpDrawerOverlay, MpDrawerContent, MpDrawerHeader,
   MpDrawerCloseButton, MpDrawerBody, MpDrawerFooter,
   css,
@@ -176,23 +177,7 @@ const sectionSub = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.second
 const sectionRight = css({ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: '3' })
 const dot = css({ w: '6px', h: '6px', borderRadius: 'full', flexShrink: 0 })
 
-// Table (mirror my-claims th/td, DT2.4 semantic tokens)
-const tblWrap = css({ w: 'full', overflowX: 'auto' })
-const tbl = css({ w: 'full', tableLayout: 'auto', borderCollapse: 'collapse' })
-const th = css({
-  bg: 'background.neutral.subtle',
-  fontFamily: 'body', fontSize: 'xs', fontWeight: 'semiBold', lineHeight: 'lg',
-  color: 'text.secondary', letterSpacing: '0.04em',
-  paddingInline: '3', paddingBlock: '2.5', h: '40px',
-  borderBottom: '1px solid', borderBottomColor: 'border.default',
-  textAlign: 'left', whiteSpace: 'nowrap', verticalAlign: 'middle',
-})
-const td = css({
-  fontFamily: 'body', fontSize: 'md', lineHeight: 'lg', color: 'text.default',
-  paddingInline: '3', paddingBlock: '3',
-  borderBottom: '1px solid', borderBottomColor: 'border.default',
-  verticalAlign: 'middle', whiteSpace: 'nowrap',
-})
+// Table cell content (DT2.4 semantic tokens)
 const cellName = css({ display: 'inline-flex', alignItems: 'center', gap: '2.5' })
 const nameText = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default' })
 const secondaryText = css({ fontFamily: 'body', fontSize: 'md', color: 'text.secondary' })
@@ -284,48 +269,46 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
           </span>
         </div>
 
-        <div :class="tblWrap">
-          <table :class="tbl">
-            <thead>
-              <tr>
-                <th :class="th">Requester</th>
-                <th :class="th">Type</th>
-                <th :class="th">Category</th>
-                <th :class="th">Vendor</th>
-                <th :class="th">Age</th>
-                <th :class="th">AI risk</th>
-                <th :class="[th, css({ textAlign: 'right' })]">Amount</th>
-                <th :class="th"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(r, i) in filteredNeeds" :key="i">
-                <td :class="td">
+        <MpTableContainer :class="css({ width: 'full' })">
+          <MpTable>
+            <MpTableHead>
+              <MpTableRow>
+                <MpTableCell scope="col">Requester</MpTableCell>
+                <MpTableCell scope="col">Type</MpTableCell>
+                <MpTableCell scope="col">Category</MpTableCell>
+                <MpTableCell scope="col">Vendor</MpTableCell>
+                <MpTableCell scope="col">Age</MpTableCell>
+                <MpTableCell scope="col">AI risk</MpTableCell>
+                <MpTableCell scope="col" :class="css({ textAlign: 'right' })">Amount</MpTableCell>
+                <MpTableCell scope="col"></MpTableCell>
+              </MpTableRow>
+            </MpTableHead>
+            <MpTableBody>
+              <MpTableRow v-for="(r, i) in filteredNeeds" :key="i">
+                <MpTableCell as="td" scope="row">
                   <span :class="cellName">
                     <MpAvatar :id="`na-${i}`" :name="r.name" size="sm" variant-color="gray" />
                     <span :class="nameText">{{ r.name }}</span>
                   </span>
-                </td>
-                <td :class="td"><span :class="secondaryText">{{ r.type }}</span></td>
-                <td :class="td"><span :class="secondaryText">{{ r.category }}</span></td>
-                <td :class="td"><span :class="secondaryText">{{ r.vendor }}</span></td>
-                <td :class="td"><span :class="secondaryText">{{ r.age }}</span></td>
-                <td :class="td">
-                  <span :class="riskCell">
-                    <span :class="[dot, css({ background: 'icon.warning' })]" />{{ r.risk }}
-                  </span>
-                </td>
-                <td :class="td"><span :class="[amountCell, css({ display: 'block' })]">{{ r.amount }}</span></td>
-                <td :class="[td, css({ textAlign: 'right' })]">
+                </MpTableCell>
+                <MpTableCell as="td"><span :class="secondaryText">{{ r.type }}</span></MpTableCell>
+                <MpTableCell as="td"><span :class="secondaryText">{{ r.category }}</span></MpTableCell>
+                <MpTableCell as="td"><span :class="secondaryText">{{ r.vendor }}</span></MpTableCell>
+                <MpTableCell as="td"><span :class="secondaryText">{{ r.age }}</span></MpTableCell>
+                <MpTableCell as="td">
+                  <MpBadge for="tableStatus" type="warning">{{ r.risk }}</MpBadge>
+                </MpTableCell>
+                <MpTableCell as="td" :class="css({ textAlign: 'right' })"><span :class="amountCell">{{ r.amount }}</span></MpTableCell>
+                <MpTableCell as="td" :class="css({ textAlign: 'right' })">
                   <MpButton variant="secondary" size="sm" @click="openReview(r, 'needs')">Review</MpButton>
-                </td>
-              </tr>
-              <tr v-if="filteredNeeds.length === 0">
-                <td :class="[td, css({ textAlign: 'center', color: 'text.secondary' })]" colspan="8">Nothing needs you — all clear.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                </MpTableCell>
+              </MpTableRow>
+              <MpTableRow v-if="filteredNeeds.length === 0">
+                <MpTableCell as="td" :class="css({ textAlign: 'center', color: 'text.secondary' })" :colspan="8">Nothing needs you — all clear.</MpTableCell>
+              </MpTableRow>
+            </MpTableBody>
+          </MpTable>
+        </MpTableContainer>
       </div>
 
       <!-- Recommended to auto-approve -->
@@ -342,50 +325,48 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
           </span>
         </div>
 
-        <div :class="tblWrap">
-          <table :class="tbl">
-            <thead>
-              <tr>
-                <th :class="[th, css({ width: '36px' })]"></th>
-                <th :class="th">Requester</th>
-                <th :class="th">Type</th>
-                <th :class="th">Category</th>
-                <th :class="th">Vendor</th>
-                <th :class="th">Age</th>
-                <th :class="th">AI check</th>
-                <th :class="[th, css({ textAlign: 'right' })]">Amount</th>
-                <th :class="th"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(r, i) in autoApprove" :key="i">
-                <td :class="td"><input v-model="r.checked" type="checkbox" :class="checkbox" /></td>
-                <td :class="td">
+        <MpTableContainer :class="css({ width: 'full' })">
+          <MpTable>
+            <MpTableHead>
+              <MpTableRow>
+                <MpTableCell scope="col" :class="css({ width: '36px' })"></MpTableCell>
+                <MpTableCell scope="col">Requester</MpTableCell>
+                <MpTableCell scope="col">Type</MpTableCell>
+                <MpTableCell scope="col">Category</MpTableCell>
+                <MpTableCell scope="col">Vendor</MpTableCell>
+                <MpTableCell scope="col">Age</MpTableCell>
+                <MpTableCell scope="col">AI check</MpTableCell>
+                <MpTableCell scope="col" :class="css({ textAlign: 'right' })">Amount</MpTableCell>
+                <MpTableCell scope="col"></MpTableCell>
+              </MpTableRow>
+            </MpTableHead>
+            <MpTableBody>
+              <MpTableRow v-for="(r, i) in autoApprove" :key="i">
+                <MpTableCell as="td"><input v-model="r.checked" type="checkbox" :class="checkbox" /></MpTableCell>
+                <MpTableCell as="td" scope="row">
                   <span :class="cellName">
                     <MpAvatar :id="`aa-${i}`" :name="r.name" size="sm" variant-color="gray" />
                     <span :class="nameText">{{ r.name }}</span>
                   </span>
-                </td>
-                <td :class="td"><span :class="secondaryText">{{ r.type }}</span></td>
-                <td :class="td"><span :class="secondaryText">{{ r.category }}</span></td>
-                <td :class="td"><span :class="secondaryText">{{ r.vendor }}</span></td>
-                <td :class="td"><span :class="secondaryText">{{ r.age }}</span></td>
-                <td :class="td">
-                  <span :class="riskCell">
-                    <span :class="[dot, css({ background: 'icon.success' })]" />{{ r.check }}
-                  </span>
-                </td>
-                <td :class="td"><span :class="[amountCell, css({ display: 'block' })]">{{ r.amount }}</span></td>
-                <td :class="[td, css({ textAlign: 'right' })]">
+                </MpTableCell>
+                <MpTableCell as="td"><span :class="secondaryText">{{ r.type }}</span></MpTableCell>
+                <MpTableCell as="td"><span :class="secondaryText">{{ r.category }}</span></MpTableCell>
+                <MpTableCell as="td"><span :class="secondaryText">{{ r.vendor }}</span></MpTableCell>
+                <MpTableCell as="td"><span :class="secondaryText">{{ r.age }}</span></MpTableCell>
+                <MpTableCell as="td">
+                  <MpBadge for="tableStatus" type="completed">{{ r.check }}</MpBadge>
+                </MpTableCell>
+                <MpTableCell as="td" :class="css({ textAlign: 'right' })"><span :class="amountCell">{{ r.amount }}</span></MpTableCell>
+                <MpTableCell as="td" :class="css({ textAlign: 'right' })">
                   <MpButton variant="secondary" size="sm" @click="openReview(r, 'auto')">Review</MpButton>
-                </td>
-              </tr>
-              <tr v-if="autoApprove.length === 0">
-                <td :class="[td, css({ textAlign: 'center', color: 'text.secondary' })]" colspan="9">Nothing queued for auto-approve.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                </MpTableCell>
+              </MpTableRow>
+              <MpTableRow v-if="autoApprove.length === 0">
+                <MpTableCell as="td" :class="css({ textAlign: 'center', color: 'text.secondary' })" :colspan="9">Nothing queued for auto-approve.</MpTableCell>
+              </MpTableRow>
+            </MpTableBody>
+          </MpTable>
+        </MpTableContainer>
       </div>
 
     </template>

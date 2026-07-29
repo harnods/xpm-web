@@ -8,17 +8,27 @@
 -->
 <script setup lang="ts">
 import {
-  MpFlex, MpText, MpButton, MpToggle, MpTextlink,
+  MpFlex, MpText, MpButton, MpToggle, MpTextlink, MpBadge,
   MpDrawer, MpDrawerOverlay, MpDrawerContent, MpDrawerHeader,
   MpDrawerCloseButton, MpDrawerBody, MpDrawerFooter,
   MpPopover, MpPopoverTrigger, MpPopoverContent, MpPopoverList, MpPopoverListItem,
+  MpTableContainer, MpTable, MpTableHead, MpTableBody, MpTableRow, MpTableCell,
   css,
 } from '@mekari/pixel3'
 
 definePageMeta({
   title: 'Claims',
-  subtitle: 'All company reimbursements and cash advances — monitor approvals and payouts.',
 })
+
+// ─── Status → badge type ─────────────────────────────────────────────
+function badgeType(s: string): 'completed' | 'warning' | 'critical' | 'information' | 'announcement' {
+  if (['Settled', 'Disbursed', 'Booked', 'Completed', 'Approved', 'Paid'].includes(s)) return 'completed'
+  if (['Awaiting approval', 'Awaiting disburse', 'Awaiting payment', 'Booking pending'].includes(s)) return 'warning'
+  if (['Declined', 'Rejected', 'Overdue'].includes(s)) return 'critical'
+  if (['Trip done · awaiting report', 'Sent', 'Requested'].includes(s)) return 'information'
+  if (['Draft', 'Inactive'].includes(s)) return 'announcement'
+  return 'announcement'
+}
 
 // ─── Types ─────────────────────────────────────────────────────────
 type ClaimStatus =
@@ -55,26 +65,23 @@ const rows: ClaimRow[] = [
   { id: '2026072101', date: '22 Jul 2026', type: 'Reimbursement',  category: 'Transport',    categorySub: 'Ride share — client visit',        status: 'Awaiting approval',  amount: 'Rp 22.400' },
 ]
 
-// ─── Status → dot color ─────────────────────────────────────────────
-const STATUS_DOT_CLASS: Record<ClaimStatus, string> = {
-  'Settled':           css({ background: 'icon.success' }),
-  'Disbursed':         css({ background: 'icon.success' }),
-  'Declined':          css({ background: 'icon.danger' }),
-  'Awaiting disburse': css({ background: 'icon.information' }),
-  'Awaiting approval': css({ background: 'icon.warning' }),
-}
-
 // ─── Interactivity: state ───────────────────────────────────────────
 const STATUS_OPTIONS: ClaimStatus[] = [
   'Settled', 'Disbursed', 'Declined', 'Awaiting disburse', 'Awaiting approval',
 ]
 
-// Toolbar "All status" dropdown → drives the visible rows.
-const statusFilter = ref<ClaimStatus | 'all'>('all')
-const statusLabel = computed(() => statusFilter.value === 'all' ? 'All status' : statusFilter.value)
+// Toolbar dropdowns
+const MONTH_OPTIONS = ['Jul 2026', 'Jun 2026', 'May 2026']
+const STATUS_MENU = ['All status', ...STATUS_OPTIONS]
+const SORT_OPTIONS = ['Sort: Oldest first', 'Sort: Newest first']
+const monthSel = ref('Jul 2026')
+const sortBy = ref('Sort: Oldest first')
+
+// "All status" dropdown → drives the visible rows.
+const statusFilter = ref('All status')
 
 const filteredRows = computed(() =>
-  statusFilter.value === 'all'
+  statusFilter.value === 'All status'
     ? rows
     : rows.filter(r => r.status === statusFilter.value),
 )
@@ -112,35 +119,11 @@ const searchInput = css({
   _placeholder: { color: 'text.secondary' },
 })
 
-const tblWrap = css({ w: 'full', overflowX: 'auto' })
-const tbl = css({ w: 'full', tableLayout: 'auto', borderCollapse: 'collapse' })
-
-const th = css({
-  bg: 'background.neutral.subtle',
-  fontFamily: 'body', fontSize: 'xs', fontWeight: 'semiBold',
-  letterSpacing: 'wide', color: 'text.secondary',
-  paddingInline: '3', paddingBlock: '2.5', h: '40px',
-  borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
-  textAlign: 'left', whiteSpace: 'nowrap', verticalAlign: 'middle', textTransform: 'uppercase',
-})
-
-const td = css({
-  fontFamily: 'body', fontSize: 'sm', color: 'text.default',
-  paddingInline: '3', paddingBlock: '3',
-  borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
-  verticalAlign: 'middle',
-})
-
 const link      = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.link', whiteSpace: 'nowrap' })
 const catMain    = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.default' })
 const catSub     = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.secondary' })
-const statusText = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.default', whiteSpace: 'nowrap' })
-const dot        = css({ w: '8px', h: '8px', borderRadius: 'full', flexShrink: 0, display: 'inline-block' })
 const amount     = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'text.default', whiteSpace: 'nowrap', textAlign: 'right' })
 const footText   = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary', whiteSpace: 'nowrap' })
-
-// Popover dropdown item
-const menuItemActive = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'text.link' })
 
 // Drawer section blocks
 const sectionLabel = css({ fontFamily: 'body', fontSize: 'xs', fontWeight: 'semiBold', letterSpacing: 'wide', textTransform: 'uppercase', color: 'text.secondary' })
@@ -185,25 +168,25 @@ const policyInput = css({
 
       <!-- Left -->
       <MpFlex align="center" gap="2" wrap="wrap">
-        <MpButton variant="secondary" size="sm" right-icon="caret-down">Jul 2026</MpButton>
+        <MpPopover id="claims-month" placement="bottom-start" is-close-on-select>
+          <MpPopoverTrigger>
+            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ monthSel }}</MpButton>
+          </MpPopoverTrigger>
+          <MpPopoverContent :class="css({ minWidth: '180px' })">
+            <MpPopoverList>
+              <MpPopoverListItem v-for="o in MONTH_OPTIONS" :key="o" :is-active="monthSel === o" @click="monthSel = o">{{ o }}</MpPopoverListItem>
+            </MpPopoverList>
+          </MpPopoverContent>
+        </MpPopover>
 
         <!-- Working status filter -->
-        <MpPopover id="claims-status" use-portal placement="bottom-start" is-close-on-select v-slot="{ onClosePopover }">
+        <MpPopover id="claims-status" placement="bottom-start" is-close-on-select>
           <MpPopoverTrigger>
-            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ statusLabel }}</MpButton>
+            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ statusFilter }}</MpButton>
           </MpPopoverTrigger>
-          <MpPopoverContent :class="css({ marginTop: '2px', minWidth: '200px' })">
+          <MpPopoverContent :class="css({ minWidth: '180px' })">
             <MpPopoverList>
-              <MpPopoverListItem @click="statusFilter = 'all'; onClosePopover()">
-                <span :class="statusFilter === 'all' ? menuItemActive : ''">All status</span>
-              </MpPopoverListItem>
-              <MpPopoverListItem
-                v-for="s in STATUS_OPTIONS"
-                :key="s"
-                @click="statusFilter = s; onClosePopover()"
-              >
-                <span :class="statusFilter === s ? menuItemActive : ''">{{ s }}</span>
-              </MpPopoverListItem>
+              <MpPopoverListItem v-for="o in STATUS_MENU" :key="o" :is-active="statusFilter === o" @click="statusFilter = o">{{ o }}</MpPopoverListItem>
             </MpPopoverList>
           </MpPopoverContent>
         </MpPopover>
@@ -213,7 +196,16 @@ const policyInput = css({
 
       <!-- Right -->
       <MpFlex align="center" gap="2" wrap="wrap">
-        <MpButton variant="secondary" size="sm" right-icon="caret-down">Sort: Oldest first</MpButton>
+        <MpPopover id="claims-sort" placement="bottom-start" is-close-on-select>
+          <MpPopoverTrigger>
+            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ sortBy }}</MpButton>
+          </MpPopoverTrigger>
+          <MpPopoverContent :class="css({ minWidth: '180px' })">
+            <MpPopoverList>
+              <MpPopoverListItem v-for="o in SORT_OPTIONS" :key="o" :is-active="sortBy === o" @click="sortBy = o">{{ o }}</MpPopoverListItem>
+            </MpPopoverList>
+          </MpPopoverContent>
+        </MpPopover>
         <MpButton variant="secondary" size="sm" left-icon="download">Export</MpButton>
         <label :class="searchWrap">
           <PxIcon name="search" :size="16" color="icon.subtle" />
@@ -224,61 +216,58 @@ const policyInput = css({
     </MpFlex>
 
     <!-- ═════ Data table ═════ -->
-    <div :class="tblWrap">
-      <table :class="tbl">
-        <thead>
-          <tr>
-            <th :class="th">Transaction ID</th>
-            <th :class="th">Request date</th>
-            <th :class="th">Claim type</th>
-            <th :class="th">Claim category</th>
-            <th :class="th">Status</th>
-            <th :class="[th, css({ width: '32px' })]"></th>
-            <th :class="[th, css({ textAlign: 'right' })]">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in filteredRows" :key="row.id">
+    <MpTableContainer :class="css({ width: 'full' })">
+      <MpTable>
+        <MpTableHead>
+          <MpTableRow>
+            <MpTableCell scope="col">Transaction ID</MpTableCell>
+            <MpTableCell scope="col">Request date</MpTableCell>
+            <MpTableCell scope="col">Claim type</MpTableCell>
+            <MpTableCell scope="col">Claim category</MpTableCell>
+            <MpTableCell scope="col">Status</MpTableCell>
+            <MpTableCell scope="col" />
+            <MpTableCell scope="col" :class="css({ textAlign: 'right' })">Amount</MpTableCell>
+          </MpTableRow>
+        </MpTableHead>
+        <MpTableBody>
+          <MpTableRow v-for="row in filteredRows" :key="row.id">
             <!-- Transaction ID -->
-            <td :class="[td, css({ whiteSpace: 'nowrap' })]">
+            <MpTableCell as="td" scope="row">
               <a href="#" :class="link">{{ row.id }}</a>
-            </td>
+            </MpTableCell>
 
             <!-- Request date -->
-            <td :class="[td, css({ whiteSpace: 'nowrap' })]">{{ row.date }}</td>
+            <MpTableCell as="td" scope="row">{{ row.date }}</MpTableCell>
 
             <!-- Claim type -->
-            <td :class="[td, css({ whiteSpace: 'nowrap' })]">{{ row.type }}</td>
+            <MpTableCell as="td" scope="row">{{ row.type }}</MpTableCell>
 
             <!-- Claim category -->
-            <td :class="td">
+            <MpTableCell as="td" scope="row">
               <div :class="css({ display: 'flex', flexDirection: 'column', gap: '2px' })">
                 <span :class="catMain">{{ row.category }}</span>
                 <span :class="catSub">{{ row.categorySub }}</span>
               </div>
-            </td>
+            </MpTableCell>
 
             <!-- Status -->
-            <td :class="[td, css({ whiteSpace: 'nowrap' })]">
-              <span :class="css({ display: 'inline-flex', alignItems: 'center', gap: '8px' })">
-                <span :class="[dot, STATUS_DOT_CLASS[row.status]]" />
-                <span :class="statusText">{{ row.status }}</span>
-              </span>
-            </td>
+            <MpTableCell as="td" scope="row">
+              <MpBadge for="tableStatus" :type="badgeType(row.status)">{{ row.status }}</MpBadge>
+            </MpTableCell>
 
             <!-- Warning flag -->
-            <td :class="[td, css({ textAlign: 'center', width: '32px' })]">
+            <MpTableCell as="td" scope="row" :class="css({ textAlign: 'center' })">
               <PxIcon v-if="row.flagged" name="warning-triangle" :size="16" color="icon.warning" />
-            </td>
+            </MpTableCell>
 
             <!-- Amount -->
-            <td :class="[td, css({ textAlign: 'right' })]">
+            <MpTableCell as="td" scope="row" :class="css({ textAlign: 'right' })">
               <span :class="amount">{{ row.amount }}</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+            </MpTableCell>
+          </MpTableRow>
+        </MpTableBody>
+      </MpTable>
+    </MpTableContainer>
 
     <!-- ═════ Footer ═════ -->
     <MpFlex align="center" justify="space-between" paddingInline="1">

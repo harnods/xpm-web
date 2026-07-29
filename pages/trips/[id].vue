@@ -11,7 +11,6 @@ import { MpFlex, MpText, MpButton, MpBadge, MpAvatar, css, token } from '@mekari
 
 definePageMeta({
   title: 'Trip bandung',
-  subtitle: 'BT20260750596 · requested 15 Jul 2026',
   breadcrumbParent: { path: '/trips', label: 'Trips' },
 })
 
@@ -137,6 +136,7 @@ const cardBodyPadTop = css({ paddingTop: '4' })
 
   <!-- ═════ Stage content ═════ -->
   <MpFlex direction="column" gap="4" width="full" min-width="0">
+    <MpText as="p" size="body-small" color="text.secondary">BT20260750596 · requested 15 Jul 2026</MpText>
     <div :class="grid">
 
       <!-- ══════════ LEFT ══════════ -->

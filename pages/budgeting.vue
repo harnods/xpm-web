@@ -8,7 +8,8 @@
 -->
 <script setup lang="ts">
 import {
-  MpFlex, MpText, MpButton,
+  MpFlex, MpText, MpButton, MpBadge,
+  MpPopover, MpPopoverTrigger, MpPopoverContent, MpPopoverList, MpPopoverListItem,
   MpDrawer, MpDrawerOverlay, MpDrawerContent, MpDrawerHeader,
   MpDrawerCloseButton, MpDrawerBody,
   css,
@@ -16,7 +17,6 @@ import {
 
 definePageMeta({
   title: 'Budgeting',
-  subtitle: 'Spend caps by category — company → organization → branch. Click any line to see its trend.',
   navKey: 'budgeting',
 })
 
@@ -92,12 +92,16 @@ const configRows: ConfigRow[] = [
 const groups = ['Organization', 'Location', 'Category']
 const activeGroups = ['Category']
 
-const TAG_CLASS: Record<Tag, string> = {
-  'FLAG':     css({ bg: 'background.warning',        color: 'text.warning' }),
-  'HARD CAP': css({ bg: 'background.highlight',      color: 'text.highlight' }),
-  'TRACK':    css({ bg: 'background.information',    color: 'text.information' }),
-  'NOT SET':  css({ bg: 'background.neutral.subtle', color: 'text.secondary' }),
+const TAG_BADGE: Record<Tag, 'warning' | 'critical' | 'information' | 'announcement'> = {
+  'FLAG':     'warning',
+  'HARD CAP': 'critical',
+  'TRACK':    'information',
+  'NOT SET':  'announcement',
 }
+
+// Organization selector (select-like → MpPopover)
+const ORG_OPTIONS = ['All organizations', 'Company', 'Sales', 'Organization-wide']
+const orgFilter = ref('All organizations')
 
 const indentClass: string[] = [
   css({ paddingLeft: '8px' }),
@@ -107,10 +111,11 @@ const indentClass: string[] = [
 ]
 
 // ─── CSS ─────────────────────────────────────────────────────────────
-// Tabs (underline)
-const tabBar   = css({ display: 'flex', alignItems: 'center', gap: '5', borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default' })
-const tab      = css({ position: 'relative', paddingBlock: '2.5', fontFamily: 'body', fontSize: 'md', fontWeight: 'regular', color: 'text.secondary', cursor: 'pointer', bg: 'transparent', border: 'none', _hover: { color: 'text.default' } })
-const tabOn    = css({ position: 'relative', paddingBlock: '2.5', fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default', cursor: 'pointer', bg: 'transparent', border: 'none', _after: { content: '""', position: 'absolute', left: '0', right: '0', bottom: '-1px', height: '2px', bg: 'background.brand.bold' } })
+// Tabs (teleported into #layout-tabs)
+const tabStrip = css({ display: 'flex', alignItems: 'center', gap: '5', paddingInline: '6', height: '44px', borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default', background: 'background.neutral' })
+const tabBtn   = css({ display: 'inline-flex', alignItems: 'center', gap: '2', height: '44px', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'body', fontSize: 'md', borderBottom: '2px solid transparent' })
+const tabActive   = css({ color: 'text.default', fontWeight: 'semiBold', borderBottomColor: 'border.brand' })
+const tabInactive = css({ color: 'text.secondary' })
 
 // Period pills + group chips
 const pill     = css({ paddingInline: '3', paddingBlock: '1.5', borderRadius: 'full', fontFamily: 'body', fontSize: 'sm', fontWeight: 'regular', color: 'text.secondary', bg: 'transparent', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', _hover: { bg: 'background.neutral.subtle' } })
@@ -137,7 +142,6 @@ const tr      = css({ cursor: 'pointer', transition: 'background-color 120ms eas
 
 const caretCell = css({ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '16px', color: 'text.secondary', fontSize: 'xs', flexShrink: 0 })
 const nameWrap  = css({ display: 'inline-flex', alignItems: 'center', gap: '2', minWidth: 0 })
-const tagBadge  = css({ display: 'inline-flex', alignItems: 'center', paddingInline: '1.5', paddingBlock: '0.5', borderRadius: 'sm', fontFamily: 'body', fontSize: '2xs', fontWeight: 'semiBold', letterSpacing: '0.02em', whiteSpace: 'nowrap' })
 const flagNote  = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.warning', whiteSpace: 'nowrap' })
 
 const barTrack = css({ position: 'relative', width: '96px', height: '6px', borderRadius: 'full', background: 'background.neutral.subtle', overflow: 'hidden' })
@@ -166,14 +170,16 @@ const drawerFootnote = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.se
     <MpButton variant="primary" size="md" @click="openDrawer">Set budget</MpButton>
   </Teleport>
 
+  <!-- ═════ Tabs strip (into layout title bar area) ═════ -->
+  <Teleport to="#layout-tabs">
+    <div :class="tabStrip">
+      <button type="button" :class="[tabBtn, activeTab === 'util' ? tabActive : tabInactive]" @click="activeTab = 'util'">Utilization</button>
+      <button type="button" :class="[tabBtn, activeTab === 'config' ? tabActive : tabInactive]" @click="activeTab = 'config'">Configured budgets</button>
+    </div>
+  </Teleport>
+
   <!-- ═════ Stage content ═════ -->
   <MpFlex direction="column" gap="4" width="full" minWidth="0">
-
-    <!-- 1) Tabs -->
-    <div :class="tabBar">
-      <button type="button" :class="activeTab === 'util' ? tabOn : tab" @click="activeTab = 'util'">Utilization</button>
-      <button type="button" :class="activeTab === 'config' ? tabOn : tab" @click="activeTab = 'config'">Configured budgets</button>
-    </div>
 
     <!-- ═════ UTILIZATION TAB ═════ -->
     <template v-if="activeTab === 'util'">
@@ -190,7 +196,16 @@ const drawerFootnote = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.se
       </MpFlex>
 
       <MpFlex align="center" gap="2">
-        <MpButton variant="secondary" size="sm" right-icon="caret-down">All organizations</MpButton>
+        <MpPopover id="filter-org" use-portal placement="bottom-end" is-close-on-select>
+          <MpPopoverTrigger>
+            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ orgFilter }}</MpButton>
+          </MpPopoverTrigger>
+          <MpPopoverContent :class="css({ marginTop: '2px', minWidth: '200px' })">
+            <MpPopoverList>
+              <MpPopoverListItem v-for="o in ORG_OPTIONS" :key="o" @click="orgFilter = o">{{ o }}</MpPopoverListItem>
+            </MpPopoverList>
+          </MpPopoverContent>
+        </MpPopover>
         <span :class="stepper">
           <span :class="stepArrow">‹</span>
           <span>Current period</span>
@@ -239,10 +254,7 @@ const drawerFootnote = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.se
                   :weight="row.bold ? 'semiBold' : 'regular'"
                   :color="row.muted ? 'text.secondary' : 'text.default'"
                 >{{ row.name }}</MpText>
-                <span
-                  v-if="row.tag"
-                  :class="[tagBadge, TAG_CLASS[row.tag]]"
-                >{{ row.tag }}</span>
+                <MpBadge v-if="row.tag" for="tableStatus" :type="TAG_BADGE[row.tag]">{{ row.tag }}</MpBadge>
                 <span v-if="row.note" :class="flagNote">{{ row.note }}</span>
               </span>
             </td>
@@ -313,7 +325,7 @@ const drawerFootnote = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.se
               <td :class="td"><MpText as="span" size="body" color="text.default">{{ b.category }}</MpText></td>
               <td :class="tdNum"><MpText as="span" size="body" color="text.default">{{ b.cap }}</MpText></td>
               <td :class="td">
-                <span :class="[tagBadge, TAG_CLASS[b.type]]">{{ b.type }}</span>
+                <MpBadge for="tableStatus" :type="TAG_BADGE[b.type]">{{ b.type }}</MpBadge>
               </td>
             </tr>
           </tbody>

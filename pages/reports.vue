@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ title: 'Reports', navKey: 'reports', subtitle: 'Spend reports, breakdowns and exports.' })
+definePageMeta({ title: 'Reports', navKey: 'reports' })
 </script>
 
 <template>

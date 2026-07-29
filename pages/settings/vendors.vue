@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ title: 'Vendors', subtitle: 'Vendor directory, payment details and bills.' })
+definePageMeta({ title: 'Vendors' })
 </script>
 
 <template>

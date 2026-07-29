@@ -9,14 +9,15 @@
 import {
   MpFlex, MpText, MpButton, MpBadge, MpCheckbox,
   MpInputGroup, MpInputLeftAddon, MpInput,
+  MpPopover, MpPopoverTrigger, MpPopoverContent, MpPopoverList, MpPopoverListItem,
   MpDrawer, MpDrawerOverlay, MpDrawerContent, MpDrawerHeader,
   MpDrawerCloseButton, MpDrawerBody, MpDrawerFooter,
+  MpTableContainer, MpTable, MpTableHead, MpTableBody, MpTableRow, MpTableCell,
   css,
 } from '@mekari/pixel3'
 
 definePageMeta({
   title: 'Transactions',
-  subtitle: 'Every money-out line across cards, reimbursements, bills and travel — one ledger.',
   navKey: 'transactions',
 })
 
@@ -31,6 +32,29 @@ const summary = [
 // ─── Filter tabs ──────────────────────────────────────────────────────
 const TABS = ['All', 'Card', 'Reimbursement', 'Cash advance', 'Bill', 'Travel']
 const activeTab = ref('All')
+
+// ─── Toolbar filters ────────────────────────────────────────────────────
+const ACCOUNT_OPTIONS = ['All accounts', 'Main account', 'Operational account']
+const MONTH_OPTIONS = ['This month', 'Last month', 'This quarter', 'This year']
+const SORT_OPTIONS = ['Sort: Oldest first', 'Sort: Newest first']
+const accountSel = ref(ACCOUNT_OPTIONS[0])
+const monthSel = ref(MONTH_OPTIONS[0])
+const sortSel = ref(SORT_OPTIONS[0])
+
+// ─── Status → badge type ────────────────────────────────────────────────
+function badgeType(s: string) {
+  const completed = ['Paid', 'Received', 'Accepted', 'Approved', 'Settled', 'Disbursed', 'Cleared', 'Booked']
+  const warning = ['Awaiting approval', 'Awaiting payment', 'Awaiting review', 'Awaiting disburse', 'Comparing']
+  const critical = ['Overdue', 'Rejected']
+  const information = ['Sent']
+  const announcement = ['Draft']
+  if (completed.includes(s)) return 'completed'
+  if (warning.includes(s)) return 'warning'
+  if (critical.includes(s)) return 'critical'
+  if (information.includes(s)) return 'information'
+  if (announcement.includes(s)) return 'announcement'
+  return 'announcement'
+}
 
 // ─── Edit columns drawer ───────────────────────────────────────────────
 interface ColDef { key: keyof TxRow; label: string }
@@ -105,25 +129,26 @@ const topBorders: Record<string, string> = {
 const summaryLabel = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
 const summaryValue = css({ fontFamily: 'body', fontSize: '2xl', fontWeight: 'bold', color: 'text.default', lineHeight: 'xs' })
 
-// Tabs
+// Tabs (rendered into the layout tab-slot)
 const tabsRow = css({
   display: 'flex', alignItems: 'center', gap: '5',
+  paddingInline: '6', height: '44px',
   borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
+  background: 'background.neutral',
 })
 const tab = css({
-  position: 'relative', background: 'transparent', border: 'none', cursor: 'pointer',
-  paddingBlock: '2.5', paddingInline: '0',
-  fontFamily: 'body', fontSize: 'md', fontWeight: 'regular', color: 'text.secondary',
-  _hover: { color: 'text.default' },
+  display: 'inline-flex', alignItems: 'center', gap: '2', height: '44px',
+  background: 'transparent', border: 'none', cursor: 'pointer',
+  fontFamily: 'body', fontSize: 'md',
+  borderBottomWidth: '2px', borderBottomStyle: 'solid', borderBottomColor: 'transparent',
+  color: 'text.secondary',
 })
 const tabActive = css({
-  position: 'relative', background: 'transparent', border: 'none', cursor: 'pointer',
-  paddingBlock: '2.5', paddingInline: '0',
-  fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default',
-  _after: {
-    content: '""', position: 'absolute', left: '0', right: '0', bottom: '-1px',
-    height: '2px', background: 'icon.brand', borderRadius: 'full',
-  },
+  display: 'inline-flex', alignItems: 'center', gap: '2', height: '44px',
+  background: 'transparent', border: 'none', cursor: 'pointer',
+  fontFamily: 'body', fontSize: 'md',
+  borderBottomWidth: '2px', borderBottomStyle: 'solid', borderBottomColor: 'border.brand',
+  color: 'text.default', fontWeight: 'semiBold',
 })
 
 // Views segmented pill
@@ -145,31 +170,8 @@ const segItemActive = css({
   fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'text.default',
 })
 
-// Table
-const tblWrap = css({ w: 'full', overflowX: 'auto' })
-const tbl = css({ w: 'full', tableLayout: 'auto', borderCollapse: 'collapse' })
-const th = css({
-  bg: 'background.neutral.subtle',
-  fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', lineHeight: 'lg', color: 'text.secondary',
-  paddingInline: '3', paddingBlock: '3', h: '44px',
-  borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
-  textAlign: 'left', whiteSpace: 'nowrap', verticalAlign: 'middle',
-})
-const td = css({
-  fontFamily: 'body', fontSize: 'md', lineHeight: 'lg', color: 'text.default',
-  paddingInline: '3', paddingBlock: '3',
-  borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
-  verticalAlign: 'middle', whiteSpace: 'nowrap',
-})
-const descCell = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default' })
-const secondaryCell = css({ fontFamily: 'body', fontSize: 'md', color: 'text.secondary' })
-const statusCell = css({ display: 'inline-flex', alignItems: 'center', gap: '2', fontFamily: 'body', fontSize: 'md', color: 'text.default' })
-const dot = css({ w: '8px', h: '8px', borderRadius: 'full', flexShrink: 0 })
-const dotClass: Record<string, string> = {
-  green: css({ background: 'icon.success' }),
-  amber: css({ background: 'icon.warning' }),
-}
-const amountCell = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default', textAlign: 'right', whiteSpace: 'nowrap' })
+// Table — main cell text inherits MpTable default; amount is semiBold only
+const amountCell = css({ fontWeight: 'semiBold', textAlign: 'right', whiteSpace: 'nowrap' })
 
 const footText = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
 
@@ -197,6 +199,17 @@ const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
     <MpButton variant="primary" size="md">Export ledger</MpButton>
   </Teleport>
 
+  <!-- ═════ Primary tabs (into layout tab-slot) ═════ -->
+  <Teleport to="#layout-tabs">
+    <div :class="tabsRow">
+      <button
+        v-for="t in TABS" :key="t" type="button"
+        :class="activeTab === t ? tabActive : tab"
+        @click="activeTab = t"
+      >{{ t }}</button>
+    </div>
+  </Teleport>
+
   <!-- ═════ Stage content ═════ -->
   <MpFlex direction="column" gap="4" width="full" minWidth="0">
 
@@ -208,23 +221,41 @@ const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
       </div>
     </div>
 
-    <!-- 2) Filter tabs -->
-    <div :class="tabsRow">
-      <button
-        v-for="t in TABS" :key="t" type="button"
-        :class="activeTab === t ? tabActive : tab"
-        @click="activeTab = t"
-      >{{ t }}</button>
-    </div>
-
-    <!-- 3) Toolbar -->
+    <!-- 2) Toolbar -->
     <MpFlex align="center" justify="space-between" gap="3" wrap="wrap">
       <MpFlex align="center" gap="2">
-        <MpButton variant="secondary" size="sm" right-icon="caret-down">All accounts</MpButton>
-        <MpButton variant="secondary" size="sm" right-icon="caret-down">This month</MpButton>
+        <MpPopover id="flt-account" placement="bottom-start" is-close-on-select>
+          <MpPopoverTrigger>
+            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ accountSel }}</MpButton>
+          </MpPopoverTrigger>
+          <MpPopoverContent :class="css({ minWidth: '180px' })">
+            <MpPopoverList>
+              <MpPopoverListItem v-for="o in ACCOUNT_OPTIONS" :key="o" :is-active="accountSel === o" @click="accountSel = o">{{ o }}</MpPopoverListItem>
+            </MpPopoverList>
+          </MpPopoverContent>
+        </MpPopover>
+        <MpPopover id="flt-month" placement="bottom-start" is-close-on-select>
+          <MpPopoverTrigger>
+            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ monthSel }}</MpButton>
+          </MpPopoverTrigger>
+          <MpPopoverContent :class="css({ minWidth: '180px' })">
+            <MpPopoverList>
+              <MpPopoverListItem v-for="o in MONTH_OPTIONS" :key="o" :is-active="monthSel === o" @click="monthSel = o">{{ o }}</MpPopoverListItem>
+            </MpPopoverList>
+          </MpPopoverContent>
+        </MpPopover>
       </MpFlex>
       <MpFlex align="center" gap="2">
-        <MpButton variant="secondary" size="sm" right-icon="caret-down">Sort: Oldest first</MpButton>
+        <MpPopover id="flt-sort" placement="bottom-start" is-close-on-select>
+          <MpPopoverTrigger>
+            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ sortSel }}</MpButton>
+          </MpPopoverTrigger>
+          <MpPopoverContent :class="css({ minWidth: '180px' })">
+            <MpPopoverList>
+              <MpPopoverListItem v-for="o in SORT_OPTIONS" :key="o" :is-active="sortSel === o" @click="sortSel = o">{{ o }}</MpPopoverListItem>
+            </MpPopoverList>
+          </MpPopoverContent>
+        </MpPopover>
         <MpButton variant="secondary" size="sm">Export</MpButton>
         <MpInputGroup :class="searchGroup">
           <MpInputLeftAddon>
@@ -251,37 +282,34 @@ const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
     </MpFlex>
 
     <!-- 5) Table -->
-    <div :class="tblWrap">
-      <table :class="tbl">
-        <thead>
-          <tr>
-            <th v-if="isVisible('date')" :class="th">DATE</th>
-            <th v-if="isVisible('source')" :class="th">SOURCE</th>
-            <th v-if="isVisible('description')" :class="th">DESCRIPTION</th>
-            <th v-if="isVisible('name')" :class="th">NAME</th>
-            <th v-if="isVisible('account')" :class="th">ACCOUNT</th>
-            <th v-if="isVisible('status')" :class="th">STATUS</th>
-            <th v-if="isVisible('amount')" :class="[th, alignRight]">AMOUNT</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(r, i) in filteredRows" :key="i">
-            <td v-if="isVisible('date')" :class="td">{{ r.date }}</td>
-            <td v-if="isVisible('source')" :class="td"><span :class="secondaryCell">{{ r.source }}</span></td>
-            <td v-if="isVisible('description')" :class="td"><span :class="descCell">{{ r.description }}</span></td>
-            <td v-if="isVisible('name')" :class="td">{{ r.name }}</td>
-            <td v-if="isVisible('account')" :class="td"><span :class="secondaryCell">{{ r.account }}</span></td>
-            <td v-if="isVisible('status')" :class="td">
-              <span :class="statusCell">
-                <span :class="[dot, dotClass[r.statusKind]]" />
-                {{ r.status }}
-              </span>
-            </td>
-            <td v-if="isVisible('amount')" :class="[td, alignRight]"><span :class="amountCell">{{ r.amount }}</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <MpTableContainer :class="css({ width: 'full' })">
+      <MpTable>
+        <MpTableHead>
+          <MpTableRow>
+            <MpTableCell v-if="isVisible('date')" scope="col">DATE</MpTableCell>
+            <MpTableCell v-if="isVisible('source')" scope="col">SOURCE</MpTableCell>
+            <MpTableCell v-if="isVisible('description')" scope="col">DESCRIPTION</MpTableCell>
+            <MpTableCell v-if="isVisible('name')" scope="col">NAME</MpTableCell>
+            <MpTableCell v-if="isVisible('account')" scope="col">ACCOUNT</MpTableCell>
+            <MpTableCell v-if="isVisible('status')" scope="col">STATUS</MpTableCell>
+            <MpTableCell v-if="isVisible('amount')" scope="col" :class="alignRight">AMOUNT</MpTableCell>
+          </MpTableRow>
+        </MpTableHead>
+        <MpTableBody>
+          <MpTableRow v-for="(r, i) in filteredRows" :key="i">
+            <MpTableCell v-if="isVisible('date')" as="td" scope="row">{{ r.date }}</MpTableCell>
+            <MpTableCell v-if="isVisible('source')" as="td">{{ r.source }}</MpTableCell>
+            <MpTableCell v-if="isVisible('description')" as="td">{{ r.description }}</MpTableCell>
+            <MpTableCell v-if="isVisible('name')" as="td">{{ r.name }}</MpTableCell>
+            <MpTableCell v-if="isVisible('account')" as="td">{{ r.account }}</MpTableCell>
+            <MpTableCell v-if="isVisible('status')" as="td">
+              <MpBadge for="tableStatus" :type="badgeType(r.status)">{{ r.status }}</MpBadge>
+            </MpTableCell>
+            <MpTableCell v-if="isVisible('amount')" as="td" :class="alignRight"><span :class="amountCell">{{ r.amount }}</span></MpTableCell>
+          </MpTableRow>
+        </MpTableBody>
+      </MpTable>
+    </MpTableContainer>
 
     <!-- 6) Footer -->
     <MpFlex align="center" justify="space-between" paddingInline="1">

@@ -9,16 +9,17 @@
 -->
 <script setup lang="ts">
 import {
-  MpFlex, MpText, MpButton, MpTextlink,
+  MpFlex, MpText, MpButton, MpTextlink, MpBadge,
+  MpPopover, MpPopoverTrigger, MpPopoverContent, MpPopoverList, MpPopoverListItem,
   MpDrawer, MpDrawerOverlay, MpDrawerContent, MpDrawerHeader,
   MpDrawerCloseButton, MpDrawerBody, MpDrawerFooter,
   MpFormControl, MpFormLabel, MpInput, MpSelect, MpTextarea,
+  MpTableContainer, MpTable, MpTableHead, MpTableBody, MpTableRow, MpTableCell,
   css,
 } from '@mekari/pixel3'
 
 definePageMeta({
   title: 'Purchases',
-  subtitle: 'Invoices, orders, quotes and requests from vendors.',
 })
 
 // ─── Tabs ────────────────────────────────────────────────────────────
@@ -72,27 +73,32 @@ const activeRows = computed(() => DATASETS[activeTab.value])
 // On Request tab the 2nd column is the requester + department, not a vendor
 const primaryHeader = computed(() => (activeTab.value === 'Request' ? 'REQUESTER' : 'VENDOR'))
 
-const STATUS_DOT_CLASS: Record<Status, string> = {
-  'Overdue':           css({ background: 'icon.danger' }),
-  'Rejected':          css({ background: 'icon.danger' }),
-  'Paid':              css({ background: 'icon.success' }),
-  'Received':          css({ background: 'icon.success' }),
-  'Accepted':          css({ background: 'icon.success' }),
-  'Approved':          css({ background: 'icon.success' }),
-  'Sent':              css({ background: 'icon.information' }),
-  'Draft':             css({ background: 'icon.default' }),
-  'Comparing':         css({ background: 'icon.warning' }),
-  'Awaiting payment':  css({ background: 'icon.warning' }),
-  'Awaiting review':   css({ background: 'icon.warning' }),
-  'Awaiting approval': css({ background: 'icon.warning' }),
-}
-
-function isDanger(s: Status) {
-  return s === 'Overdue' || s === 'Rejected'
+function badgeType(s: string) {
+  const completed = ['Paid', 'Received', 'Accepted', 'Approved', 'Settled', 'Disbursed', 'Cleared', 'Booked']
+  const warning = ['Awaiting approval', 'Awaiting payment', 'Awaiting review', 'Awaiting disburse', 'Comparing']
+  const critical = ['Overdue', 'Rejected']
+  const information = ['Sent']
+  const announcement = ['Draft']
+  if (completed.includes(s)) return 'completed'
+  if (warning.includes(s)) return 'warning'
+  if (critical.includes(s)) return 'critical'
+  if (information.includes(s)) return 'information'
+  if (announcement.includes(s)) return 'announcement'
+  return 'announcement'
 }
 function hasWarn(s: Status) {
   return s === 'Overdue' || s === 'Awaiting payment'
 }
+
+// ─── Toolbar filters ────────────────────────────────────────────────────
+const STATUS_OPTIONS = ['All status', 'Awaiting payment', 'Awaiting review', 'Paid', 'Overdue']
+const ACCOUNT_OPTIONS = ['All accounts', 'Main account', 'Operational account']
+const MONTH_OPTIONS = ['This month', 'Last month', 'This quarter', 'This year']
+const SORT_OPTIONS = ['Sort: Oldest first', 'Sort: Newest first']
+const statusSel = ref(STATUS_OPTIONS[0])
+const accountSel = ref(ACCOUNT_OPTIONS[0])
+const monthSel = ref(MONTH_OPTIONS[0])
+const sortSel = ref(SORT_OPTIONS[0])
 
 // ─── Filters drawer ──────────────────────────────────────────────────
 const filtersOpen = ref(false)
@@ -119,17 +125,24 @@ const form = reactive({
 // ─── Tab / table CSS ─────────────────────────────────────────────────
 const tabBar = css({
   display: 'flex', alignItems: 'center', gap: '5',
+  paddingInline: '6', height: '44px',
   borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
+  background: 'background.neutral',
 })
 const tab = css({
-  appearance: 'none', background: 'transparent', border: 'none', cursor: 'pointer',
-  paddingBlock: '3', marginBottom: '-1px',
-  fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.secondary',
+  display: 'inline-flex', alignItems: 'center', gap: '2', height: '44px',
+  background: 'transparent', border: 'none', cursor: 'pointer',
+  fontFamily: 'body', fontSize: 'md',
   borderBottomWidth: '2px', borderBottomStyle: 'solid', borderBottomColor: 'transparent',
-  transition: 'color 120ms ease, border-color 120ms ease',
-  _hover: { color: 'text.default' },
+  color: 'text.secondary',
 })
-const tabActive = css({ color: 'text.default', borderBottomColor: 'border.brand' })
+const tabActive = css({
+  display: 'inline-flex', alignItems: 'center', gap: '2', height: '44px',
+  background: 'transparent', border: 'none', cursor: 'pointer',
+  fontFamily: 'body', fontSize: 'md',
+  borderBottomWidth: '2px', borderBottomStyle: 'solid', borderBottomColor: 'border.brand',
+  color: 'text.default', fontWeight: 'semiBold',
+})
 
 const searchWrap = css({
   display: 'inline-flex', alignItems: 'center', gap: '2',
@@ -144,30 +157,9 @@ const searchInput = css({
   _placeholder: { color: 'text.secondary' },
 })
 
-const tblWrap = css({ w: 'full', overflowX: 'auto' })
-const tbl = css({ w: 'full', tableLayout: 'auto', borderCollapse: 'collapse' })
-const th = css({
-  bg: 'background.neutral.subtle',
-  fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'text.secondary',
-  lineHeight: 'lg', paddingInline: '3', paddingBlock: '3', h: '44px',
-  borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
-  textAlign: 'left', whiteSpace: 'nowrap', verticalAlign: 'middle',
-})
-const td = css({
-  fontFamily: 'body', fontSize: 'md', lineHeight: 'lg', color: 'text.default',
-  paddingInline: '3', paddingBlock: '3',
-  borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
-  verticalAlign: 'middle', whiteSpace: 'nowrap',
-})
 const docLink   = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'medium', color: 'text.link', cursor: 'pointer' })
-const vendorName = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default' })
 const vendorSub = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
-const muted     = css({ fontFamily: 'body', fontSize: 'md', color: 'text.secondary' })
-const statusWrap = css({ display: 'inline-flex', alignItems: 'center', gap: '2' })
-const dot        = css({ w: '8px', h: '8px', borderRadius: 'full', flexShrink: 0 })
-const statusText = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default' })
-const statusTextBold = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'bold', color: 'text.default' })
-const totalText = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default', textAlign: 'right' })
+const totalText = css({ fontWeight: 'semiBold', textAlign: 'right' })
 
 const footer = css({
   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -202,10 +194,8 @@ const pillActive = css({
     <MpButton variant="primary" size="md" @click="createOpen = true">Create purchase</MpButton>
   </Teleport>
 
-  <!-- ═════ Stage content ═════ -->
-  <MpFlex direction="column" gap="4" width="full" min-width="0">
-
-    <!-- Tabs -->
+  <!-- ═════ Primary tabs (into layout tab-slot) ═════ -->
+  <Teleport to="#layout-tabs">
     <div :class="tabBar">
       <button
         v-for="t in tabs"
@@ -215,18 +205,58 @@ const pillActive = css({
         @click="activeTab = t"
       >{{ t }}</button>
     </div>
+  </Teleport>
+
+  <!-- ═════ Stage content ═════ -->
+  <MpFlex direction="column" gap="4" width="full" min-width="0">
 
     <!-- Toolbar -->
     <MpFlex align="center" justify="space-between" gap="3" wrap="wrap">
       <MpFlex align="center" gap="2" wrap="wrap">
-        <MpButton variant="secondary" size="sm" right-icon="caret-down">All status</MpButton>
-        <MpButton variant="secondary" size="sm" right-icon="caret-down">All accounts</MpButton>
-        <MpButton variant="secondary" size="sm" right-icon="caret-down">This month</MpButton>
+        <MpPopover id="flt-status" placement="bottom-start" is-close-on-select>
+          <MpPopoverTrigger>
+            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ statusSel }}</MpButton>
+          </MpPopoverTrigger>
+          <MpPopoverContent :class="css({ minWidth: '180px' })">
+            <MpPopoverList>
+              <MpPopoverListItem v-for="o in STATUS_OPTIONS" :key="o" :is-active="statusSel === o" @click="statusSel = o">{{ o }}</MpPopoverListItem>
+            </MpPopoverList>
+          </MpPopoverContent>
+        </MpPopover>
+        <MpPopover id="flt-account" placement="bottom-start" is-close-on-select>
+          <MpPopoverTrigger>
+            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ accountSel }}</MpButton>
+          </MpPopoverTrigger>
+          <MpPopoverContent :class="css({ minWidth: '180px' })">
+            <MpPopoverList>
+              <MpPopoverListItem v-for="o in ACCOUNT_OPTIONS" :key="o" :is-active="accountSel === o" @click="accountSel = o">{{ o }}</MpPopoverListItem>
+            </MpPopoverList>
+          </MpPopoverContent>
+        </MpPopover>
+        <MpPopover id="flt-month" placement="bottom-start" is-close-on-select>
+          <MpPopoverTrigger>
+            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ monthSel }}</MpButton>
+          </MpPopoverTrigger>
+          <MpPopoverContent :class="css({ minWidth: '180px' })">
+            <MpPopoverList>
+              <MpPopoverListItem v-for="o in MONTH_OPTIONS" :key="o" :is-active="monthSel === o" @click="monthSel = o">{{ o }}</MpPopoverListItem>
+            </MpPopoverList>
+          </MpPopoverContent>
+        </MpPopover>
         <MpButton variant="secondary" size="sm" left-icon="filter" @click="filtersOpen = true">Filters</MpButton>
       </MpFlex>
 
       <MpFlex align="center" gap="2" wrap="wrap">
-        <MpButton variant="secondary" size="sm" right-icon="caret-down">Sort: Oldest first</MpButton>
+        <MpPopover id="flt-sort" placement="bottom-start" is-close-on-select>
+          <MpPopoverTrigger>
+            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ sortSel }}</MpButton>
+          </MpPopoverTrigger>
+          <MpPopoverContent :class="css({ minWidth: '180px' })">
+            <MpPopoverList>
+              <MpPopoverListItem v-for="o in SORT_OPTIONS" :key="o" :is-active="sortSel === o" @click="sortSel = o">{{ o }}</MpPopoverListItem>
+            </MpPopoverList>
+          </MpPopoverContent>
+        </MpPopover>
         <MpButton variant="secondary" size="sm">Export</MpButton>
         <label :class="searchWrap">
           <PxIcon name="search" :size="16" color="icon.subtle" />
@@ -236,46 +266,43 @@ const pillActive = css({
     </MpFlex>
 
     <!-- Table -->
-    <div :class="tblWrap">
-      <table :class="tbl">
-        <thead>
-          <tr>
-            <th :class="th">DOCUMENT</th>
-            <th :class="th">{{ primaryHeader }}</th>
-            <th :class="th">DATE</th>
-            <th :class="th">DUE · VALID</th>
-            <th :class="th">STATUS</th>
-            <th :class="[th, css({ width: '24px' })]"></th>
-            <th :class="[th, css({ textAlign: 'right' })]">TOTAL</th>
-            <th :class="[th, css({ width: '44px' })]"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="r in activeRows" :key="r.doc">
-            <td :class="td"><span :class="docLink">{{ r.doc }}</span></td>
-            <td :class="td">
-              <div :class="vendorName">{{ r.primary }}</div>
+    <MpTableContainer :class="css({ width: 'full' })">
+      <MpTable>
+        <MpTableHead>
+          <MpTableRow>
+            <MpTableCell scope="col">DOCUMENT</MpTableCell>
+            <MpTableCell scope="col">{{ primaryHeader }}</MpTableCell>
+            <MpTableCell scope="col">DATE</MpTableCell>
+            <MpTableCell scope="col">DUE · VALID</MpTableCell>
+            <MpTableCell scope="col">STATUS</MpTableCell>
+            <MpTableCell scope="col" :class="css({ width: '24px' })"></MpTableCell>
+            <MpTableCell scope="col" :class="css({ textAlign: 'right' })">TOTAL</MpTableCell>
+            <MpTableCell scope="col" :class="css({ width: '44px' })"></MpTableCell>
+          </MpTableRow>
+        </MpTableHead>
+        <MpTableBody>
+          <MpTableRow v-for="r in activeRows" :key="r.doc">
+            <MpTableCell as="td" scope="row"><span :class="docLink">{{ r.doc }}</span></MpTableCell>
+            <MpTableCell as="td">
+              <div>{{ r.primary }}</div>
               <div :class="vendorSub">{{ r.sub }}</div>
-            </td>
-            <td :class="td"><span :class="muted">{{ r.date }}</span></td>
-            <td :class="td"><span :class="muted">{{ r.due }}</span></td>
-            <td :class="td">
-              <span :class="statusWrap">
-                <span :class="[dot, STATUS_DOT_CLASS[r.status]]" />
-                <span :class="isDanger(r.status) ? statusTextBold : statusText">{{ r.status }}</span>
-              </span>
-            </td>
-            <td :class="[td, css({ textAlign: 'center' })]">
+            </MpTableCell>
+            <MpTableCell as="td">{{ r.date }}</MpTableCell>
+            <MpTableCell as="td">{{ r.due }}</MpTableCell>
+            <MpTableCell as="td">
+              <MpBadge for="tableStatus" :type="badgeType(r.status)">{{ r.status }}</MpBadge>
+            </MpTableCell>
+            <MpTableCell as="td" :class="css({ textAlign: 'center' })">
               <PxIcon v-if="hasWarn(r.status)" name="warning-triangle" :size="16" color="icon.warning" />
-            </td>
-            <td :class="[td, css({ textAlign: 'right' })]"><span :class="totalText">{{ r.total }}</span></td>
-            <td :class="[td, css({ textAlign: 'right' })]">
+            </MpTableCell>
+            <MpTableCell as="td" :class="css({ textAlign: 'right' })"><span :class="totalText">{{ r.total }}</span></MpTableCell>
+            <MpTableCell as="td" :class="css({ textAlign: 'right' })">
               <MpButton variant="ghost" size="sm" left-icon="menu-meatball" aria-label="More" />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+            </MpTableCell>
+          </MpTableRow>
+        </MpTableBody>
+      </MpTable>
+    </MpTableContainer>
 
     <!-- Footer -->
     <div :class="footer">

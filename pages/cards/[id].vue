@@ -19,7 +19,6 @@ import {
 
 definePageMeta({
   title: 'Nabila MNC Test VCC',
-  subtitle: 'C2026061550210 · Virtual card · XM punya 3 · Testing refund and reversal',
   breadcrumbParent: { path: '/cards', label: 'Cards' },
 })
 
@@ -215,6 +214,7 @@ const walletBalance = css({ fontFamily: 'body', fontSize: 'md', color: 'text.sec
 
   <!-- ═════ Stage content ═════ -->
   <MpFlex direction="column" gap="4" width="full" min-width="0">
+    <MpText as="p" size="body-small" color="text.secondary">C2026061550210 · Virtual card · XM punya 3 · Testing refund and reversal</MpText>
 
     <!-- ── Balance row + progress ── -->
     <div :class="card">

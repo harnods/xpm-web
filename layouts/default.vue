@@ -5,7 +5,6 @@ const tabsSlot = css({ lineHeight: '0' })
 
 const route = useRoute()
 const pageTitle = computed(() => (route.meta.title as string) || 'Page Title')
-const subtitle = computed(() => (route.meta.subtitle as string) || '')
 const breadcrumbParent = computed(() => (route.meta.breadcrumbParent as any)?.path ? (route.meta.breadcrumbParent as any) : null)
 
 // Mirror sidebar state to compute width for toast centering
@@ -43,7 +42,7 @@ if (import.meta.client) {
         <MpFlex
           align="center"
           justify="space-between"
-          :height="(breadcrumbParent || subtitle) ? '100px' : '72px'"
+          :height="breadcrumbParent ? '100px' : '72px'"
           paddingInline="6"
           flexShrink="0"
         >
@@ -63,9 +62,6 @@ if (import.meta.client) {
               </MpText>
               <div id="layout-title-suffix" />
             </MpFlex>
-            <MpText v-if="subtitle" as="p" size="body" color="text.secondary">
-              {{ subtitle }}
-            </MpText>
           </MpFlex>
           <div id="layout-header-actions" />
         </MpFlex>
