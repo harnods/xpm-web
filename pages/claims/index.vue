@@ -7,7 +7,13 @@
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 -->
 <script setup lang="ts">
-import { MpFlex, MpText, MpButton, css } from '@mekari/pixel3'
+import {
+  MpFlex, MpText, MpButton, MpToggle, MpTextlink,
+  MpDrawer, MpDrawerOverlay, MpDrawerContent, MpDrawerHeader,
+  MpDrawerCloseButton, MpDrawerBody, MpDrawerFooter,
+  MpPopover, MpPopoverTrigger, MpPopoverContent, MpPopoverList, MpPopoverListItem,
+  css,
+} from '@mekari/pixel3'
 
 definePageMeta({
   title: 'Claims',
@@ -58,6 +64,40 @@ const STATUS_DOT: Record<ClaimStatus, string> = {
   'Awaiting approval': 'var(--mp-colors-icon-warning)',
 }
 
+// ─── Interactivity: state ───────────────────────────────────────────
+const STATUS_OPTIONS: ClaimStatus[] = [
+  'Settled', 'Disbursed', 'Declined', 'Awaiting disburse', 'Awaiting approval',
+]
+
+// Toolbar "All status" dropdown → drives the visible rows.
+const statusFilter = ref<ClaimStatus | 'all'>('all')
+const statusLabel = computed(() => statusFilter.value === 'all' ? 'All status' : statusFilter.value)
+
+const filteredRows = computed(() =>
+  statusFilter.value === 'all'
+    ? rows
+    : rows.filter(r => r.status === statusFilter.value),
+)
+
+// Drawers
+const filtersOpen = ref(false)
+const policyOpen  = ref(false)
+
+// "All filters" drawer — reference shell; local pill selections (Apply/Reset only).
+const fClaimType = ref<string | null>(null)
+const fStatus    = ref<string | null>(null)
+const fPeriod    = ref<string | null>(null)
+function resetFilters() { fClaimType.value = null; fStatus.value = null; fPeriod.value = null }
+
+// "Claim policy" drawer — inferred, reference-consistent (static demo data).
+const receiptRequired  = ref(true)
+const policyCaps = [
+  { name: 'Meals',         cap: 'Rp 200.000 / day' },
+  { name: 'Transport',     cap: 'Rp 500.000 / week' },
+  { name: 'Accommodation', cap: 'Rp 1.500.000 / night' },
+  { name: 'Software',      cap: 'Rp 5.000.000 / month' },
+]
+
 // ─── CSS ────────────────────────────────────────────────────────────
 const searchWrap = css({
   display: 'flex', alignItems: 'center', gap: '2',
@@ -98,12 +138,43 @@ const statusText = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.defaul
 const dot        = css({ w: '8px', h: '8px', borderRadius: 'full', flexShrink: 0, display: 'inline-block' })
 const amount     = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'text.default', whiteSpace: 'nowrap', textAlign: 'right' })
 const footText   = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary', whiteSpace: 'nowrap' })
+
+// Popover dropdown item
+const menuItemActive = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'text.link' })
+
+// Drawer section blocks
+const sectionLabel = css({ fontFamily: 'body', fontSize: 'xs', fontWeight: 'semiBold', letterSpacing: 'wide', textTransform: 'uppercase', color: 'text.secondary' })
+const fieldLabel   = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'text.default' })
+const helpText     = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
+
+// Selectable pill (used across filter groups)
+const pill = css({
+  fontFamily: 'body', fontSize: 'sm', lineHeight: 'lg',
+  paddingInline: '3', paddingBlock: '1.5', borderRadius: 'full',
+  borderWidth: '1px', borderStyle: 'solid', cursor: 'pointer',
+  whiteSpace: 'nowrap', background: 'transparent',
+})
+const pillOff = { borderColor: 'var(--mp-colors-border-default)', color: 'var(--mp-colors-text-default)' }
+const pillOn  = { borderColor: 'var(--mp-colors-border-focused)', color: 'var(--mp-colors-text-link)', background: 'var(--mp-colors-background-selected-subtle, #EEF0FF)' }
+
+// Policy caps list
+const capRow = css({
+  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4',
+  paddingBlock: '2.5',
+  borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
+})
+const policyInput = css({
+  minHeight: '32px', paddingInline: '2.5', width: '160px',
+  borderWidth: '1px', borderStyle: 'solid', borderColor: 'border.form', borderRadius: 'md',
+  background: 'background.neutral', fontFamily: 'body', fontSize: 'sm', color: 'text.default',
+  outline: 'none', _focus: { boxShadow: 'focus', borderColor: 'border.focused' },
+})
 </script>
 
 <template>
   <!-- ═════ Header CTA ═════ -->
   <Teleport to="#layout-header-actions">
-    <MpButton variant="primary" size="md">Manage claim policy</MpButton>
+    <MpButton variant="primary" size="md" @click="policyOpen = true">Manage claim policy</MpButton>
   </Teleport>
 
   <!-- ═════ Stage content ═════ -->
@@ -115,8 +186,29 @@ const footText   = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.second
       <!-- Left -->
       <MpFlex align="center" gap="2" style="flex-wrap:wrap;">
         <MpButton variant="secondary" size="sm" right-icon="caret-down">Jul 2026</MpButton>
-        <MpButton variant="secondary" size="sm" right-icon="caret-down">All status</MpButton>
-        <MpButton variant="secondary" size="sm" left-icon="filter">Filters</MpButton>
+
+        <!-- Working status filter -->
+        <MpPopover id="claims-status" use-portal placement="bottom-start" is-close-on-select v-slot="{ onClosePopover }">
+          <MpPopoverTrigger>
+            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ statusLabel }}</MpButton>
+          </MpPopoverTrigger>
+          <MpPopoverContent :class="css({ marginTop: '2px', minWidth: '200px' })">
+            <MpPopoverList>
+              <MpPopoverListItem @click="statusFilter = 'all'; onClosePopover()">
+                <span :class="statusFilter === 'all' ? menuItemActive : ''">All status</span>
+              </MpPopoverListItem>
+              <MpPopoverListItem
+                v-for="s in STATUS_OPTIONS"
+                :key="s"
+                @click="statusFilter = s; onClosePopover()"
+              >
+                <span :class="statusFilter === s ? menuItemActive : ''">{{ s }}</span>
+              </MpPopoverListItem>
+            </MpPopoverList>
+          </MpPopoverContent>
+        </MpPopover>
+
+        <MpButton variant="secondary" size="sm" left-icon="filter" @click="filtersOpen = true">Filters</MpButton>
       </MpFlex>
 
       <!-- Right -->
@@ -146,7 +238,7 @@ const footText   = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.second
           </tr>
         </thead>
         <tbody>
-          <tr v-for="row in rows" :key="row.id">
+          <tr v-for="row in filteredRows" :key="row.id">
             <!-- Transaction ID -->
             <td :class="td" style="white-space:nowrap;">
               <a href="#" :class="link">{{ row.id }}</a>
@@ -190,7 +282,7 @@ const footText   = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.second
 
     <!-- ═════ Footer ═════ -->
     <MpFlex align="center" justify="space-between" paddingInline="1">
-      <span :class="footText">Showing 12 of 12</span>
+      <span :class="footText">Showing {{ filteredRows.length }} of {{ rows.length }}</span>
       <MpFlex align="center" gap="6">
         <span :class="footText">Rows per page: 10</span>
         <span :class="footText">Page 1 of 1</span>
@@ -198,4 +290,132 @@ const footText   = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.second
     </MpFlex>
 
   </MpFlex>
+
+  <!-- ═════ Drawer: All filters (reference shell) ═════ -->
+  <MpDrawer id="claims-filters" :is-open="filtersOpen" size="md" placement="right" is-block-scroll-on-mount @close="filtersOpen = false">
+    <MpDrawerOverlay />
+    <MpDrawerContent>
+      <MpDrawerHeader>
+        <MpText weight="semiBold" style="font-size:16px; line-height:24px;">All filters</MpText>
+        <MpDrawerCloseButton />
+      </MpDrawerHeader>
+
+      <MpDrawerBody>
+        <MpFlex direction="column" gap="5" width="full">
+
+          <!-- Claim type -->
+          <MpFlex direction="column" gap="2">
+            <span :class="fieldLabel">Claim type</span>
+            <MpFlex align="center" gap="2" style="flex-wrap:wrap;">
+              <button
+                v-for="t in ['Reimbursement', 'Cash advance']"
+                :key="t"
+                :class="pill"
+                :style="fClaimType === t ? pillOn : pillOff"
+                @click="fClaimType = fClaimType === t ? null : t"
+              >{{ t }}</button>
+            </MpFlex>
+          </MpFlex>
+
+          <!-- Status -->
+          <MpFlex direction="column" gap="2">
+            <span :class="fieldLabel">Status</span>
+            <MpFlex align="center" gap="2" style="flex-wrap:wrap;">
+              <button
+                v-for="s in STATUS_OPTIONS"
+                :key="s"
+                :class="pill"
+                :style="fStatus === s ? pillOn : pillOff"
+                @click="fStatus = fStatus === s ? null : s"
+              >{{ s }}</button>
+            </MpFlex>
+          </MpFlex>
+
+          <!-- Period -->
+          <MpFlex direction="column" gap="2">
+            <span :class="sectionLabel">Period</span>
+            <MpFlex align="center" gap="2" style="flex-wrap:wrap;">
+              <button
+                v-for="p in ['This month', 'Last month', 'Last 90 days', 'This year', 'Custom']"
+                :key="p"
+                :class="pill"
+                :style="fPeriod === p ? pillOn : pillOff"
+                @click="fPeriod = fPeriod === p ? null : p"
+              >{{ p }}</button>
+            </MpFlex>
+          </MpFlex>
+
+        </MpFlex>
+      </MpDrawerBody>
+
+      <MpDrawerFooter>
+        <MpFlex align="center" justify="space-between" width="full">
+          <MpTextlink size="body" style="cursor:pointer;" @click="resetFilters">Reset filter</MpTextlink>
+          <MpFlex gap="2">
+            <MpButton variant="ghost" @click="filtersOpen = false">Cancel</MpButton>
+            <MpButton variant="primary" @click="filtersOpen = false">Apply</MpButton>
+          </MpFlex>
+        </MpFlex>
+      </MpDrawerFooter>
+    </MpDrawerContent>
+  </MpDrawer>
+
+  <!-- ═════ Drawer: Claim policy (INFERRED — no reference screen; reference-consistent) ═════ -->
+  <MpDrawer id="claims-policy" :is-open="policyOpen" size="md" placement="right" is-block-scroll-on-mount @close="policyOpen = false">
+    <MpDrawerOverlay />
+    <MpDrawerContent>
+      <MpDrawerHeader>
+        <MpText weight="semiBold" style="font-size:16px; line-height:24px;">Claim policy</MpText>
+        <MpDrawerCloseButton />
+      </MpDrawerHeader>
+
+      <MpDrawerBody>
+        <MpFlex direction="column" gap="5" width="full">
+
+          <!-- Categories & caps -->
+          <MpFlex direction="column" gap="2">
+            <span :class="sectionLabel">Categories &amp; caps</span>
+            <div>
+              <div v-for="c in policyCaps" :key="c.name" :class="capRow">
+                <span :class="fieldLabel">{{ c.name }}</span>
+                <span :class="helpText">{{ c.cap }}</span>
+              </div>
+            </div>
+          </MpFlex>
+
+          <!-- Receipt required -->
+          <MpFlex align="center" justify="space-between" gap="4">
+            <MpFlex direction="column" gap="0.5" style="min-width:0;">
+              <span :class="fieldLabel">Receipt required</span>
+              <span :class="helpText">Claims must include an attached receipt.</span>
+            </MpFlex>
+            <MpToggle v-model:is-checked="receiptRequired" />
+          </MpFlex>
+
+          <!-- Auto-approve threshold -->
+          <MpFlex align="center" justify="space-between" gap="4">
+            <MpFlex direction="column" gap="0.5" style="min-width:0;">
+              <span :class="fieldLabel">Auto-approve threshold</span>
+              <span :class="helpText">Claims below this amount skip approval.</span>
+            </MpFlex>
+            <input :class="policyInput" type="text" value="Rp 100.000" />
+          </MpFlex>
+
+          <!-- Approval routing note -->
+          <MpFlex direction="column" gap="1">
+            <span :class="fieldLabel">Approval routing</span>
+            <span :class="helpText">Claims above the threshold route to the requester's direct manager, then Finance for disbursement.</span>
+          </MpFlex>
+
+        </MpFlex>
+      </MpDrawerBody>
+
+      <MpDrawerFooter>
+        <MpFlex justify="flex-end" gap="2" width="full">
+          <MpButton variant="ghost" @click="policyOpen = false">Cancel</MpButton>
+          <MpButton variant="primary" @click="policyOpen = false">Save policy</MpButton>
+        </MpFlex>
+      </MpDrawerFooter>
+    </MpDrawerContent>
+  </MpDrawer>
 </template>

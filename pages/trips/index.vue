@@ -7,12 +7,40 @@
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 -->
 <script setup lang="ts">
-import { MpFlex, MpButton, css } from '@mekari/pixel3'
+import {
+  MpFlex, MpButton, MpText, MpTextlink,
+  MpDrawer, MpDrawerOverlay, MpDrawerContent, MpDrawerHeader,
+  MpDrawerCloseButton, MpDrawerBody, MpDrawerFooter,
+  css,
+} from '@mekari/pixel3'
 
 definePageMeta({
   title: 'Trips',
   subtitle: 'All submitted trips across the company — monitor bookings, approvals and travelers.',
 })
+
+// ─── Drawer state ────────────────────────────────────────────────────
+const filtersOpen = ref(false)
+const policyOpen = ref(false)
+
+// Filter selections (single-select toggle per group, prototype-static)
+type FilterKey = 'type' | 'status' | 'period'
+const sel = ref<Record<FilterKey, string | null>>({ type: null, status: null, period: null })
+function pick(key: FilterKey, v: string) { sel.value[key] = sel.value[key] === v ? null : v }
+function resetFilters() { sel.value = { type: null, status: null, period: null } }
+
+const TRIP_TYPES = ['Domestic', 'International']
+const STATUSES = ['Booking pending', 'Booked', 'Trip done', 'Completed']
+const PERIODS = ['This month', 'Last month', 'Last 90 days', 'This year', 'Custom']
+
+// Travel-policy drawer content (inferred — no reference wiring existed;
+// kept reference-consistent with the New-trip-policy drawer on the home page)
+const perDiemZones = [
+  { zone: 'Zone 1 — Jabodetabek', rate: 'Rp 350.000 / day' },
+  { zone: 'Zone 2 — Java (non-Jabodetabek)', rate: 'Rp 300.000 / day' },
+  { zone: 'Zone 3 — Outer islands', rate: 'Rp 400.000 / day' },
+  { zone: 'Zone 4 — International', rate: 'USD 75 / day' },
+]
 
 // ─── Data ────────────────────────────────────────────────────────────
 type StatusKind = 'pending' | 'awaiting' | 'completed' | 'booked'
@@ -88,12 +116,37 @@ const dot        = css({ w: '8px', h: '8px', borderRadius: 'full', flexShrink: 0
 const statusText = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.default' })
 
 const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
+
+// ─── Drawer styles ───────────────────────────────────────────────────
+const drawerTitle = css({ fontFamily: 'body', fontSize: 'lg', fontWeight: 'semiBold', color: 'text.default' })
+const groupLabel  = css({ fontFamily: 'body', fontSize: 'xs', fontWeight: 'semiBold', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.secondary' })
+const fieldLabel  = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'text.default' })
+const pillRow     = css({ display: 'flex', flexWrap: 'wrap', gap: '2' })
+
+const pillOff = css({
+  display: 'inline-flex', alignItems: 'center', px: '3', py: '1.5',
+  borderWidth: '1px', borderStyle: 'solid', borderColor: 'border.default', borderRadius: 'full',
+  fontFamily: 'body', fontSize: 'sm', color: 'text.default', cursor: 'pointer', bg: 'background.neutral',
+  transition: 'border-color 120ms ease',
+  _hover: { borderColor: 'border.bold' },
+})
+const pillOn = css({
+  display: 'inline-flex', alignItems: 'center', px: '3', py: '1.5',
+  borderWidth: '1px', borderStyle: 'solid', borderColor: 'var(--mp-colors-indigo-200)', borderRadius: 'full',
+  fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'var(--mp-colors-indigo-600)',
+  cursor: 'pointer', bg: 'background.brand',
+})
+
+const policyRow  = css({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4', paddingBlock: '2.5', borderTopWidth: '1px', borderTopStyle: 'solid', borderTopColor: 'border.default', _first: { borderTopWidth: '0' } })
+const policyName = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.default' })
+const policyRate = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'text.default', whiteSpace: 'nowrap' })
+const policyBox  = css({ borderWidth: '1px', borderStyle: 'solid', borderColor: 'border.default', borderRadius: 'lg', paddingInline: '4', paddingBlock: '1' })
 </script>
 
 <template>
   <!-- ═════ Header CTA ═════ -->
   <Teleport to="#layout-header-actions">
-    <MpButton variant="primary" size="md">Manage travel policy</MpButton>
+    <MpButton variant="primary" size="md" @click="policyOpen = true">Manage travel policy</MpButton>
   </Teleport>
 
   <!-- ═════ Stage content ═════ -->
@@ -104,7 +157,7 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
       <div :class="toolbarBtnRow">
         <MpButton variant="secondary" size="sm" right-icon="caret-down">All trip type</MpButton>
         <MpButton variant="secondary" size="sm" right-icon="caret-down">All status</MpButton>
-        <MpButton variant="secondary" size="sm" left-icon="filter">Filters</MpButton>
+        <MpButton variant="secondary" size="sm" left-icon="filter" @click="filtersOpen = true">Filters</MpButton>
       </div>
       <div :class="toolbarBtnRow">
         <MpButton variant="secondary" size="sm" right-icon="caret-down">Sort: Oldest first</MpButton>
@@ -175,4 +228,97 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
     <span :class="footNote">Showing 7 of 7 · Rows per page: 10 · Page 1 of 1</span>
 
   </MpFlex>
+
+  <!-- ═════ DRAWER · All filters ═════ -->
+  <MpDrawer id="trips-filters-drawer" :is-open="filtersOpen" size="md" placement="right" is-block-scroll-on-mount @close="filtersOpen = false">
+    <MpDrawerOverlay />
+    <MpDrawerContent>
+      <MpDrawerHeader>
+        <span :class="drawerTitle">All filters</span>
+        <MpDrawerCloseButton />
+      </MpDrawerHeader>
+      <MpDrawerBody>
+        <MpFlex direction="column" gap="6" width="full">
+          <!-- Trip type -->
+          <MpFlex direction="column" gap="3">
+            <span :class="fieldLabel">Trip type</span>
+            <div :class="pillRow">
+              <span v-for="t in TRIP_TYPES" :key="t" :class="sel.type === t ? pillOn : pillOff" @click="pick('type', t)">{{ t }}</span>
+            </div>
+          </MpFlex>
+          <!-- Status -->
+          <MpFlex direction="column" gap="3">
+            <span :class="fieldLabel">Status</span>
+            <div :class="pillRow">
+              <span v-for="s in STATUSES" :key="s" :class="sel.status === s ? pillOn : pillOff" @click="pick('status', s)">{{ s }}</span>
+            </div>
+          </MpFlex>
+          <!-- Period -->
+          <MpFlex direction="column" gap="3">
+            <span :class="groupLabel">Period</span>
+            <div :class="pillRow">
+              <span v-for="p in PERIODS" :key="p" :class="sel.period === p ? pillOn : pillOff" @click="pick('period', p)">{{ p }}</span>
+            </div>
+          </MpFlex>
+        </MpFlex>
+      </MpDrawerBody>
+      <MpDrawerFooter>
+        <MpFlex align="center" justify="space-between" gap="2" width="full">
+          <MpTextlink size="body" style="cursor:pointer;" @click="resetFilters">Reset filter</MpTextlink>
+          <MpFlex gap="2">
+            <MpButton variant="ghost" @click="filtersOpen = false">Cancel</MpButton>
+            <MpButton variant="primary" @click="filtersOpen = false">Apply</MpButton>
+          </MpFlex>
+        </MpFlex>
+      </MpDrawerFooter>
+    </MpDrawerContent>
+  </MpDrawer>
+
+  <!-- ═════ DRAWER · Travel policy (inferred — no reference wiring; kept
+       reference-consistent with the home-page trip-policy drawer) ═════ -->
+  <MpDrawer id="trips-policy-drawer" :is-open="policyOpen" size="md" placement="right" is-block-scroll-on-mount @close="policyOpen = false">
+    <MpDrawerOverlay />
+    <MpDrawerContent>
+      <MpDrawerHeader>
+        <span :class="drawerTitle">Travel policy</span>
+        <MpDrawerCloseButton />
+      </MpDrawerHeader>
+      <MpDrawerBody>
+        <MpFlex direction="column" gap="6" width="full">
+          <!-- Booking window -->
+          <MpFlex direction="column" gap="1">
+            <span :class="fieldLabel">Booking window</span>
+            <MpText size="body" color="secondary">Trips must be booked at least 3 days before departure.</MpText>
+          </MpFlex>
+          <!-- Cabin class cap -->
+          <MpFlex direction="column" gap="1">
+            <span :class="fieldLabel">Cabin class cap</span>
+            <MpText size="body" color="secondary">Economy for flights under 5 hours; Business allowed beyond.</MpText>
+          </MpFlex>
+          <!-- Hotel nightly cap -->
+          <MpFlex direction="column" gap="1">
+            <span :class="fieldLabel">Hotel nightly cap</span>
+            <MpText size="body" color="secondary">Rp 1.200.000 domestic · USD 180 international, per night.</MpText>
+          </MpFlex>
+          <!-- Per-diem rates by zone -->
+          <MpFlex direction="column" gap="3">
+            <span :class="groupLabel">Per-diem rates by zone</span>
+            <div :class="policyBox">
+              <div v-for="z in perDiemZones" :key="z.zone" :class="policyRow">
+                <span :class="policyName">{{ z.zone }}</span>
+                <span :class="policyRate">{{ z.rate }}</span>
+              </div>
+            </div>
+          </MpFlex>
+          <span :class="footNote">Requests above these caps can still be submitted; approvers see an over-policy flag before booking.</span>
+        </MpFlex>
+      </MpDrawerBody>
+      <MpDrawerFooter>
+        <MpFlex justify="flex-end" gap="2" width="full">
+          <MpButton variant="ghost" @click="policyOpen = false">Cancel</MpButton>
+          <MpButton variant="primary" @click="policyOpen = false">Save policy</MpButton>
+        </MpFlex>
+      </MpDrawerFooter>
+    </MpDrawerContent>
+  </MpDrawer>
 </template>

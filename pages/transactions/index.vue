@@ -7,8 +7,10 @@
 -->
 <script setup lang="ts">
 import {
-  MpFlex, MpText, MpButton, MpBadge,
+  MpFlex, MpText, MpButton, MpBadge, MpCheckbox,
   MpInputGroup, MpInputLeftAddon, MpInput,
+  MpDrawer, MpDrawerOverlay, MpDrawerContent, MpDrawerHeader,
+  MpDrawerCloseButton, MpDrawerBody, MpDrawerFooter,
   css,
 } from '@mekari/pixel3'
 
@@ -29,6 +31,26 @@ const summary = [
 // ─── Filter tabs ──────────────────────────────────────────────────────
 const TABS = ['All', 'Card', 'Reimbursement', 'Cash advance', 'Bill', 'Travel']
 const activeTab = ref('All')
+
+// ─── Edit columns drawer ───────────────────────────────────────────────
+interface ColDef { key: keyof TxRow; label: string }
+const COLUMNS: ColDef[] = [
+  { key: 'date',        label: 'Date'        },
+  { key: 'source',      label: 'Source'      },
+  { key: 'description', label: 'Description' },
+  { key: 'name',        label: 'Name'        },
+  { key: 'account',     label: 'Account'     },
+  { key: 'status',      label: 'Status'      },
+  { key: 'amount',      label: 'Amount'      },
+]
+const colsOpen = ref(false)
+const visibleCols = ref<Set<string>>(new Set(COLUMNS.map(c => c.key)))
+const isVisible = (k: string) => visibleCols.value.has(k)
+function toggleCol(k: string) {
+  const next = new Set(visibleCols.value)
+  next.has(k) ? next.delete(k) : next.add(k)
+  visibleCols.value = next
+}
 
 // ─── Views segmented pill ──────────────────────────────────────────────
 const activeView = ref('Default')
@@ -62,6 +84,11 @@ const DOT: Record<string, string> = {
   green: 'var(--mp-colors-icon-success)',
   amber: 'var(--mp-colors-icon-warning)',
 }
+
+// ─── Tab filtering ─────────────────────────────────────────────────────
+const filteredRows = computed(() =>
+  activeTab.value === 'All' ? rows : rows.filter(r => r.source === activeTab.value),
+)
 
 // ─── CSS ────────────────────────────────────────────────────────────
 const summaryGrid = css({
@@ -140,6 +167,19 @@ const dot = css({ w: '8px', h: '8px', borderRadius: 'full', flexShrink: 0 })
 const amountCell = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default', textAlign: 'right', whiteSpace: 'nowrap' })
 
 const footText = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
+
+// Edit columns drawer
+const colsSubhead = css({
+  fontFamily: 'body', fontSize: 'xs', fontWeight: 'semiBold', letterSpacing: '0.04em',
+  color: 'text.secondary', paddingBlock: '2',
+})
+const colRow = css({
+  display: 'flex', alignItems: 'center', gap: '3',
+  paddingInline: '2', paddingBlock: '2', borderRadius: 'md', cursor: 'pointer',
+  _hover: { bg: 'background.neutral.subtle' },
+})
+const colHandle = css({ fontFamily: 'body', fontSize: 'md', color: 'text.subtle', cursor: 'grab', flexShrink: 0 })
+const colLabel = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default' })
 </script>
 
 <template>
@@ -198,7 +238,7 @@ const footText = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
           >Default</button>
         </div>
       </MpFlex>
-      <MpButton variant="secondary" size="sm">Edit columns</MpButton>
+      <MpButton variant="secondary" size="sm" @click="colsOpen = true">Edit columns</MpButton>
     </MpFlex>
 
     <!-- 5) Table -->
@@ -206,29 +246,29 @@ const footText = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
       <table :class="tbl">
         <thead>
           <tr>
-            <th :class="th">DATE</th>
-            <th :class="th">SOURCE</th>
-            <th :class="th">DESCRIPTION</th>
-            <th :class="th">NAME</th>
-            <th :class="th">ACCOUNT</th>
-            <th :class="th">STATUS</th>
-            <th :class="th" style="text-align:right;">AMOUNT</th>
+            <th v-if="isVisible('date')" :class="th">DATE</th>
+            <th v-if="isVisible('source')" :class="th">SOURCE</th>
+            <th v-if="isVisible('description')" :class="th">DESCRIPTION</th>
+            <th v-if="isVisible('name')" :class="th">NAME</th>
+            <th v-if="isVisible('account')" :class="th">ACCOUNT</th>
+            <th v-if="isVisible('status')" :class="th">STATUS</th>
+            <th v-if="isVisible('amount')" :class="th" style="text-align:right;">AMOUNT</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(r, i) in rows" :key="i">
-            <td :class="td">{{ r.date }}</td>
-            <td :class="td"><span :class="secondaryCell">{{ r.source }}</span></td>
-            <td :class="td"><span :class="descCell">{{ r.description }}</span></td>
-            <td :class="td">{{ r.name }}</td>
-            <td :class="td"><span :class="secondaryCell">{{ r.account }}</span></td>
-            <td :class="td">
+          <tr v-for="(r, i) in filteredRows" :key="i">
+            <td v-if="isVisible('date')" :class="td">{{ r.date }}</td>
+            <td v-if="isVisible('source')" :class="td"><span :class="secondaryCell">{{ r.source }}</span></td>
+            <td v-if="isVisible('description')" :class="td"><span :class="descCell">{{ r.description }}</span></td>
+            <td v-if="isVisible('name')" :class="td">{{ r.name }}</td>
+            <td v-if="isVisible('account')" :class="td"><span :class="secondaryCell">{{ r.account }}</span></td>
+            <td v-if="isVisible('status')" :class="td">
               <span :class="statusCell">
                 <span :class="dot" :style="{ background: DOT[r.statusKind] }" />
                 {{ r.status }}
               </span>
             </td>
-            <td :class="td" style="text-align:right;"><span :class="amountCell">{{ r.amount }}</span></td>
+            <td v-if="isVisible('amount')" :class="td" style="text-align:right;"><span :class="amountCell">{{ r.amount }}</span></td>
           </tr>
         </tbody>
       </table>
@@ -236,12 +276,48 @@ const footText = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
 
     <!-- 6) Footer -->
     <MpFlex align="center" justify="space-between" paddingInline="1">
-      <span :class="footText">Showing 7 of 7</span>
+      <span :class="footText">Showing {{ filteredRows.length }} of {{ rows.length }}</span>
       <MpFlex align="center" gap="6">
         <span :class="footText">Rows per page: 10</span>
         <span :class="footText">Page 1 of 1</span>
       </MpFlex>
     </MpFlex>
+
+    <!-- Edit columns drawer -->
+    <MpDrawer
+      id="edit-columns-drawer"
+      :is-open="colsOpen"
+      size="sm"
+      placement="right"
+      is-block-scroll-on-mount
+      @close="colsOpen = false"
+    >
+      <MpDrawerOverlay />
+      <MpDrawerContent>
+        <MpDrawerHeader>
+          <MpText weight="semiBold" style="font-size:16px; line-height:24px;">Edit columns</MpText>
+          <MpDrawerCloseButton />
+        </MpDrawerHeader>
+
+        <MpDrawerBody>
+          <div :class="colsSubhead">COLUMNS — TICK TO SHOW · DRAG TO REORDER</div>
+          <MpFlex direction="column" gap="0" width="full">
+            <div v-for="c in COLUMNS" :key="c.key" :class="colRow" @click="toggleCol(c.key)">
+              <span :class="colHandle">⠿</span>
+              <MpCheckbox :is-checked="isVisible(c.key)" @click.stop="toggleCol(c.key)" />
+              <span :class="colLabel">{{ c.label }}</span>
+            </div>
+          </MpFlex>
+        </MpDrawerBody>
+
+        <MpDrawerFooter>
+          <MpFlex align="center" justify="flex-end" gap="2" width="full">
+            <MpButton variant="ghost" @click="colsOpen = false">Cancel</MpButton>
+            <MpButton variant="primary" @click="colsOpen = false">Save</MpButton>
+          </MpFlex>
+        </MpDrawerFooter>
+      </MpDrawerContent>
+    </MpDrawer>
 
   </MpFlex>
 </template>

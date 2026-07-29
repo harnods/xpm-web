@@ -8,8 +8,12 @@
 -->
 <script setup lang="ts">
 import {
-  MpFlex, MpButton, MpBadge,
+  MpFlex, MpText, MpButton, MpBadge,
   MpInputGroup, MpInputLeftAddon, MpInput,
+  MpDrawer, MpDrawerOverlay, MpDrawerContent, MpDrawerHeader,
+  MpDrawerCloseButton, MpDrawerBody, MpDrawerFooter,
+  MpFormControl, MpFormLabel, MpFormHelpText, MpTextarea,
+  MpBanner, MpBannerIcon, MpBannerDescription,
   css,
 } from '@mekari/pixel3'
 
@@ -54,6 +58,41 @@ const cardInfo = [
 ]
 
 const activitySearch = ref('')
+
+// ─── Status (local toggles — reference buttons are unwired) ────────────
+type CardStatus = 'Active' | 'Frozen' | 'Inactive'
+const status = ref<CardStatus>('Inactive')
+const isFrozen = computed(() => status.value === 'Frozen')
+const statusBadgeType = computed(() =>
+  status.value === 'Frozen' ? 'warning'
+    : status.value === 'Active' ? 'completed'
+    : 'announcement',
+)
+function toggleFreeze() { status.value = isFrozen.value ? 'Active' : 'Frozen' }
+function deactivate() { status.value = 'Inactive' }
+
+// ─── Top up balance drawer ─────────────────────────────────────────────
+interface Wallet { id: string; name: string; balance: string }
+const wallets: Wallet[] = [
+  { id: 'main',   name: 'Main account',       balance: 'Rp 0' },
+  { id: 'reimb',  name: 'Reimbursement pool',  balance: 'Rp 6.773.797' },
+  { id: 'float',  name: 'Card float',          balance: 'Rp 2.180.000' },
+]
+const isTopUpOpen = ref(false)
+const selectedWallet = ref('float')
+const topUpAmount = ref('0')
+const topUpReason = ref('')
+function formatThousands(val: string): string {
+  const digits = String(val).replace(/\D/g, '')
+  return digits ? Number(digits).toLocaleString('id-ID') : '0'
+}
+function openTopUp() {
+  selectedWallet.value = 'float'
+  topUpAmount.value = '0'
+  topUpReason.value = ''
+  isTopUpOpen.value = true
+}
+function proceedTopUp() { isTopUpOpen.value = false }
 
 // ─── CSS ─────────────────────────────────────────────────────────────
 const card = css({
@@ -133,20 +172,37 @@ const infoRow = css({
 const infoLabel = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
 const infoValue = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default' })
 const infoSub   = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
+
+// Top-up wallet selectable rows
+const walletList = css({ display: 'flex', flexDirection: 'column', gap: '2' })
+const walletRow = css({
+  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '3',
+  px: '4', py: '3', borderRadius: 'lg', cursor: 'pointer',
+  borderWidth: '1px', borderStyle: 'solid', borderColor: 'border.default',
+  background: 'transparent', width: 'full', textAlign: 'left',
+})
+const walletRowActive = css({
+  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '3',
+  px: '4', py: '3', borderRadius: 'lg', cursor: 'pointer',
+  borderWidth: '1px', borderStyle: 'solid', borderColor: 'border.brand',
+  background: 'background.brand.selected', width: 'full', textAlign: 'left',
+})
+const walletName = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default' })
+const walletBalance = css({ fontFamily: 'body', fontSize: 'md', color: 'text.secondary', whiteSpace: 'nowrap' })
 </script>
 
 <template>
   <!-- ═════ Title suffix badge ═════ -->
   <Teleport to="#layout-title-suffix">
-    <MpBadge for="tableStatus" type="announcement">Inactive</MpBadge>
+    <MpBadge for="tableStatus" :type="statusBadgeType">{{ status }}</MpBadge>
   </Teleport>
 
   <!-- ═════ Header CTAs ═════ -->
   <Teleport to="#layout-header-actions">
     <MpFlex align="center" gap="2">
-      <MpButton variant="secondary" size="md">Freeze</MpButton>
-      <MpButton variant="ghost" size="md" :style="{ color: 'var(--mp-colors-text-danger)' }">Deactivate</MpButton>
-      <MpButton variant="primary" size="md">Top up balance</MpButton>
+      <MpButton variant="secondary" size="md" @click="toggleFreeze">{{ isFrozen ? 'Unfreeze' : 'Freeze' }}</MpButton>
+      <MpButton variant="ghost" size="md" :style="{ color: 'var(--mp-colors-text-danger)' }" @click="deactivate">Deactivate</MpButton>
+      <MpButton variant="primary" size="md" @click="openTopUp">Top up balance</MpButton>
     </MpFlex>
   </Teleport>
 
@@ -244,4 +300,68 @@ const infoSub   = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.seconda
     </div>
 
   </MpFlex>
+
+  <!-- ═════ Top up card balance drawer ═════ -->
+  <MpDrawer id="top-up-drawer" :is-open="isTopUpOpen" size="md" placement="right" is-block-scroll-on-mount @close="isTopUpOpen = false">
+    <MpDrawerOverlay />
+    <MpDrawerContent>
+      <MpDrawerHeader>
+        <MpText weight="semiBold" style="font-size:16px; line-height:24px;">Top up card balance</MpText>
+        <MpDrawerCloseButton />
+      </MpDrawerHeader>
+
+      <MpDrawerBody>
+        <MpFlex direction="column" gap="5">
+          <!-- Info banner -->
+          <MpBanner id="banner-topup" variant="info" is-inline>
+            <MpBannerIcon id="banner-topup-icon" />
+            <MpBannerDescription id="banner-topup-desc">
+              The source wallet is debited the moment the top-up succeeds — no bank transfer needed.
+            </MpBannerDescription>
+          </MpBanner>
+
+          <!-- Pay from wallet -->
+          <MpFormControl id="topup-wallet" isRequired>
+            <MpFormLabel>Pay from wallet</MpFormLabel>
+            <div :class="walletList">
+              <button
+                v-for="w in wallets"
+                :key="w.id"
+                type="button"
+                :class="selectedWallet === w.id ? walletRowActive : walletRow"
+                @click="selectedWallet = w.id"
+              >
+                <span :class="walletName">{{ w.name }}</span>
+                <span :class="walletBalance">{{ w.balance }}</span>
+              </button>
+            </div>
+          </MpFormControl>
+
+          <!-- Top-up amount -->
+          <MpFormControl id="topup-amount" isRequired>
+            <MpFormLabel>Top-up amount</MpFormLabel>
+            <MpInputGroup style="width:100%;">
+              <MpInputLeftAddon has-background><MpText size="body" weight="semiBold">Rp</MpText></MpInputLeftAddon>
+              <MpInput :modelValue="topUpAmount" placeholder="0" :isFullWidth="true"
+                @input="(e: Event) => (topUpAmount = formatThousands((e.target as HTMLInputElement).value))" />
+            </MpInputGroup>
+            <MpFormHelpText>New card balance after top-up: Rp 100.000.000</MpFormHelpText>
+          </MpFormControl>
+
+          <!-- Reason -->
+          <MpFormControl id="topup-reason">
+            <MpFormLabel>Reason</MpFormLabel>
+            <MpTextarea id="textarea-topup-reason" v-model="topUpReason" placeholder="Why is this card being topped up?" :isFullWidth="true" />
+          </MpFormControl>
+        </MpFlex>
+      </MpDrawerBody>
+
+      <MpDrawerFooter>
+        <MpFlex align="center" justify="flex-end" gap="3" width="full">
+          <MpButton variant="ghost" size="md" @click="isTopUpOpen = false">Cancel</MpButton>
+          <MpButton variant="primary" size="md" @click="proceedTopUp">Proceed</MpButton>
+        </MpFlex>
+      </MpDrawerFooter>
+    </MpDrawerContent>
+  </MpDrawer>
 </template>

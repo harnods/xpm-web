@@ -30,6 +30,9 @@ const transport = [
   { mode: 'Train — transfer',    from: 'Bandung…', to: 'Client…', departure: '15 Jul 2026', ret: '—' },
 ]
 
+// ─── Collapsible section state (per-section ref, default open) ─────────
+const open = ref({ transport: true, accommodation: true, cashAdvance: true })
+
 const timeline = [
   { title: 'Booking pending',                          dot: 'var(--mp-colors-icon-warning)', time: '' },
   { title: 'Approved by XM punya 3 (BUATXM3)',         dot: 'var(--mp-colors-icon-success)', time: '15 Jul 2026, 15:54 (GMT+7)' },
@@ -53,6 +56,11 @@ const cardHeadLabel = css({
   color: 'text.secondary', textTransform: 'uppercase',
 })
 const cardBody = css({ paddingInline: '4', paddingBottom: '4', display: 'flex', flexDirection: 'column', gap: '3' })
+const cardHeadBtn = css({
+  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+  paddingInline: '4', paddingTop: '4', paddingBottom: '3',
+  width: 'full', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left',
+})
 
 const infoGrid = css({ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '4' })
 const infoLabel = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
@@ -145,11 +153,11 @@ const tlTime  = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.secondary
 
         <!-- TRANSPORTATION -->
         <div :class="card">
-          <div :class="cardHead">
+          <button :class="cardHeadBtn" @click="open.transport = !open.transport">
             <span :class="cardHeadLabel">Transportation</span>
-            <PxIcon name="chevrons-down" :size="18" color="icon.default" />
-          </div>
-          <div :class="cardBody">
+            <PxIcon :name="open.transport ? 'caret-up' : 'caret-down'" :size="18" color="icon.default" />
+          </button>
+          <div v-show="open.transport" :class="cardBody">
             <div v-for="t in transport" :key="t.mode" :class="rowBlock">
               <div style="min-width:0;">
                 <span :class="modeLabel">{{ t.mode }}</span>
@@ -178,8 +186,11 @@ const tlTime  = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.secondary
 
         <!-- ACCOMMODATION -->
         <div :class="card">
-          <div :class="cardHead"><span :class="cardHeadLabel">Accommodation</span></div>
-          <div :class="cardBody">
+          <button :class="cardHeadBtn" @click="open.accommodation = !open.accommodation">
+            <span :class="cardHeadLabel">Accommodation</span>
+            <PxIcon :name="open.accommodation ? 'caret-up' : 'caret-down'" :size="18" color="icon.default" />
+          </button>
+          <div v-show="open.accommodation" :class="cardBody">
             <div :class="rowBlock">
               <div style="min-width:0;">
                 <span :class="modeLabel">Kontrakan</span>
@@ -205,8 +216,11 @@ const tlTime  = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.secondary
 
         <!-- CASH ADVANCE -->
         <div :class="card">
-          <div :class="cardHead"><span :class="cardHeadLabel">Cash advance</span></div>
-          <div :class="cardBody">
+          <button :class="cardHeadBtn" @click="open.cashAdvance = !open.cashAdvance">
+            <span :class="cardHeadLabel">Cash advance</span>
+            <PxIcon :name="open.cashAdvance ? 'caret-up' : 'caret-down'" :size="18" color="icon.default" />
+          </button>
+          <div v-show="open.cashAdvance" :class="cardBody">
             <table :class="tbl">
               <thead>
                 <tr>

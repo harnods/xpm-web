@@ -13,7 +13,12 @@
     NOTIFICATIONS  — "New" + "Earlier" list sections
 -->
 <script setup lang="ts">
-import { MpFlex, MpButton, MpAvatar, css } from '@mekari/pixel3'
+import {
+  MpFlex, MpButton, MpAvatar, MpText, MpBadge,
+  MpDrawer, MpDrawerOverlay, MpDrawerContent, MpDrawerHeader,
+  MpDrawerCloseButton, MpDrawerBody, MpDrawerFooter,
+  css,
+} from '@mekari/pixel3'
 
 definePageMeta({ title: 'Inbox' })
 
@@ -32,6 +37,11 @@ const CHIPS = ['All', 'Claims', 'Trips', 'Advances', 'Invoices']
 const activeChip = ref('All')
 const searchQuery = ref('')
 
+// Map chip label → row type ('All' = no filter)
+const CHIP_TYPE: Record<string, string> = {
+  Claims: 'Claim', Trips: 'Trip', Advances: 'Advance', Invoices: 'Invoice',
+}
+
 // ─── Approvals data ──────────────────────────────────────────────────
 const needsAttention = [
   { name: 'Maya Chen',           type: 'Claim',   category: 'Meals',        vendor: 'Nobu Downtown',      age: '4 days', risk: 'Missing itemization', amount: 'Rp 184.000' },
@@ -42,15 +52,44 @@ const needsAttention = [
   { name: 'Daniel Reyes',        type: 'Trip',    category: 'New York',     vendor: 'New York, US',       age: '1 day',  risk: 'Hotel above cap',     amount: 'Rp 1.480.000' },
 ]
 
-const autoApprove = [
-  { name: 'Tom Okafor',          type: 'Trip',    category: 'Austin',       vendor: 'Austin, US',          age: '4 days', check: 'In policy · risk 12',      amount: 'Rp 3.400.000' },
-  { name: 'Daniel Reyes',        type: 'Claim',   category: 'Travel',       vendor: 'United Airlines',     age: '2 days', check: 'In policy · risk 12',      amount: 'Rp 412.500' },
-  { name: 'Maya Chen',           type: 'Trip',    category: 'London',       vendor: 'London, UK',          age: '2 days', check: 'In policy · risk 12',      amount: 'Rp 2.150.000' },
-  { name: 'Lena Bauer',          type: 'Claim',   category: 'Events',       vendor: 'SaaStr Inc.',         age: '1 day',  check: 'In policy · risk 12',      amount: 'Rp 899.000' },
-  { name: 'Sofia Martins',       type: 'Advance', category: 'Cash advance', vendor: '—',                   age: '1 day',  check: 'In policy · risk 12',      amount: 'Rp 400.000' },
-  { name: 'Movus Technologies',  type: 'Invoice', category: 'Vendor bill',  vendor: 'Movus Technologies',  age: '1 day',  check: 'Matches PO · risk 12',     amount: 'Rp 1.240.000' },
-  { name: 'Sofia Martins',       type: 'Claim',   category: 'Transport',    vendor: 'Uber',                age: '6 hrs',  check: 'Auto-approve fit · risk 7', amount: 'Rp 22.400' },
-]
+// Filter "Needs your attention" by the active chip's row type
+const filteredNeeds = computed(() =>
+  activeChip.value === 'All'
+    ? needsAttention
+    : needsAttention.filter(r => r.type === CHIP_TYPE[activeChip.value]),
+)
+
+const autoApprove = ref([
+  { name: 'Tom Okafor',          type: 'Trip',    category: 'Austin',       vendor: 'Austin, US',          age: '4 days', check: 'In policy · risk 12',      amount: 'Rp 3.400.000', checked: true },
+  { name: 'Daniel Reyes',        type: 'Claim',   category: 'Travel',       vendor: 'United Airlines',     age: '2 days', check: 'In policy · risk 12',      amount: 'Rp 412.500',   checked: true },
+  { name: 'Maya Chen',           type: 'Trip',    category: 'London',       vendor: 'London, UK',          age: '2 days', check: 'In policy · risk 12',      amount: 'Rp 2.150.000', checked: true },
+  { name: 'Lena Bauer',          type: 'Claim',   category: 'Events',       vendor: 'SaaStr Inc.',         age: '1 day',  check: 'In policy · risk 12',      amount: 'Rp 899.000',   checked: true },
+  { name: 'Sofia Martins',       type: 'Advance', category: 'Cash advance', vendor: '—',                   age: '1 day',  check: 'In policy · risk 12',      amount: 'Rp 400.000',   checked: true },
+  { name: 'Movus Technologies',  type: 'Invoice', category: 'Vendor bill',  vendor: 'Movus Technologies',  age: '1 day',  check: 'Matches PO · risk 12',     amount: 'Rp 1.240.000', checked: true },
+  { name: 'Sofia Martins',       type: 'Claim',   category: 'Transport',    vendor: 'Uber',                age: '6 hrs',  check: 'Auto-approve fit · risk 7', amount: 'Rp 22.400',    checked: true },
+])
+
+// Clear the auto-approve queue (prototype "Approve all")
+function approveAll() { autoApprove.value = [] }
+
+// ─── Review drawer ───────────────────────────────────────────────────
+interface ReviewRow {
+  name: string; type: string; category: string; vendor: string
+  age: string; ai: string; amount: string
+  aiColor: 'warning' | 'success'
+}
+const reviewOpen = ref(false)
+const reviewRow = ref<ReviewRow | null>(null)
+function openReview(r: any, source: 'needs' | 'auto') {
+  reviewRow.value = {
+    name: r.name, type: r.type, category: r.category, vendor: r.vendor,
+    age: r.age, amount: r.amount,
+    ai: source === 'needs' ? r.risk : r.check,
+    aiColor: source === 'needs' ? 'warning' : 'success',
+  }
+  reviewOpen.value = true
+}
+function closeReview() { reviewOpen.value = false }
 
 // ─── To-do data ──────────────────────────────────────────────────────
 const yourTodos = [
@@ -183,6 +222,17 @@ const iconChip = css({
 })
 const notifMeta = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary', whiteSpace: 'nowrap' })
 const listLabel = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'text.secondary', letterSpacing: '0.04em' })
+
+// Review drawer detail rows
+const detailRow = css({
+  display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '4',
+  paddingBlock: '3',
+  borderBottom: '1px solid', borderBottomColor: 'border.default',
+})
+const detailLabel = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary', flexShrink: 0 })
+const detailValue = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default', textAlign: 'right' })
+const detailValueStrong = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default', textAlign: 'right' })
+const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary', paddingTop: '2' })
 </script>
 
 <template>
@@ -249,7 +299,7 @@ const listLabel = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBol
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(r, i) in needsAttention" :key="i">
+              <tr v-for="(r, i) in filteredNeeds" :key="i">
                 <td :class="td">
                   <span :class="cellName">
                     <MpAvatar :id="`na-${i}`" :name="r.name" size="sm" variant-color="gray" />
@@ -267,8 +317,11 @@ const listLabel = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBol
                 </td>
                 <td :class="td"><span :class="amountCell" style="display:block;">{{ r.amount }}</span></td>
                 <td :class="td" style="text-align:right;">
-                  <MpButton variant="secondary" size="sm">Review</MpButton>
+                  <MpButton variant="secondary" size="sm" @click="openReview(r, 'needs')">Review</MpButton>
                 </td>
+              </tr>
+              <tr v-if="filteredNeeds.length === 0">
+                <td :class="td" colspan="8" style="text-align:center; color:var(--mp-colors-text-secondary);">Nothing needs you — all clear.</td>
               </tr>
             </tbody>
           </table>
@@ -284,7 +337,7 @@ const listLabel = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBol
           </span>
           <span :class="sectionSub">in policy, clean receipts, low AI risk</span>
           <span :class="sectionRight">
-            <MpButton variant="primary" size="sm">Approve all · Rp 8.523.900</MpButton>
+            <MpButton v-if="autoApprove.length" variant="primary" size="sm" @click="approveAll">Approve all · Rp 8.523.900</MpButton>
           </span>
         </div>
 
@@ -305,7 +358,7 @@ const listLabel = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBol
             </thead>
             <tbody>
               <tr v-for="(r, i) in autoApprove" :key="i">
-                <td :class="td"><input type="checkbox" :class="checkbox" /></td>
+                <td :class="td"><input v-model="r.checked" type="checkbox" :class="checkbox" /></td>
                 <td :class="td">
                   <span :class="cellName">
                     <MpAvatar :id="`aa-${i}`" :name="r.name" size="sm" variant-color="gray" />
@@ -323,8 +376,11 @@ const listLabel = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBol
                 </td>
                 <td :class="td"><span :class="amountCell" style="display:block;">{{ r.amount }}</span></td>
                 <td :class="td" style="text-align:right;">
-                  <MpButton variant="secondary" size="sm">Review</MpButton>
+                  <MpButton variant="secondary" size="sm" @click="openReview(r, 'auto')">Review</MpButton>
                 </td>
+              </tr>
+              <tr v-if="autoApprove.length === 0">
+                <td :class="td" colspan="9" style="text-align:center; color:var(--mp-colors-text-secondary);">Nothing queued for auto-approve.</td>
               </tr>
             </tbody>
           </table>
@@ -366,6 +422,8 @@ const listLabel = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBol
         </div>
       </MpFlex>
 
+      <span :class="footNote">Outstanding age turns amber at 5 days, red at 14. Your to-dos you can finish directly; for others' you can only nudge.</span>
+
     </template>
 
     <!-- ══════════════════ NOTIFICATIONS ══════════════════ -->
@@ -406,4 +464,54 @@ const listLabel = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBol
     </template>
 
   </MpFlex>
+
+  <!-- ═════ Review request drawer ═════ -->
+  <MpDrawer
+    id="review-request-drawer"
+    :is-open="reviewOpen"
+    size="md"
+    placement="right"
+    is-block-scroll-on-mount
+    @close="closeReview"
+  >
+    <MpDrawerOverlay />
+    <MpDrawerContent>
+      <MpDrawerHeader>
+        <MpText weight="semiBold" style="font-size:16px; line-height:24px;">Review request</MpText>
+        <MpDrawerCloseButton />
+      </MpDrawerHeader>
+
+      <MpDrawerBody>
+        <MpFlex v-if="reviewRow" direction="column" gap="4" width="full">
+          <!-- Requester -->
+          <MpFlex align="center" gap="2.5">
+            <MpAvatar id="review-avatar" :name="reviewRow.name" size="md" variant-color="gray" />
+            <MpFlex direction="column" gap="0">
+              <span :class="nameText">{{ reviewRow.name }}</span>
+              <span :class="rowSub">{{ reviewRow.type }} · {{ reviewRow.category }}</span>
+            </MpFlex>
+          </MpFlex>
+
+          <!-- AI risk / check line -->
+          <MpBadge variant="subtle" :variant-color="reviewRow.aiColor === 'warning' ? 'orange' : 'green'">{{ reviewRow.ai }}</MpBadge>
+
+          <!-- Detail rows -->
+          <MpFlex direction="column" gap="0" width="full">
+            <div :class="detailRow"><span :class="detailLabel">Type</span><span :class="detailValue">{{ reviewRow.type }}</span></div>
+            <div :class="detailRow"><span :class="detailLabel">Category</span><span :class="detailValue">{{ reviewRow.category }}</span></div>
+            <div :class="detailRow"><span :class="detailLabel">Vendor</span><span :class="detailValue">{{ reviewRow.vendor }}</span></div>
+            <div :class="detailRow"><span :class="detailLabel">Age</span><span :class="detailValue">{{ reviewRow.age }}</span></div>
+            <div :class="detailRow"><span :class="detailLabel">Amount</span><span :class="detailValueStrong">{{ reviewRow.amount }}</span></div>
+          </MpFlex>
+        </MpFlex>
+      </MpDrawerBody>
+
+      <MpDrawerFooter>
+        <MpFlex justify="flex-end" gap="2" width="full">
+          <MpButton variant="ghost" @click="closeReview">Decline</MpButton>
+          <MpButton variant="primary" @click="closeReview">Approve</MpButton>
+        </MpFlex>
+      </MpDrawerFooter>
+    </MpDrawerContent>
+  </MpDrawer>
 </template>
