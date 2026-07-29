@@ -92,22 +92,25 @@ const configRows: ConfigRow[] = [
 const groups = ['Organization', 'Location', 'Category']
 const activeGroups = ['Category']
 
-const TAG_STYLE: Record<Tag, { bg: string; color: string }> = {
-  'FLAG':     { bg: 'var(--mp-colors-orange-100)',  color: 'var(--mp-colors-orange-700)' },
-  'HARD CAP': { bg: 'var(--mp-colors-violet-100)',  color: 'var(--mp-colors-violet-700)' },
-  'TRACK':    { bg: 'var(--mp-colors-blue-100)',    color: 'var(--mp-colors-blue-700)' },
-  'NOT SET':  { bg: 'var(--mp-colors-neutral-200)', color: 'var(--mp-colors-text-secondary)' },
+const TAG_CLASS: Record<Tag, string> = {
+  'FLAG':     css({ bg: 'background.warning',        color: 'text.warning' }),
+  'HARD CAP': css({ bg: 'background.highlight',      color: 'text.highlight' }),
+  'TRACK':    css({ bg: 'background.information',    color: 'text.information' }),
+  'NOT SET':  css({ bg: 'background.neutral.subtle', color: 'text.secondary' }),
 }
 
-function indentPad(level: number): string {
-  return `${8 + level * 22}px`
-}
+const indentClass: string[] = [
+  css({ paddingLeft: '8px' }),
+  css({ paddingLeft: '30px' }),
+  css({ paddingLeft: '52px' }),
+  css({ paddingLeft: '74px' }),
+]
 
 // ─── CSS ─────────────────────────────────────────────────────────────
 // Tabs (underline)
 const tabBar   = css({ display: 'flex', alignItems: 'center', gap: '5', borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default' })
 const tab      = css({ position: 'relative', paddingBlock: '2.5', fontFamily: 'body', fontSize: 'md', fontWeight: 'regular', color: 'text.secondary', cursor: 'pointer', bg: 'transparent', border: 'none', _hover: { color: 'text.default' } })
-const tabOn    = css({ position: 'relative', paddingBlock: '2.5', fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default', cursor: 'pointer', bg: 'transparent', border: 'none', _after: { content: '""', position: 'absolute', left: '0', right: '0', bottom: '-1px', height: '2px', bg: 'var(--mp-colors-indigo-600)' } })
+const tabOn    = css({ position: 'relative', paddingBlock: '2.5', fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default', cursor: 'pointer', bg: 'transparent', border: 'none', _after: { content: '""', position: 'absolute', left: '0', right: '0', bottom: '-1px', height: '2px', bg: 'background.brand.bold' } })
 
 // Period pills + group chips
 const pill     = css({ paddingInline: '3', paddingBlock: '1.5', borderRadius: 'full', fontFamily: 'body', fontSize: 'sm', fontWeight: 'regular', color: 'text.secondary', bg: 'transparent', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', _hover: { bg: 'background.neutral.subtle' } })
@@ -135,16 +138,14 @@ const tr      = css({ cursor: 'pointer', transition: 'background-color 120ms eas
 const caretCell = css({ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '16px', color: 'text.secondary', fontSize: 'xs', flexShrink: 0 })
 const nameWrap  = css({ display: 'inline-flex', alignItems: 'center', gap: '2', minWidth: 0 })
 const tagBadge  = css({ display: 'inline-flex', alignItems: 'center', paddingInline: '1.5', paddingBlock: '0.5', borderRadius: 'sm', fontFamily: 'body', fontSize: '2xs', fontWeight: 'semiBold', letterSpacing: '0.02em', whiteSpace: 'nowrap' })
-const flagNote  = css({ fontFamily: 'body', fontSize: 'sm', color: 'var(--mp-colors-orange-700)', whiteSpace: 'nowrap' })
+const flagNote  = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.warning', whiteSpace: 'nowrap' })
 
-const barTrack = css({ position: 'relative', width: '96px', height: '6px', borderRadius: 'full', background: 'var(--mp-colors-neutral-200)', overflow: 'hidden' })
+const barTrack = css({ position: 'relative', width: '96px', height: '6px', borderRadius: 'full', background: 'background.neutral.subtle', overflow: 'hidden' })
 const barFill  = css({ position: 'absolute', left: '0', top: '0', bottom: '0', borderRadius: 'full' })
+const barBrand = css({ background: 'background.brand.bold' })
+const barWarn  = css({ background: 'background.warning.bold' })
 const setLink  = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.link', cursor: 'pointer', _hover: { textDecoration: 'underline' } })
 const pctText  = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default' })
-
-function barColor(pct: number): string {
-  return pct >= 95 ? 'var(--mp-colors-orange-600)' : 'var(--mp-colors-indigo-600)'
-}
 
 // Footnote under the table
 const footnote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary', lineHeight: 'lg' })
@@ -166,7 +167,7 @@ const drawerFootnote = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.se
   </Teleport>
 
   <!-- ═════ Stage content ═════ -->
-  <MpFlex direction="column" gap="4" width="full" style="min-width:0;">
+  <MpFlex direction="column" gap="4" width="full" minWidth="0">
 
     <!-- 1) Tabs -->
     <div :class="tabBar">
@@ -178,8 +179,8 @@ const drawerFootnote = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.se
     <template v-if="activeTab === 'util'">
 
     <!-- 2) Period pills + org selector + period stepper -->
-    <MpFlex align="center" justify="space-between" gap="3" style="flex-wrap:wrap;">
-      <MpFlex align="center" gap="1" style="flex-wrap:wrap;">
+    <MpFlex align="center" justify="space-between" gap="3" wrap="wrap">
+      <MpFlex align="center" gap="1" wrap="wrap">
         <button
           v-for="p in periods"
           :key="p"
@@ -199,7 +200,7 @@ const drawerFootnote = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.se
     </MpFlex>
 
     <!-- 3) Group by -->
-    <MpFlex align="center" gap="2" style="flex-wrap:wrap;">
+    <MpFlex align="center" gap="2" wrap="wrap">
       <span :class="groupLabel">Group by</span>
       <button
         v-for="g in groups"
@@ -229,7 +230,7 @@ const drawerFootnote = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.se
           <tr v-for="row in rows" :key="row.key" :class="tr">
 
             <!-- NAME (indent + caret + tag + note) -->
-            <td :class="td" :style="{ paddingLeft: indentPad(row.level) }">
+            <td :class="[td, indentClass[row.level]]">
               <span :class="nameWrap">
                 <span :class="caretCell">{{ row.caret || '' }}</span>
                 <MpText
@@ -240,8 +241,7 @@ const drawerFootnote = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.se
                 >{{ row.name }}</MpText>
                 <span
                   v-if="row.tag"
-                  :class="tagBadge"
-                  :style="{ background: TAG_STYLE[row.tag].bg, color: TAG_STYLE[row.tag].color }"
+                  :class="[tagBadge, TAG_CLASS[row.tag]]"
                 >{{ row.tag }}</span>
                 <span v-if="row.note" :class="flagNote">{{ row.note }}</span>
               </span>
@@ -271,8 +271,8 @@ const drawerFootnote = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.se
             <td :class="td">
               <span v-if="row.pct !== null" :class="barTrack">
                 <span
-                  :class="barFill"
-                  :style="{ width: Math.min(row.pct, 100) + '%', background: barColor(row.pct) }"
+                  :class="[barFill, row.pct >= 95 ? barWarn : barBrand]"
+                  :style="{ width: Math.min(row.pct, 100) + '%' }"
                 />
               </span>
             </td>
@@ -313,7 +313,7 @@ const drawerFootnote = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.se
               <td :class="td"><MpText as="span" size="body" color="text.default">{{ b.category }}</MpText></td>
               <td :class="tdNum"><MpText as="span" size="body" color="text.default">{{ b.cap }}</MpText></td>
               <td :class="td">
-                <span :class="tagBadge" :style="{ background: TAG_STYLE[b.type].bg, color: TAG_STYLE[b.type].color }">{{ b.type }}</span>
+                <span :class="[tagBadge, TAG_CLASS[b.type]]">{{ b.type }}</span>
               </td>
             </tr>
           </tbody>
@@ -343,7 +343,7 @@ const drawerFootnote = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.se
       </MpDrawerHeader>
 
       <MpDrawerBody>
-        <MpFlex direction="column" gap="8" width="full" style="padding-bottom:24px;">
+        <MpFlex direction="column" gap="8" width="full" pb="6">
 
           <!-- 1 · WHO -->
           <MpFlex direction="column" gap="3">
@@ -369,7 +369,7 @@ const drawerFootnote = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.se
           <MpFlex direction="column" gap="3">
             <span :class="sectionNum">2 · PERIOD</span>
             <span :class="sectionDesc">Budgets with different periods coexist — e.g. a monthly cap and a yearly envelope for the same scope.</span>
-            <MpFlex align="center" gap="2" style="flex-wrap:wrap;">
+            <MpFlex align="center" gap="2" wrap="wrap">
               <button
                 v-for="p in bgdPeriods"
                 :key="p"
@@ -383,14 +383,14 @@ const drawerFootnote = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.se
           <MpFlex direction="column" gap="3">
             <span :class="sectionNum">3 · CATEGORY CAPS</span>
             <span :class="sectionDesc">Amount per period — pooled for the whole scope, or per person so it scales with headcount.</span>
-            <MpFlex align="center" gap="2" style="flex-wrap:wrap;">
+            <MpFlex align="center" gap="2" wrap="wrap">
               <button v-for="c in bgdCatChips" :key="c" type="button" :class="chipGhost">+ {{ c }}</button>
             </MpFlex>
             <span :class="drawerFootnote">Track = meter only · Flag = warn approvers · Hard cap = auto-reject over the cap · Per person = each employee gets their own allowance (e.g. an AI budget per engineer), and the envelope scales with headcount</span>
           </MpFlex>
 
           <!-- Footer -->
-          <MpFlex align="center" justify="flex-end" gap="3" style="padding-top:8px;">
+          <MpFlex align="center" justify="flex-end" gap="3" pt="2">
             <MpButton variant="ghost" @click="closeDrawer">Cancel</MpButton>
             <MpButton variant="primary" @click="closeDrawer">Save budget</MpButton>
           </MpFlex>

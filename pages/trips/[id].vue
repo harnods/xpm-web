@@ -7,7 +7,7 @@
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 -->
 <script setup lang="ts">
-import { MpFlex, MpText, MpButton, MpBadge, MpAvatar, css } from '@mekari/pixel3'
+import { MpFlex, MpText, MpButton, MpBadge, MpAvatar, css, token } from '@mekari/pixel3'
 
 definePageMeta({
   title: 'Trip bandung',
@@ -34,9 +34,9 @@ const transport = [
 const open = ref({ transport: true, accommodation: true, cashAdvance: true })
 
 const timeline = [
-  { title: 'Booking pending',                          dot: 'var(--mp-colors-icon-warning)', time: '' },
-  { title: 'Approved by XM punya 3 (BUATXM3)',         dot: 'var(--mp-colors-icon-success)', time: '15 Jul 2026, 15:54 (GMT+7)' },
-  { title: 'Requested by XM punya 3 (BUATXM3)',        dot: 'var(--mp-colors-icon-success)', time: '15 Jul 2026, 15:54 (GMT+7)' },
+  { title: 'Booking pending',                          dot: token.var('colors.icon.warning'), time: '' },
+  { title: 'Approved by XM punya 3 (BUATXM3)',         dot: token.var('colors.icon.success'), time: '15 Jul 2026, 15:54 (GMT+7)' },
+  { title: 'Requested by XM punya 3 (BUATXM3)',        dot: token.var('colors.icon.success'), time: '15 Jul 2026, 15:54 (GMT+7)' },
 ]
 
 // ─── CSS ─────────────────────────────────────────────────────────────
@@ -112,9 +112,16 @@ const reqSub  = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary
 const tlItem  = css({ display: 'flex', gap: '3', alignItems: 'flex-start' })
 const tlRail  = css({ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 })
 const tlDot   = css({ w: '10px', h: '10px', borderRadius: 'full', marginTop: '4px' })
-const tlLine  = css({ w: '1px', flex: '1 1 auto', minHeight: '18px', background: 'var(--mp-colors-border-default)' })
+const tlLine  = css({ w: '1px', flex: '1 1 auto', minHeight: '18px', background: 'border.default' })
 const tlTitle = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'text.default' })
 const tlTime  = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.secondary' })
+
+// Layout helpers (folded from former inline styles)
+const colGap2       = css({ display: 'flex', flexDirection: 'column', gap: '2px' })
+const col           = css({ display: 'flex', flexDirection: 'column' })
+const minW0         = css({ minWidth: 0 })
+const colGap2PadB   = css({ display: 'flex', flexDirection: 'column', gap: '2px', paddingBottom: '2' })
+const cardBodyPadTop = css({ paddingTop: '4' })
 </script>
 
 <template>
@@ -129,7 +136,7 @@ const tlTime  = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.secondary
   </Teleport>
 
   <!-- ═════ Stage content ═════ -->
-  <MpFlex direction="column" gap="4" width="full" style="min-width:0;">
+  <MpFlex direction="column" gap="4" width="full" min-width="0">
     <div :class="grid">
 
       <!-- ══════════ LEFT ══════════ -->
@@ -140,7 +147,7 @@ const tlTime  = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.secondary
           <div :class="cardHead"><span :class="cardHeadLabel">Trip information</span></div>
           <div :class="cardBody">
             <div :class="infoGrid">
-              <div v-for="f in tripInfo" :key="f.label" style="display:flex;flex-direction:column;gap:2px;">
+              <div v-for="f in tripInfo" :key="f.label" :class="colGap2">
                 <span :class="infoLabel">{{ f.label }}</span>
                 <span>
                   <span :class="infoValue">{{ f.value }}</span>
@@ -159,19 +166,19 @@ const tlTime  = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.secondary
           </button>
           <div v-show="open.transport" :class="cardBody">
             <div v-for="t in transport" :key="t.mode" :class="rowBlock">
-              <div style="min-width:0;">
+              <div :class="minW0">
                 <span :class="modeLabel">{{ t.mode }}</span>
                 <div :class="legGrid">
-                  <div style="display:flex;flex-direction:column;gap:2px;">
+                  <div :class="colGap2">
                     <span :class="legLabel">From</span><span :class="legValue">{{ t.from }}</span>
                   </div>
-                  <div style="display:flex;flex-direction:column;gap:2px;">
+                  <div :class="colGap2">
                     <span :class="legLabel">To</span><span :class="legValue">{{ t.to }}</span>
                   </div>
-                  <div style="display:flex;flex-direction:column;gap:2px;">
+                  <div :class="colGap2">
                     <span :class="legLabel">Departure</span><span :class="legValue">{{ t.departure }}</span>
                   </div>
-                  <div style="display:flex;flex-direction:column;gap:2px;">
+                  <div :class="colGap2">
                     <span :class="legLabel">Return</span><span :class="legValue">{{ t.ret }}</span>
                   </div>
                 </div>
@@ -192,16 +199,16 @@ const tlTime  = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.secondary
           </button>
           <div v-show="open.accommodation" :class="cardBody">
             <div :class="rowBlock">
-              <div style="min-width:0;">
+              <div :class="minW0">
                 <span :class="modeLabel">Kontrakan</span>
                 <div :class="legGrid">
-                  <div style="display:flex;flex-direction:column;gap:2px;">
+                  <div :class="colGap2">
                     <span :class="legLabel">Location</span><span :class="legValue">Bandung</span>
                   </div>
-                  <div style="display:flex;flex-direction:column;gap:2px;">
+                  <div :class="colGap2">
                     <span :class="legLabel">Check-in</span><span :class="legValue">15 Jul 2026</span>
                   </div>
-                  <div style="display:flex;flex-direction:column;gap:2px;">
+                  <div :class="colGap2">
                     <span :class="legLabel">Check-out</span><span :class="legValue">17 Jul 2026</span>
                   </div>
                 </div>
@@ -280,15 +287,15 @@ const tlTime  = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.secondary
 
         <!-- Requester -->
         <div :class="card">
-          <div :class="cardBody" style="padding-top:16px;">
+          <div :class="[cardBody, cardBodyPadTop]">
             <MpFlex align="center" gap="3">
               <MpAvatar id="av-requester" name="XM punya 3" size="md" variant-color="gray" />
-              <div style="display:flex;flex-direction:column;">
+              <div :class="col">
                 <span :class="reqName">XM punya 3</span>
                 <span :class="reqSub">BUATXM3</span>
               </div>
             </MpFlex>
-            <div style="display:flex;flex-direction:column;gap:2px;">
+            <div :class="colGap2">
               <span :class="reqSub">CEO — Board of Director (BOD) HQ</span>
               <span :class="reqSub">Pusat</span>
               <span :class="reqSub">prodtestingxpm@gmail.com</span>
@@ -306,7 +313,7 @@ const tlTime  = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.secondary
                 <span :class="tlDot" :style="{ background: item.dot }" />
                 <span v-if="i < timeline.length - 1" :class="tlLine" />
               </div>
-              <div style="display:flex;flex-direction:column;gap:2px;padding-bottom:8px;">
+              <div :class="colGap2PadB">
                 <span :class="tlTitle">{{ item.title }}</span>
                 <span v-if="item.time" :class="tlTime">{{ item.time }}</span>
               </div>

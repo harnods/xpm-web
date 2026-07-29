@@ -111,12 +111,12 @@ const cellBig   = css({ fontFamily: 'body', fontSize: '2xl', fontWeight: 'bold',
 const cellMed   = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default' })
 const cellSub   = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
 
-const progressWrap = css({ display: 'flex', alignItems: 'center', gap: '3' })
+const progressWrap = css({ display: 'flex', alignItems: 'center', gap: '3', px: '5', py: '4' })
 const progressTrack = css({
   flex: '1 1 auto', h: '8px', borderRadius: 'full', overflow: 'hidden',
-  background: 'var(--mp-colors-neutral-200)',
+  background: 'background.neutral.subtle',
 })
-const progressFill = css({ h: 'full', borderRadius: 'full', background: 'var(--mp-colors-indigo-600)', width: '60%' })
+const progressFill = css({ h: 'full', borderRadius: 'full', background: 'background.brand.bold', width: '60%' })
 const progressLabel = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary', whiteSpace: 'nowrap', flexShrink: 0 })
 
 const twoCol = css({ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: '4', alignItems: 'start' })
@@ -135,9 +135,9 @@ const chip = css({
 const chipActive = css({
   fontFamily: 'body', fontSize: 'sm', color: 'text.link', fontWeight: 'semiBold', cursor: 'pointer',
   paddingInline: '3', paddingBlock: '1.5', borderRadius: 'full',
-  borderWidth: '1px', borderStyle: 'solid', borderColor: 'var(--mp-colors-icon-brand)', background: 'background.brand',
+  borderWidth: '1px', borderStyle: 'solid', borderColor: 'border.brand', background: 'background.brand',
 })
-const chipDivider = css({ w: '1px', h: '20px', background: 'var(--mp-colors-neutral-200)', flexShrink: 0 })
+const chipDivider = css({ w: '1px', h: '20px', background: 'background.neutral.subtle', flexShrink: 0 })
 
 const actList = css({ display: 'flex', flexDirection: 'column' })
 const actRow = css({
@@ -145,20 +145,27 @@ const actRow = css({
   borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
   _last: { borderBottomWidth: '0' },
 })
+const actMeta  = css({ display: 'flex', flexDirection: 'column', gap: '0.5', minWidth: '0', flex: '1 1 auto' })
 const actTitle = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default' })
 const actSub   = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
-const actAmount = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', whiteSpace: 'nowrap', textAlign: 'right', flexShrink: 0 })
+const actAmount = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', whiteSpace: 'nowrap', textAlign: 'right', flexShrink: 0, width: '112px' })
+const actAmountPos = css({ color: 'text.success' })
+const actAmountNeg = css({ color: 'text.default' })
 
 // Card visual
 const cardVisual = css({
   borderRadius: 'lg', p: '4', aspectRatio: '1.6', color: 'white',
   display: 'flex', flexDirection: 'column',
+  // brand card art — gradient constant (not a single token; only allowed raw-hex)
+  backgroundImage: 'linear-gradient(135deg, #1D2656 0%, #4B61DC 100%)',
 })
 const cvTop = css({ display: 'flex', alignItems: 'center', justifyContent: 'space-between' })
+const cvSpacer = css({ flex: '1 1 auto' })
+const cvNumWrap = css({ display: 'flex', flexDirection: 'column', gap: '0.5' })
 const cvBrand = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'white' })
 const cvVisa  = css({ fontFamily: 'body', fontSize: 'lg', fontWeight: 'bold', fontStyle: 'italic', color: 'white', letterSpacing: '0.04em' })
 const cvName  = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'white' })
-const cvBottom = css({ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '3' })
+const cvBottom = css({ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '3', marginTop: '3' })
 const cvMuted = css({ fontFamily: 'body', fontSize: 'xs', color: 'rgba(255,255,255,0.72)' })
 const cvNumber = css({ fontFamily: 'body', fontSize: 'md', color: 'white', letterSpacing: '0.06em' })
 
@@ -201,13 +208,13 @@ const walletBalance = css({ fontFamily: 'body', fontSize: 'md', color: 'text.sec
   <Teleport to="#layout-header-actions">
     <MpFlex align="center" gap="2">
       <MpButton variant="secondary" size="md" @click="toggleFreeze">{{ isFrozen ? 'Unfreeze' : 'Freeze' }}</MpButton>
-      <MpButton variant="ghost" size="md" :style="{ color: 'var(--mp-colors-text-danger)' }" @click="deactivate">Deactivate</MpButton>
+      <MpButton variant="ghost" size="md" color="text.danger" @click="deactivate">Deactivate</MpButton>
       <MpButton variant="primary" size="md" @click="openTopUp">Top up balance</MpButton>
     </MpFlex>
   </Teleport>
 
   <!-- ═════ Stage content ═════ -->
-  <MpFlex direction="column" gap="4" width="full" style="min-width:0;">
+  <MpFlex direction="column" gap="4" width="full" min-width="0">
 
     <!-- ── Balance row + progress ── -->
     <div :class="card">
@@ -218,7 +225,7 @@ const walletBalance = css({ fontFamily: 'body', fontSize: 'md', color: 'text.sec
           <span v-if="c.sub" :class="cellSub">{{ c.sub }}</span>
         </div>
       </div>
-      <div :class="progressWrap" style="padding:16px 20px;">
+      <div :class="progressWrap">
         <span :class="progressTrack"><span :class="progressFill" /></span>
         <span :class="progressLabel">60% of loaded balance spent</span>
       </div>
@@ -239,7 +246,7 @@ const walletBalance = css({ fontFamily: 'body', fontSize: 'md', color: 'text.sec
             <span :class="chipDivider" />
             <button v-for="f in rangeFilters" :key="f" type="button" :class="f === rangeActive ? chipActive : chip">{{ f }}</button>
           </div>
-          <MpInputGroup style="width:200px;flex-shrink:0;">
+          <MpInputGroup width="200px" flex-shrink="0">
             <MpInputLeftAddon>
               <PxIcon name="search" :size="16" color="icon.default" />
             </MpInputLeftAddon>
@@ -249,15 +256,12 @@ const walletBalance = css({ fontFamily: 'body', fontSize: 'md', color: 'text.sec
 
         <div :class="actList">
           <div v-for="a in activity" :key="a.title + a.sub" :class="actRow">
-            <div style="display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 auto;">
+            <div :class="actMeta">
               <span :class="actTitle">{{ a.title }}</span>
               <span :class="actSub">{{ a.sub }}</span>
             </div>
             <MpBadge for="tableStatus" :type="a.badgeType">{{ a.badge }}</MpBadge>
-            <span
-              :class="actAmount"
-              :style="{ color: a.positive ? 'var(--mp-colors-icon-success)' : 'var(--mp-colors-text-default)', width: '112px' }"
-            >{{ a.amount }}</span>
+            <span :class="[actAmount, a.positive ? actAmountPos : actAmountNeg]">{{ a.amount }}</span>
           </div>
         </div>
       </div>
@@ -266,15 +270,15 @@ const walletBalance = css({ fontFamily: 'body', fontSize: 'md', color: 'text.sec
       <div :class="rightCol">
 
         <!-- VISA card visual -->
-        <div :class="cardVisual" style="background:linear-gradient(135deg, #1D2656 0%, #4B61DC 100%);">
+        <div :class="cardVisual">
           <div :class="cvTop">
             <span :class="cvBrand">mekari</span>
             <span :class="cvVisa">VISA</span>
           </div>
-          <div style="flex:1 1 auto;" />
+          <div :class="cvSpacer" />
           <span :class="cvName">Nabila MNC Test VCC</span>
-          <div :class="cvBottom" style="margin-top:12px;">
-            <div style="display:flex;flex-direction:column;gap:2px;">
+          <div :class="cvBottom">
+            <div :class="cvNumWrap">
               <span :class="cvMuted">Virtual card</span>
               <span :class="cvNumber">•••• 2104</span>
             </div>
@@ -306,7 +310,7 @@ const walletBalance = css({ fontFamily: 'body', fontSize: 'md', color: 'text.sec
     <MpDrawerOverlay />
     <MpDrawerContent>
       <MpDrawerHeader>
-        <MpText weight="semiBold" style="font-size:16px; line-height:24px;">Top up card balance</MpText>
+        <MpText weight="semiBold" font-size="16px" line-height="24px">Top up card balance</MpText>
         <MpDrawerCloseButton />
       </MpDrawerHeader>
 
@@ -340,7 +344,7 @@ const walletBalance = css({ fontFamily: 'body', fontSize: 'md', color: 'text.sec
           <!-- Top-up amount -->
           <MpFormControl id="topup-amount" isRequired>
             <MpFormLabel>Top-up amount</MpFormLabel>
-            <MpInputGroup style="width:100%;">
+            <MpInputGroup width="full">
               <MpInputLeftAddon has-background><MpText size="body" weight="semiBold">Rp</MpText></MpInputLeftAddon>
               <MpInput :modelValue="topUpAmount" placeholder="0" :isFullWidth="true"
                 @input="(e: Event) => (topUpAmount = formatThousands((e.target as HTMLInputElement).value))" />

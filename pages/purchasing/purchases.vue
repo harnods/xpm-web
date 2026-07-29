@@ -72,19 +72,19 @@ const activeRows = computed(() => DATASETS[activeTab.value])
 // On Request tab the 2nd column is the requester + department, not a vendor
 const primaryHeader = computed(() => (activeTab.value === 'Request' ? 'REQUESTER' : 'VENDOR'))
 
-const STATUS_COLOR: Record<Status, string> = {
-  'Overdue':           'var(--mp-colors-icon-danger)',
-  'Rejected':          'var(--mp-colors-icon-danger)',
-  'Paid':              'var(--mp-colors-icon-success)',
-  'Received':          'var(--mp-colors-icon-success)',
-  'Accepted':          'var(--mp-colors-icon-success)',
-  'Approved':          'var(--mp-colors-icon-success)',
-  'Sent':              'var(--mp-colors-blue-600)',
-  'Draft':             'var(--mp-colors-icon-subtle)',
-  'Comparing':         'var(--mp-colors-icon-warning)',
-  'Awaiting payment':  'var(--mp-colors-icon-warning)',
-  'Awaiting review':   'var(--mp-colors-icon-warning)',
-  'Awaiting approval': 'var(--mp-colors-icon-warning)',
+const STATUS_DOT_CLASS: Record<Status, string> = {
+  'Overdue':           css({ background: 'icon.danger' }),
+  'Rejected':          css({ background: 'icon.danger' }),
+  'Paid':              css({ background: 'icon.success' }),
+  'Received':          css({ background: 'icon.success' }),
+  'Accepted':          css({ background: 'icon.success' }),
+  'Approved':          css({ background: 'icon.success' }),
+  'Sent':              css({ background: 'icon.information' }),
+  'Draft':             css({ background: 'icon.default' }),
+  'Comparing':         css({ background: 'icon.warning' }),
+  'Awaiting payment':  css({ background: 'icon.warning' }),
+  'Awaiting review':   css({ background: 'icon.warning' }),
+  'Awaiting approval': css({ background: 'icon.warning' }),
 }
 
 function isDanger(s: Status) {
@@ -203,7 +203,7 @@ const pillActive = css({
   </Teleport>
 
   <!-- ═════ Stage content ═════ -->
-  <MpFlex direction="column" gap="4" width="full" style="min-width:0;">
+  <MpFlex direction="column" gap="4" width="full" min-width="0">
 
     <!-- Tabs -->
     <div :class="tabBar">
@@ -217,15 +217,15 @@ const pillActive = css({
     </div>
 
     <!-- Toolbar -->
-    <MpFlex align="center" justify="space-between" gap="3" style="flex-wrap:wrap;">
-      <MpFlex align="center" gap="2" style="flex-wrap:wrap;">
+    <MpFlex align="center" justify="space-between" gap="3" wrap="wrap">
+      <MpFlex align="center" gap="2" wrap="wrap">
         <MpButton variant="secondary" size="sm" right-icon="caret-down">All status</MpButton>
         <MpButton variant="secondary" size="sm" right-icon="caret-down">All accounts</MpButton>
         <MpButton variant="secondary" size="sm" right-icon="caret-down">This month</MpButton>
         <MpButton variant="secondary" size="sm" left-icon="filter" @click="filtersOpen = true">Filters</MpButton>
       </MpFlex>
 
-      <MpFlex align="center" gap="2" style="flex-wrap:wrap;">
+      <MpFlex align="center" gap="2" wrap="wrap">
         <MpButton variant="secondary" size="sm" right-icon="caret-down">Sort: Oldest first</MpButton>
         <MpButton variant="secondary" size="sm">Export</MpButton>
         <label :class="searchWrap">
@@ -245,9 +245,9 @@ const pillActive = css({
             <th :class="th">DATE</th>
             <th :class="th">DUE · VALID</th>
             <th :class="th">STATUS</th>
-            <th :class="th" style="width:24px;"></th>
-            <th :class="th" style="text-align:right;">TOTAL</th>
-            <th :class="th" style="width:44px;"></th>
+            <th :class="[th, css({ width: '24px' })]"></th>
+            <th :class="[th, css({ textAlign: 'right' })]">TOTAL</th>
+            <th :class="[th, css({ width: '44px' })]"></th>
           </tr>
         </thead>
         <tbody>
@@ -261,15 +261,15 @@ const pillActive = css({
             <td :class="td"><span :class="muted">{{ r.due }}</span></td>
             <td :class="td">
               <span :class="statusWrap">
-                <span :class="dot" :style="{ background: STATUS_COLOR[r.status] }" />
+                <span :class="[dot, STATUS_DOT_CLASS[r.status]]" />
                 <span :class="isDanger(r.status) ? statusTextBold : statusText">{{ r.status }}</span>
               </span>
             </td>
-            <td :class="td" style="text-align:center;">
+            <td :class="[td, css({ textAlign: 'center' })]">
               <PxIcon v-if="hasWarn(r.status)" name="warning-triangle" :size="16" color="icon.warning" />
             </td>
-            <td :class="td" style="text-align:right;"><span :class="totalText">{{ r.total }}</span></td>
-            <td :class="td" style="text-align:right;">
+            <td :class="[td, css({ textAlign: 'right' })]"><span :class="totalText">{{ r.total }}</span></td>
+            <td :class="[td, css({ textAlign: 'right' })]">
               <MpButton variant="ghost" size="sm" left-icon="menu-meatball" aria-label="More" />
             </td>
           </tr>
@@ -331,7 +331,7 @@ const pillActive = css({
 
       <MpDrawerFooter>
         <MpFlex align="center" justify="space-between" width="full">
-          <MpTextlink size="body" style="cursor:pointer;" @click="resetFilters">Reset filter</MpTextlink>
+          <MpTextlink size="body" cursor="pointer" @click="resetFilters">Reset filter</MpTextlink>
           <MpFlex align="center" gap="2">
             <MpButton variant="ghost" @click="filtersOpen = false">Cancel</MpButton>
             <MpButton variant="primary" @click="filtersOpen = false">Apply</MpButton>
@@ -370,11 +370,11 @@ const pillActive = css({
           </MpFormControl>
 
           <MpFlex gap="4" width="full">
-            <MpFormControl id="np-date" isRequired style="flex:1 1 0;">
+            <MpFormControl id="np-date" isRequired flex="1 1 0">
               <MpFormLabel>Date</MpFormLabel>
               <MpInput id="np-date-input" v-model="form.date" type="date" :is-full-width="true" />
             </MpFormControl>
-            <MpFormControl id="np-due" style="flex:1 1 0;">
+            <MpFormControl id="np-due" flex="1 1 0">
               <MpFormLabel>Due date</MpFormLabel>
               <MpInput id="np-due-input" v-model="form.due" type="date" :is-full-width="true" />
             </MpFormControl>

@@ -56,12 +56,12 @@ const rows: ClaimRow[] = [
 ]
 
 // ─── Status → dot color ─────────────────────────────────────────────
-const STATUS_DOT: Record<ClaimStatus, string> = {
-  'Settled':           'var(--mp-colors-icon-success)',
-  'Disbursed':         'var(--mp-colors-icon-success)',
-  'Declined':          'var(--mp-colors-icon-danger)',
-  'Awaiting disburse': 'var(--mp-colors-blue-600)',
-  'Awaiting approval': 'var(--mp-colors-icon-warning)',
+const STATUS_DOT_CLASS: Record<ClaimStatus, string> = {
+  'Settled':           css({ background: 'icon.success' }),
+  'Disbursed':         css({ background: 'icon.success' }),
+  'Declined':          css({ background: 'icon.danger' }),
+  'Awaiting disburse': css({ background: 'icon.information' }),
+  'Awaiting approval': css({ background: 'icon.warning' }),
 }
 
 // ─── Interactivity: state ───────────────────────────────────────────
@@ -154,8 +154,8 @@ const pill = css({
   borderWidth: '1px', borderStyle: 'solid', cursor: 'pointer',
   whiteSpace: 'nowrap', background: 'transparent',
 })
-const pillOff = { borderColor: 'var(--mp-colors-border-default)', color: 'var(--mp-colors-text-default)' }
-const pillOn  = { borderColor: 'var(--mp-colors-border-focused)', color: 'var(--mp-colors-text-link)', background: 'var(--mp-colors-background-selected-subtle, #EEF0FF)' }
+const pillOff = css({ borderColor: 'border.default', color: 'text.default' })
+const pillOn  = css({ borderColor: 'border.focused', color: 'text.link', background: 'background.brand.selected' })
 
 // Policy caps list
 const capRow = css({
@@ -178,13 +178,13 @@ const policyInput = css({
   </Teleport>
 
   <!-- ═════ Stage content ═════ -->
-  <MpFlex direction="column" gap="4" width="full" style="min-width:0;">
+  <MpFlex direction="column" gap="4" width="full" min-width="0">
 
     <!-- ═════ Toolbar ═════ -->
-    <MpFlex align="center" justify="space-between" gap="3" style="flex-wrap:wrap;">
+    <MpFlex align="center" justify="space-between" gap="3" wrap="wrap">
 
       <!-- Left -->
-      <MpFlex align="center" gap="2" style="flex-wrap:wrap;">
+      <MpFlex align="center" gap="2" wrap="wrap">
         <MpButton variant="secondary" size="sm" right-icon="caret-down">Jul 2026</MpButton>
 
         <!-- Working status filter -->
@@ -212,7 +212,7 @@ const policyInput = css({
       </MpFlex>
 
       <!-- Right -->
-      <MpFlex align="center" gap="2" style="flex-wrap:wrap;">
+      <MpFlex align="center" gap="2" wrap="wrap">
         <MpButton variant="secondary" size="sm" right-icon="caret-down">Sort: Oldest first</MpButton>
         <MpButton variant="secondary" size="sm" left-icon="download">Export</MpButton>
         <label :class="searchWrap">
@@ -233,46 +233,46 @@ const policyInput = css({
             <th :class="th">Claim type</th>
             <th :class="th">Claim category</th>
             <th :class="th">Status</th>
-            <th :class="th" style="width:32px;"></th>
-            <th :class="th" style="text-align:right;">Amount</th>
+            <th :class="[th, css({ width: '32px' })]"></th>
+            <th :class="[th, css({ textAlign: 'right' })]">Amount</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="row in filteredRows" :key="row.id">
             <!-- Transaction ID -->
-            <td :class="td" style="white-space:nowrap;">
+            <td :class="[td, css({ whiteSpace: 'nowrap' })]">
               <a href="#" :class="link">{{ row.id }}</a>
             </td>
 
             <!-- Request date -->
-            <td :class="td" style="white-space:nowrap;">{{ row.date }}</td>
+            <td :class="[td, css({ whiteSpace: 'nowrap' })]">{{ row.date }}</td>
 
             <!-- Claim type -->
-            <td :class="td" style="white-space:nowrap;">{{ row.type }}</td>
+            <td :class="[td, css({ whiteSpace: 'nowrap' })]">{{ row.type }}</td>
 
             <!-- Claim category -->
             <td :class="td">
-              <div style="display:flex;flex-direction:column;gap:2px;">
+              <div :class="css({ display: 'flex', flexDirection: 'column', gap: '2px' })">
                 <span :class="catMain">{{ row.category }}</span>
                 <span :class="catSub">{{ row.categorySub }}</span>
               </div>
             </td>
 
             <!-- Status -->
-            <td :class="td" style="white-space:nowrap;">
-              <span style="display:inline-flex;align-items:center;gap:8px;">
-                <span :class="dot" :style="{ background: STATUS_DOT[row.status] }" />
+            <td :class="[td, css({ whiteSpace: 'nowrap' })]">
+              <span :class="css({ display: 'inline-flex', alignItems: 'center', gap: '8px' })">
+                <span :class="[dot, STATUS_DOT_CLASS[row.status]]" />
                 <span :class="statusText">{{ row.status }}</span>
               </span>
             </td>
 
             <!-- Warning flag -->
-            <td :class="td" style="text-align:center;width:32px;">
+            <td :class="[td, css({ textAlign: 'center', width: '32px' })]">
               <PxIcon v-if="row.flagged" name="warning-triangle" :size="16" color="icon.warning" />
             </td>
 
             <!-- Amount -->
-            <td :class="td" style="text-align:right;">
+            <td :class="[td, css({ textAlign: 'right' })]">
               <span :class="amount">{{ row.amount }}</span>
             </td>
           </tr>
@@ -296,7 +296,7 @@ const policyInput = css({
     <MpDrawerOverlay />
     <MpDrawerContent>
       <MpDrawerHeader>
-        <MpText weight="semiBold" style="font-size:16px; line-height:24px;">All filters</MpText>
+        <MpText weight="semiBold" font-size="16px" line-height="24px">All filters</MpText>
         <MpDrawerCloseButton />
       </MpDrawerHeader>
 
@@ -306,12 +306,11 @@ const policyInput = css({
           <!-- Claim type -->
           <MpFlex direction="column" gap="2">
             <span :class="fieldLabel">Claim type</span>
-            <MpFlex align="center" gap="2" style="flex-wrap:wrap;">
+            <MpFlex align="center" gap="2" wrap="wrap">
               <button
                 v-for="t in ['Reimbursement', 'Cash advance']"
                 :key="t"
-                :class="pill"
-                :style="fClaimType === t ? pillOn : pillOff"
+                :class="[pill, fClaimType === t ? pillOn : pillOff]"
                 @click="fClaimType = fClaimType === t ? null : t"
               >{{ t }}</button>
             </MpFlex>
@@ -320,12 +319,11 @@ const policyInput = css({
           <!-- Status -->
           <MpFlex direction="column" gap="2">
             <span :class="fieldLabel">Status</span>
-            <MpFlex align="center" gap="2" style="flex-wrap:wrap;">
+            <MpFlex align="center" gap="2" wrap="wrap">
               <button
                 v-for="s in STATUS_OPTIONS"
                 :key="s"
-                :class="pill"
-                :style="fStatus === s ? pillOn : pillOff"
+                :class="[pill, fStatus === s ? pillOn : pillOff]"
                 @click="fStatus = fStatus === s ? null : s"
               >{{ s }}</button>
             </MpFlex>
@@ -334,12 +332,11 @@ const policyInput = css({
           <!-- Period -->
           <MpFlex direction="column" gap="2">
             <span :class="sectionLabel">Period</span>
-            <MpFlex align="center" gap="2" style="flex-wrap:wrap;">
+            <MpFlex align="center" gap="2" wrap="wrap">
               <button
                 v-for="p in ['This month', 'Last month', 'Last 90 days', 'This year', 'Custom']"
                 :key="p"
-                :class="pill"
-                :style="fPeriod === p ? pillOn : pillOff"
+                :class="[pill, fPeriod === p ? pillOn : pillOff]"
                 @click="fPeriod = fPeriod === p ? null : p"
               >{{ p }}</button>
             </MpFlex>
@@ -350,7 +347,7 @@ const policyInput = css({
 
       <MpDrawerFooter>
         <MpFlex align="center" justify="space-between" width="full">
-          <MpTextlink size="body" style="cursor:pointer;" @click="resetFilters">Reset filter</MpTextlink>
+          <MpTextlink size="body" cursor="pointer" @click="resetFilters">Reset filter</MpTextlink>
           <MpFlex gap="2">
             <MpButton variant="ghost" @click="filtersOpen = false">Cancel</MpButton>
             <MpButton variant="primary" @click="filtersOpen = false">Apply</MpButton>
@@ -365,7 +362,7 @@ const policyInput = css({
     <MpDrawerOverlay />
     <MpDrawerContent>
       <MpDrawerHeader>
-        <MpText weight="semiBold" style="font-size:16px; line-height:24px;">Claim policy</MpText>
+        <MpText weight="semiBold" font-size="16px" line-height="24px">Claim policy</MpText>
         <MpDrawerCloseButton />
       </MpDrawerHeader>
 
@@ -385,7 +382,7 @@ const policyInput = css({
 
           <!-- Receipt required -->
           <MpFlex align="center" justify="space-between" gap="4">
-            <MpFlex direction="column" gap="0.5" style="min-width:0;">
+            <MpFlex direction="column" gap="0.5" min-width="0">
               <span :class="fieldLabel">Receipt required</span>
               <span :class="helpText">Claims must include an attached receipt.</span>
             </MpFlex>
@@ -394,7 +391,7 @@ const policyInput = css({
 
           <!-- Auto-approve threshold -->
           <MpFlex align="center" justify="space-between" gap="4">
-            <MpFlex direction="column" gap="0.5" style="min-width:0;">
+            <MpFlex direction="column" gap="0.5" min-width="0">
               <span :class="fieldLabel">Auto-approve threshold</span>
               <span :class="helpText">Claims below this amount skip approval.</span>
             </MpFlex>

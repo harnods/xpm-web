@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MpFlex, MpText, MpIcon, css, cx, token } from '@mekari/pixel3'
+import { MpFlex, MpText, MpIcon, css, cx } from '@mekari/pixel3'
 
 interface NavChild { label: string; path: string }
 interface NavGroup { title: string; children: NavChild[] }
@@ -91,15 +91,6 @@ const onKeydown = (e: KeyboardEvent) => {
 onMounted(() => window.addEventListener('keydown', onKeydown))
 onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 
-const panelStyle = computed(() => ({
-  width: isPanelCollapsed.value ? '16px' : '240px',
-  marginRight: isPanelCollapsed.value ? '16px' : '8px',
-  borderColor: isPanelCollapsed.value ? token.var('colors.border.default') : 'transparent',
-  boxShadow: isPanelCollapsed.value
-    ? '6px 0 15px -3px rgba(0, 0, 0, 0.10) inset, 4px 0 6px -2px rgba(0, 0, 0, 0.05) inset'
-    : 'none',
-}))
-
 /* ---------- styles ---------- */
 const rootFull = css({ display: 'flex', flexDirection: 'column', w: '216px', h: '100%', flexShrink: 0 })
 const rootRailOrSubmenu = css({ display: 'flex', flexDirection: 'row', h: '100%', flexShrink: 0, position: 'relative' })
@@ -118,10 +109,19 @@ const panelBase = css({
   transitionProperty: 'width, margin-right, border-color, box-shadow',
   transitionDuration: '200ms', transitionTimingFunction: 'ease',
 })
+const panelCollapsed = css({
+  width: '16px', marginRight: '16px', borderColor: 'border.default',
+  boxShadow: '6px 0 15px -3px rgba(0, 0, 0, 0.10) inset, 4px 0 6px -2px rgba(0, 0, 0, 0.05) inset',
+})
+const panelExpanded = css({
+  width: '240px', marginRight: '8px', borderColor: 'transparent', boxShadow: 'none',
+})
 const panelInner = css({
   display: 'flex', flexDirection: 'column', w: '240px', h: '100%', flexShrink: 0,
   transition: 'opacity 150ms ease',
 })
+const panelInnerHidden = css({ opacity: 0, pointerEvents: 'none' })
+const panelInnerShown = css({ opacity: 1, pointerEvents: 'auto' })
 
 const halfCircleExpand = css({
   position: 'absolute', bottom: '5', left: '72px', zIndex: 30,
@@ -134,11 +134,18 @@ const halfCircleExpand = css({
   transition: 'opacity 150ms ease',
   _hover: { bg: 'background.neutral.hovered' },
 })
+const halfCircleVisible = css({ opacity: 1, pointerEvents: 'auto' })
+const halfCircleHidden = css({ opacity: 0, pointerEvents: 'none' })
 
 const navGroup = css({
   display: 'flex', flexDirection: 'column', gap: '0.5', py: '2', px: '2',
 })
+const navGroupFirst = css({
+  display: 'flex', flexDirection: 'column', gap: '0.5', pt: '4', pb: '2', px: '2',
+})
 const groupDivider = css({ marginInline: '3', height: '1px', background: 'border.default' })
+const railDivider = css({ marginInline: '3', height: '1px', background: 'border.default', width: '40px' })
+const submenuDivider = css({ height: '1px', background: 'border.default', margin: '1' })
 
 const itemBase = {
   display: 'flex', alignItems: 'center', gap: '2', w: 'full', height: '36px', px: '3',
@@ -153,6 +160,9 @@ const itemLabel = css({ flex: '1 1 auto', overflow: 'hidden', textOverflow: 'ell
 
 const railGroup = css({
   display: 'flex', flexDirection: 'column', gap: '0.5', py: '2', w: 'full',
+})
+const railGroupFirst = css({
+  display: 'flex', flexDirection: 'column', gap: '0.5', pt: '4', pb: '2', w: 'full',
 })
 const railBase = {
   display: 'flex', alignItems: 'center', justifyContent: 'flex-start', w: 'full', h: '36px', pl: '4',
@@ -196,7 +206,7 @@ const itemClassRail = (item: NavItem) => cx(isItemActive(item) ? railActive : ra
       <MpFlex as="nav" direction="column" flex="1" overflowY="auto" overflowX="hidden" minHeight="0" aria-label="Main">
         <template v-for="(group, gi) in allGroups" :key="gi">
           <div v-if="gi > 0" :class="groupDivider" />
-          <div :class="navGroup" :style="gi === 0 ? { paddingTop: '16px' } : {}">
+          <div :class="gi === 0 ? navGroupFirst : navGroup">
             <NuxtLink
               v-for="item in group"
               :key="item.label"
@@ -228,8 +238,8 @@ const itemClassRail = (item: NavItem) => cx(isItemActive(item) ? railActive : ra
       <div :class="mode === 'submenu' ? railBoxSubmenu : railBoxOnly">
         <MpFlex direction="column" flex="1" paddingInline="1" overflowY="auto" overflowX="hidden" minHeight="0">
           <template v-for="(group, gi) in allGroups" :key="gi">
-            <div v-if="gi > 0" :class="groupDivider" style="width: 40px" />
-            <div :class="railGroup" :style="gi === 0 ? { paddingTop: '16px' } : {}">
+            <div v-if="gi > 0" :class="railDivider" />
+            <div :class="gi === 0 ? railGroupFirst : railGroup">
               <NuxtLink
                 v-for="item in group"
                 :key="item.label"
@@ -255,13 +265,13 @@ const itemClassRail = (item: NavItem) => cx(isItemActive(item) ? railActive : ra
         </MpFlex>
       </div>
 
-      <div v-if="mode === 'submenu'" :class="panelBase" :style="panelStyle">
-        <div :class="panelInner" :style="{ opacity: isPanelCollapsed ? 0 : 1, pointerEvents: isPanelCollapsed ? 'none' : 'auto' }">
+      <div v-if="mode === 'submenu'" :class="cx(panelBase, isPanelCollapsed ? panelCollapsed : panelExpanded)">
+        <div :class="cx(panelInner, isPanelCollapsed ? panelInnerHidden : panelInnerShown)">
           <MpFlex direction="column" gap="0.5" flex="1" paddingInline="2" overflowY="auto" minHeight="0">
             <div v-if="!activeParent?.groups" :class="sectionTitle">{{ activeParent?.label }}</div>
             <template v-if="activeParent?.groups">
               <template v-for="(group, gi) in activeParent.groups" :key="group.title">
-                <div v-if="gi > 0" style="height:1px;background:var(--mp-colors-gray-100);margin:4px 4px;" />
+                <div v-if="gi > 0" :class="submenuDivider" />
                 <div :class="sectionTitle">{{ group.title }}</div>
                 <NuxtLink
                   v-for="child in group.children"
@@ -297,8 +307,7 @@ const itemClassRail = (item: NavItem) => cx(isItemActive(item) ? railActive : ra
       <button
         v-if="mode === 'submenu'"
         type="button"
-        :class="halfCircleExpand"
-        :style="{ opacity: isPanelCollapsed ? 1 : 0, pointerEvents: isPanelCollapsed ? 'auto' : 'none' }"
+        :class="cx(halfCircleExpand, isPanelCollapsed ? halfCircleVisible : halfCircleHidden)"
         aria-label="Expand submenu"
         @click="isPanelCollapsed = false"
       >

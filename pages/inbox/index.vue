@@ -124,7 +124,7 @@ const tabBtn = css({
 })
 const tabActive = css({
   color: 'text.default', fontWeight: 'semiBold',
-  borderBottomColor: 'var(--mp-colors-indigo-500)',
+  borderBottomColor: 'border.brand',
 })
 const tabInactive = css({
   color: 'text.secondary',
@@ -198,7 +198,7 @@ const nameText = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold
 const secondaryText = css({ fontFamily: 'body', fontSize: 'md', color: 'text.secondary' })
 const riskCell = css({ display: 'inline-flex', alignItems: 'center', gap: '2', fontFamily: 'body', fontSize: 'md', color: 'text.secondary' })
 const amountCell = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default', textAlign: 'right', whiteSpace: 'nowrap' })
-const checkbox = css({ w: '16px', h: '16px', cursor: 'pointer', accentColor: 'var(--mp-colors-indigo-500)' })
+const checkbox = css({ w: '16px', h: '16px', cursor: 'pointer', accentColor: 'background.brand.bold' })
 
 // List rows (to-do / notifications)
 const card = css({
@@ -238,7 +238,7 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
 <template>
   <!-- ═════ Tabs strip (into layout title bar area) ═════ -->
   <Teleport to="#layout-tabs">
-    <MpFlex gap="6" paddingInline="6" style="line-height: normal;">
+    <MpFlex gap="6" paddingInline="6" lineHeight="normal">
       <button
         v-for="t in TABS" :key="t.key"
         :class="[tabBtn, activeTab === t.key ? tabActive : tabInactive]"
@@ -251,14 +251,14 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
   </Teleport>
 
   <!-- ═════ Stage content ═════ -->
-  <MpFlex direction="column" gap="4" width="full" style="min-width:0;">
+  <MpFlex direction="column" gap="4" width="full" minWidth="0">
 
     <!-- ══════════════════ APPROVALS ══════════════════ -->
     <template v-if="activeTab === 'approvals'">
 
       <!-- Filter chips + search -->
-      <MpFlex align="center" justify="space-between" gap="3" style="flex-wrap:wrap;">
-        <MpFlex align="center" gap="2" style="flex-wrap:wrap;">
+      <MpFlex align="center" justify="space-between" gap="3" wrap="wrap">
+        <MpFlex align="center" gap="2" wrap="wrap">
           <button
             v-for="c in CHIPS" :key="c"
             :class="[chipBase, activeChip === c ? chipActive : chipGhost]"
@@ -277,7 +277,7 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
         <div :class="[sectionHead, css({ paddingInline: '4', paddingTop: '4', paddingBottom: '3' })]">
           <span :class="sectionTitle">Needs your attention</span>
           <span :class="sectionPill">
-            <span :class="dot" :style="{ background: 'var(--mp-colors-icon-warning)' }" />8
+            <span :class="[dot, css({ background: 'icon.warning' })]" />8
           </span>
           <span :class="sectionRight">
             <span :class="sectionSub">Rp 9.773.990 waiting · flagged by policy or AI</span>
@@ -294,7 +294,7 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
                 <th :class="th">Vendor</th>
                 <th :class="th">Age</th>
                 <th :class="th">AI risk</th>
-                <th :class="th" style="text-align:right;">Amount</th>
+                <th :class="[th, css({ textAlign: 'right' })]">Amount</th>
                 <th :class="th"></th>
               </tr>
             </thead>
@@ -312,16 +312,16 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
                 <td :class="td"><span :class="secondaryText">{{ r.age }}</span></td>
                 <td :class="td">
                   <span :class="riskCell">
-                    <span :class="dot" :style="{ background: 'var(--mp-colors-icon-warning)' }" />{{ r.risk }}
+                    <span :class="[dot, css({ background: 'icon.warning' })]" />{{ r.risk }}
                   </span>
                 </td>
-                <td :class="td"><span :class="amountCell" style="display:block;">{{ r.amount }}</span></td>
-                <td :class="td" style="text-align:right;">
+                <td :class="td"><span :class="[amountCell, css({ display: 'block' })]">{{ r.amount }}</span></td>
+                <td :class="[td, css({ textAlign: 'right' })]">
                   <MpButton variant="secondary" size="sm" @click="openReview(r, 'needs')">Review</MpButton>
                 </td>
               </tr>
               <tr v-if="filteredNeeds.length === 0">
-                <td :class="td" colspan="8" style="text-align:center; color:var(--mp-colors-text-secondary);">Nothing needs you — all clear.</td>
+                <td :class="[td, css({ textAlign: 'center', color: 'text.secondary' })]" colspan="8">Nothing needs you — all clear.</td>
               </tr>
             </tbody>
           </table>
@@ -333,11 +333,12 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
         <div :class="css({ display: 'flex', alignItems: 'center', gap: '2', flexWrap: 'wrap', paddingInline: '4', paddingTop: '4', paddingBottom: '3' })">
           <span :class="sectionTitle">Recommended to auto-approve</span>
           <span :class="sectionPill">
-            <span :class="dot" :style="{ background: 'var(--mp-colors-icon-success)' }" />7
+            <span :class="[dot, css({ background: 'icon.success' })]" />7
           </span>
           <span :class="sectionSub">in policy, clean receipts, low AI risk</span>
-          <span :class="sectionRight">
-            <MpButton v-if="autoApprove.length" variant="primary" size="sm" @click="approveAll">Approve all · Rp 8.523.900</MpButton>
+          <span :class="[sectionRight, css({ display: 'inline-flex', alignItems: 'center', gap: '2' })]">
+            <span v-if="autoApprove.length" :class="sectionSub">Rp 8.523.900</span>
+            <MpButton v-if="autoApprove.length" variant="primary" size="sm" @click="approveAll">Approve all</MpButton>
           </span>
         </div>
 
@@ -345,14 +346,14 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
           <table :class="tbl">
             <thead>
               <tr>
-                <th :class="th" style="width:36px;"></th>
+                <th :class="[th, css({ width: '36px' })]"></th>
                 <th :class="th">Requester</th>
                 <th :class="th">Type</th>
                 <th :class="th">Category</th>
                 <th :class="th">Vendor</th>
                 <th :class="th">Age</th>
                 <th :class="th">AI check</th>
-                <th :class="th" style="text-align:right;">Amount</th>
+                <th :class="[th, css({ textAlign: 'right' })]">Amount</th>
                 <th :class="th"></th>
               </tr>
             </thead>
@@ -371,16 +372,16 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
                 <td :class="td"><span :class="secondaryText">{{ r.age }}</span></td>
                 <td :class="td">
                   <span :class="riskCell">
-                    <span :class="dot" :style="{ background: 'var(--mp-colors-icon-success)' }" />{{ r.check }}
+                    <span :class="[dot, css({ background: 'icon.success' })]" />{{ r.check }}
                   </span>
                 </td>
-                <td :class="td"><span :class="amountCell" style="display:block;">{{ r.amount }}</span></td>
-                <td :class="td" style="text-align:right;">
+                <td :class="td"><span :class="[amountCell, css({ display: 'block' })]">{{ r.amount }}</span></td>
+                <td :class="[td, css({ textAlign: 'right' })]">
                   <MpButton variant="secondary" size="sm" @click="openReview(r, 'auto')">Review</MpButton>
                 </td>
               </tr>
               <tr v-if="autoApprove.length === 0">
-                <td :class="td" colspan="9" style="text-align:center; color:var(--mp-colors-text-secondary);">Nothing queued for auto-approve.</td>
+                <td :class="[td, css({ textAlign: 'center', color: 'text.secondary' })]" colspan="9">Nothing queued for auto-approve.</td>
               </tr>
             </tbody>
           </table>
@@ -477,7 +478,7 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
     <MpDrawerOverlay />
     <MpDrawerContent>
       <MpDrawerHeader>
-        <MpText weight="semiBold" style="font-size:16px; line-height:24px;">Review request</MpText>
+        <MpText weight="semiBold" :class="css({ fontSize: 'lg', lineHeight: 'xl' })">Review request</MpText>
         <MpDrawerCloseButton />
       </MpDrawerHeader>
 
@@ -508,7 +509,7 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
 
       <MpDrawerFooter>
         <MpFlex justify="flex-end" gap="2" width="full">
-          <MpButton variant="ghost" @click="closeReview">Decline</MpButton>
+          <MpButton variant="ghost" @click="closeReview">Reject</MpButton>
           <MpButton variant="primary" @click="closeReview">Approve</MpButton>
         </MpFlex>
       </MpDrawerFooter>

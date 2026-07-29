@@ -16,7 +16,7 @@ import {
   MpFlex, MpText, MpButton, MpBadge, MpToggle,
   MpDrawer, MpDrawerOverlay, MpDrawerContent, MpDrawerHeader,
   MpDrawerCloseButton, MpDrawerBody, MpDrawerFooter,
-  css,
+  css, token,
 } from '@mekari/pixel3'
 
 definePageMeta({
@@ -24,10 +24,6 @@ definePageMeta({
   subtitle: 'Manage company wallets, balances and money movement.',
   navKey: 'accounts',
 })
-
-// ─── Colors ──────────────────────────────────────────────────────────
-const AMBER = 'var(--mp-colors-orange-600)'
-const GREEN = 'var(--mp-colors-icon-success)'
 
 // ─── Types ─────────────────────────────────────────────────────────────
 interface Line { amt: string; cur: string }
@@ -190,8 +186,8 @@ const heading = computed(() => `${selectedWallet.value.name} · ${activeCurrency
 const showBanner = computed(() => !!cur.value.zero)
 const stats = computed(() => [
   { label: `Balance · ${activeCurrency.value}`, value: cur.value.balance,   color: 'text.default', big: true },
-  { label: 'Pending payouts',                   value: cur.value.pending,   color: AMBER },
-  { label: 'Money in · Jul',                    value: cur.value.moneyIn,   color: GREEN },
+  { label: 'Pending payouts',                   value: cur.value.pending,   color: 'text.warning' },
+  { label: 'Money in · Jul',                    value: cur.value.moneyIn,   color: 'text.success' },
   { label: 'Money out · Jul',                   value: cur.value.moneyOut,  color: 'text.default' },
 ])
 
@@ -248,11 +244,11 @@ const mutedLine = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.seconda
 const banner = css({
   display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '3',
   bg: 'background.danger', borderWidth: '1px', borderStyle: 'solid',
-  borderColor: 'var(--mp-colors-red-200)', borderRadius: 'lg',
+  borderColor: 'border.danger', borderRadius: 'lg',
   px: '4', py: '3',
 })
 const bannerLeft = css({ display: 'flex', alignItems: 'center', gap: '2.5', minWidth: 0 })
-const bannerDot  = css({ w: '8px', h: '8px', borderRadius: 'full', flexShrink: 0 })
+const bannerDot  = css({ w: '8px', h: '8px', borderRadius: 'full', flexShrink: 0, bg: 'icon.warning' })
 const bannerText = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default' })
 
 // Two-column grid
@@ -430,18 +426,18 @@ const inputBase = css({
   width: 'full', fontFamily: 'body', fontSize: 'md', color: 'text.default',
   px: '3', py: '2.5', borderRadius: 'md', bg: 'background.neutral',
   borderWidth: '1px', borderStyle: 'solid', borderColor: 'border.default',
-  _focus: { outline: 'none', borderColor: 'border.brand', boxShadow: '0 0 0 3px var(--mp-colors-background-brand-selected)' },
+  _focus: { outline: 'none', borderColor: 'border.brand', boxShadow: `0 0 0 3px ${token.var('colors.background.brand.selected')}` },
 })
 const textareaBase = css({
   width: 'full', fontFamily: 'body', fontSize: 'md', color: 'text.default',
   px: '3', py: '2.5', borderRadius: 'md', bg: 'background.neutral', minHeight: '84px', resize: 'vertical',
   borderWidth: '1px', borderStyle: 'solid', borderColor: 'border.default',
-  _focus: { outline: 'none', borderColor: 'border.brand', boxShadow: '0 0 0 3px var(--mp-colors-background-brand-selected)' },
+  _focus: { outline: 'none', borderColor: 'border.brand', boxShadow: `0 0 0 3px ${token.var('colors.background.brand.selected')}` },
 })
 const amountWrap = css({
   display: 'flex', alignItems: 'center', gap: '2', px: '3', py: '2.5', borderRadius: 'md', bg: 'background.neutral',
   borderWidth: '1px', borderStyle: 'solid', borderColor: 'border.default',
-  _focusWithin: { borderColor: 'border.brand', boxShadow: '0 0 0 3px var(--mp-colors-background-brand-selected)' },
+  _focusWithin: { borderColor: 'border.brand', boxShadow: `0 0 0 3px ${token.var('colors.background.brand.selected')}` },
 })
 const amountPrefix = css({ fontFamily: 'body', fontSize: 'md', color: 'text.secondary', flexShrink: 0 })
 const amountInput = css({
@@ -449,11 +445,16 @@ const amountInput = css({
 })
 const toggleRow = css({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4' })
 
-// Resolve a stat color: pass-through raw var() strings, map semantic tokens to CSS vars
-function statColor(c: string): string {
-  if (c.startsWith('var')) return c
-  return `var(--mp-colors-${c.replace('.', '-')})`
+// Stat value color classes (semantic tokens)
+const statColors: Record<string, string> = {
+  'text.default': css({ color: 'text.default' }),
+  'text.warning': css({ color: 'text.warning' }),
+  'text.success': css({ color: 'text.success' }),
 }
+// Money-in cell (positive)
+const moneyIn = css({ color: 'text.success' })
+// Drawer heading (16px / 24px)
+const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
 </script>
 
 <template>
@@ -467,7 +468,7 @@ function statColor(c: string): string {
   </Teleport>
 
   <!-- ═════ Stage content ═════ -->
-  <MpFlex direction="column" gap="4" width="full" style="min-width:0;">
+  <MpFlex direction="column" gap="4" width="full" minWidth="0">
 
     <!-- All-wallets total -->
     <span :class="mutedLine">All wallets ≈ Rp 25.572.177</span>
@@ -475,7 +476,7 @@ function statColor(c: string): string {
     <!-- Zero-balance warning banner -->
     <div v-if="showBanner" :class="banner">
       <div :class="bannerLeft">
-        <span :class="bannerDot" :style="{ background: AMBER }" />
+        <span :class="bannerDot" />
         <span :class="bannerText">{{ selectedWallet.name }} is at zero — top up to release pending payouts.</span>
       </div>
       <MpButton variant="primary" size="sm" @click="openTop">Top up now</MpButton>
@@ -524,7 +525,7 @@ function statColor(c: string): string {
         <div :class="statStrip">
           <div v-for="s in stats" :key="s.label" :class="statCell">
             <span :class="statLabel">{{ s.label }}</span>
-            <span :class="s.big ? statBig : statValue" :style="{ color: statColor(s.color) }">{{ s.value }}</span>
+            <span :class="[s.big ? statBig : statValue, statColors[s.color]]">{{ s.value }}</span>
           </div>
         </div>
 
@@ -578,7 +579,7 @@ function statColor(c: string): string {
                 <td :class="td">{{ r.date }}</td>
                 <td :class="td">{{ r.desc }}</td>
                 <td :class="tdNum">
-                  <span v-if="r.in" :style="{ color: GREEN }">{{ r.in }}</span>
+                  <span v-if="r.in" :class="moneyIn">{{ r.in }}</span>
                   <span v-else :class="dashCell">—</span>
                 </td>
                 <td :class="tdNum">
@@ -596,7 +597,7 @@ function statColor(c: string): string {
           <!-- Wallet details -->
           <div :class="settingsCard">
             <div :class="settingsHead">
-              <MpFlex direction="column" gap="0.5" style="min-width:0;">
+              <MpFlex direction="column" gap="0.5" minWidth="0">
                 <span :class="settingsTitle">Wallet details</span>
                 <span :class="settingsSub">Name, purpose and the people accountable for this wallet</span>
               </MpFlex>
@@ -646,7 +647,7 @@ function statColor(c: string): string {
           <!-- Funding rules -->
           <div :class="settingsCard">
             <div :class="settingsHead">
-              <MpFlex direction="column" gap="0.5" style="min-width:0;">
+              <MpFlex direction="column" gap="0.5" minWidth="0">
                 <span :class="settingsTitle">Funding rules</span>
                 <span :class="settingsSub">Which spend this wallet pays for — by branch, type and policy</span>
               </MpFlex>
@@ -674,7 +675,7 @@ function statColor(c: string): string {
     <MpDrawerOverlay />
     <MpDrawerContent>
       <MpDrawerHeader>
-        <MpText weight="semiBold" style="font-size:16px; line-height:24px;">Edit wallet</MpText>
+        <MpText weight="semiBold" :class="drawerHeading">Edit wallet</MpText>
         <MpDrawerCloseButton />
       </MpDrawerHeader>
       <MpDrawerBody>
@@ -698,7 +699,7 @@ function statColor(c: string): string {
           <div :class="toggleRow">
             <div>
               <span :class="fieldLabel">Default account</span>
-              <span :class="fieldHint">Use this wallet as the company default for new spend.</span>
+              <span :class="fieldHint">Use this wallet as the company default for new spend</span>
             </div>
             <MpToggle v-model:is-checked="editDefault" />
           </div>
@@ -718,7 +719,7 @@ function statColor(c: string): string {
     <MpDrawerOverlay />
     <MpDrawerContent>
       <MpDrawerHeader>
-        <MpText weight="semiBold" style="font-size:16px; line-height:24px;">Move money</MpText>
+        <MpText weight="semiBold" :class="drawerHeading">Move money</MpText>
         <MpDrawerCloseButton />
       </MpDrawerHeader>
       <MpDrawerBody>
@@ -762,7 +763,7 @@ function statColor(c: string): string {
     <MpDrawerOverlay />
     <MpDrawerContent>
       <MpDrawerHeader>
-        <MpText weight="semiBold" style="font-size:16px; line-height:24px;">Top up</MpText>
+        <MpText weight="semiBold" :class="drawerHeading">Top up</MpText>
         <MpDrawerCloseButton />
       </MpDrawerHeader>
       <MpDrawerBody>

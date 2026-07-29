@@ -23,9 +23,9 @@ definePageMeta({
 
 // ─── Data ────────────────────────────────────────────────────────────
 const summary = [
-  { label: 'Active cards',          badge: '12', value: 'Rp 1.240.000', top: 'var(--mp-colors-green-600)' },
-  { label: 'Inactive',              badge: '8',  value: 'Rp 620.000',   top: 'var(--mp-colors-neutral-400)' },
-  { label: 'Card creation credit',  badge: null, value: '20',           top: 'var(--mp-colors-indigo-700)' },
+  { label: 'Active cards',          badge: '12', value: 'Rp 1.240.000', top: 'success' as const },
+  { label: 'Inactive',              badge: '8',  value: 'Rp 620.000',   top: 'default' as const },
+  { label: 'Card creation credit',  badge: null, value: '20',           top: 'brand'   as const },
 ]
 
 const tabs = [
@@ -89,6 +89,12 @@ const summaryCard = css({
   bg: 'background.neutral', borderWidth: '1px', borderStyle: 'solid', borderColor: 'border.default',
   borderRadius: 'lg', borderTopWidth: '3px',
 })
+// summary-card top border accent (palette → semantic)
+const cardTop = {
+  success: css({ borderTopColor: 'border.success' }),
+  default: css({ borderTopColor: 'border.default' }),
+  brand:   css({ borderTopColor: 'border.brand' }),
+}
 const summaryLabelRow = css({ display: 'flex', alignItems: 'center', gap: '2' })
 const summaryLabel    = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
 const summaryValue    = css({ fontFamily: 'body', fontSize: '2xl', fontWeight: 'bold', color: 'text.default', lineHeight: 'xs' })
@@ -106,7 +112,7 @@ const tabItem = css({
 const tabItemActive = css({
   fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.link',
   paddingBlock: '2', cursor: 'pointer', background: 'transparent', border: 'none',
-  borderBottomWidth: '2px', borderBottomStyle: 'solid', borderBottomColor: 'var(--mp-colors-icon-brand)',
+  borderBottomWidth: '2px', borderBottomStyle: 'solid', borderBottomColor: 'border.brand',
   marginBottom: '-1px',
 })
 
@@ -130,6 +136,11 @@ const cellPrimary = css({ fontFamily: 'body', fontSize: 'md', color: 'text.defau
 const cellSub  = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
 const statusCell = css({ display: 'inline-flex', alignItems: 'center', gap: '2', whiteSpace: 'nowrap' })
 const dot = css({ w: '8px', h: '8px', borderRadius: 'full', flexShrink: 0 })
+const dotActive   = css({ background: 'icon.success' })
+const dotInactive = css({ background: 'icon.default' })
+
+const alignRight = css({ textAlign: 'right' })
+const nowrap = css({ whiteSpace: 'nowrap' })
 
 const footer = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
 </script>
@@ -141,11 +152,11 @@ const footer = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary'
   </Teleport>
 
   <!-- ═════ Stage content ═════ -->
-  <MpFlex direction="column" gap="4" width="full" style="min-width:0;">
+  <MpFlex direction="column" gap="4" width="full" min-width="0">
 
     <!-- ── Summary cards ── -->
     <div :class="summaryGrid">
-      <div v-for="s in summary" :key="s.label" :class="summaryCard" :style="{ borderTopColor: s.top }">
+      <div v-for="s in summary" :key="s.label" :class="[summaryCard, cardTop[s.top]]">
         <div :class="summaryLabelRow">
           <span :class="summaryLabel">{{ s.label }}</span>
           <MpBadge v-if="s.badge" for="tableStatus" type="neutral">{{ s.badge }}</MpBadge>
@@ -162,15 +173,15 @@ const footer = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary'
     </div>
 
     <!-- ── Toolbar ── -->
-    <MpFlex align="center" justify="space-between" gap="3" style="flex-wrap:wrap;">
-      <MpFlex align="center" gap="2" style="flex-wrap:wrap;">
+    <MpFlex align="center" justify="space-between" gap="3" wrap="wrap">
+      <MpFlex align="center" gap="2" wrap="wrap">
         <MpButton variant="secondary" size="sm" right-icon="caret-down">All status</MpButton>
         <MpButton variant="secondary" size="sm" right-icon="caret-down">All accounts</MpButton>
       </MpFlex>
-      <MpFlex align="center" gap="2" style="flex-wrap:wrap;">
+      <MpFlex align="center" gap="2" wrap="wrap">
         <MpButton variant="ghost" size="sm" right-icon="caret-down">Sort: Oldest first</MpButton>
         <MpButton variant="secondary" size="sm" left-icon="download">Export</MpButton>
-        <MpInputGroup style="width:260px;flex-shrink:0;">
+        <MpInputGroup width="260px" flex-shrink="0">
           <MpInputLeftAddon>
             <PxIcon name="search" :size="16" color="icon.default" />
           </MpInputLeftAddon>
@@ -187,7 +198,7 @@ const footer = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary'
             <th :class="th">Card name</th>
             <th :class="th">Cardholder</th>
             <th :class="th">Expiration</th>
-            <th :class="th" style="text-align:right;">Card balance</th>
+            <th :class="[th, alignRight]">Card balance</th>
             <th :class="th">Account</th>
             <th :class="th">Status</th>
           </tr>
@@ -202,15 +213,12 @@ const footer = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary'
               <div :class="cellPrimary">{{ row.holder }}</div>
               <div :class="cellSub">{{ row.holderSub }}</div>
             </td>
-            <td :class="td" style="white-space:nowrap;">{{ row.exp }}</td>
-            <td :class="td" style="text-align:right;white-space:nowrap;">{{ row.balance }}</td>
-            <td :class="td" style="white-space:nowrap;">{{ row.account }}</td>
+            <td :class="[td, nowrap]">{{ row.exp }}</td>
+            <td :class="[td, alignRight, nowrap]">{{ row.balance }}</td>
+            <td :class="[td, nowrap]">{{ row.account }}</td>
             <td :class="td">
               <span :class="statusCell">
-                <span
-                  :class="dot"
-                  :style="{ background: row.status === 'Active' ? 'var(--mp-colors-icon-success)' : 'var(--mp-colors-icon-default)' }"
-                />
+                <span :class="[dot, row.status === 'Active' ? dotActive : dotInactive]" />
                 {{ row.status }}
               </span>
             </td>
@@ -229,7 +237,7 @@ const footer = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary'
     <MpDrawerOverlay />
     <MpDrawerContent>
       <MpDrawerHeader>
-        <MpText weight="semiBold" style="font-size:16px; line-height:24px;">New card</MpText>
+        <MpText weight="semiBold" font-size="16px" line-height="24px">New card</MpText>
         <MpDrawerCloseButton />
       </MpDrawerHeader>
 
@@ -261,7 +269,7 @@ const footer = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary'
           <!-- Spend limit -->
           <MpFormControl id="create-spend-limit" isRequired>
             <MpFormLabel>Spend limit</MpFormLabel>
-            <MpInputGroup style="width:100%;">
+            <MpInputGroup width="full">
               <MpInputLeftAddon has-background><MpText size="body" weight="semiBold">Rp</MpText></MpInputLeftAddon>
               <MpInput :modelValue="createDraft.spendLimit" placeholder="0" :isFullWidth="true"
                 @input="(e: Event) => (createDraft.spendLimit = formatThousands((e.target as HTMLInputElement).value))" />

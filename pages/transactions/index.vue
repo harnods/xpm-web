@@ -22,10 +22,10 @@ definePageMeta({
 
 // ─── Summary cards ───────────────────────────────────────────────────
 const summary = [
-  { label: 'Total out · Jul', value: 'Rp 457,4 jt',     top: 'var(--mp-colors-neutral-400)' },
-  { label: 'Card spend',      value: 'Rp 44.664.000',   top: 'var(--mp-colors-indigo-700)'  },
-  { label: 'Reimbursed',      value: 'Rp 12.513.585',   top: 'var(--mp-colors-green-600)'   },
-  { label: 'Bills paid',      value: 'Rp 380.462.009',  top: 'var(--mp-colors-orange-600)'  },
+  { label: 'Total out · Jul', value: 'Rp 457,4 jt',     top: 'default' },
+  { label: 'Card spend',      value: 'Rp 44.664.000',   top: 'brand'   },
+  { label: 'Reimbursed',      value: 'Rp 12.513.585',   top: 'success' },
+  { label: 'Bills paid',      value: 'Rp 380.462.009',  top: 'warning' },
 ]
 
 // ─── Filter tabs ──────────────────────────────────────────────────────
@@ -80,11 +80,6 @@ const rows: TxRow[] = [
   { date: '20 Jul', source: 'Travel',        description: 'Trip Bandung · BT20260751072',        name: 'XM punya 3',          account: 'Main account', status: 'Booked',             statusKind: 'green', amount: 'Rp 1.250.000'  },
 ]
 
-const DOT: Record<string, string> = {
-  green: 'var(--mp-colors-icon-success)',
-  amber: 'var(--mp-colors-icon-warning)',
-}
-
 // ─── Tab filtering ─────────────────────────────────────────────────────
 const filteredRows = computed(() =>
   activeTab.value === 'All' ? rows : rows.filter(r => r.source === activeTab.value),
@@ -101,6 +96,12 @@ const summaryCard = css({
   borderRadius: 'lg',
   borderTopWidth: '3px', borderTopStyle: 'solid',
 })
+const topBorders: Record<string, string> = {
+  default: css({ borderTopColor: 'border.default' }),
+  brand:   css({ borderTopColor: 'border.brand' }),
+  success: css({ borderTopColor: 'border.success' }),
+  warning: css({ borderTopColor: 'border.warning' }),
+}
 const summaryLabel = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
 const summaryValue = css({ fontFamily: 'body', fontSize: '2xl', fontWeight: 'bold', color: 'text.default', lineHeight: 'xs' })
 
@@ -121,7 +122,7 @@ const tabActive = css({
   fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default',
   _after: {
     content: '""', position: 'absolute', left: '0', right: '0', bottom: '-1px',
-    height: '2px', background: 'var(--mp-colors-icon-brand)', borderRadius: 'full',
+    height: '2px', background: 'icon.brand', borderRadius: 'full',
   },
 })
 
@@ -164,6 +165,10 @@ const descCell = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold
 const secondaryCell = css({ fontFamily: 'body', fontSize: 'md', color: 'text.secondary' })
 const statusCell = css({ display: 'inline-flex', alignItems: 'center', gap: '2', fontFamily: 'body', fontSize: 'md', color: 'text.default' })
 const dot = css({ w: '8px', h: '8px', borderRadius: 'full', flexShrink: 0 })
+const dotClass: Record<string, string> = {
+  green: css({ background: 'icon.success' }),
+  amber: css({ background: 'icon.warning' }),
+}
 const amountCell = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default', textAlign: 'right', whiteSpace: 'nowrap' })
 
 const footText = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
@@ -180,6 +185,10 @@ const colRow = css({
 })
 const colHandle = css({ fontFamily: 'body', fontSize: 'md', color: 'text.subtle', cursor: 'grab', flexShrink: 0 })
 const colLabel = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default' })
+
+const alignRight = css({ textAlign: 'right' })
+const searchGroup = css({ width: '260px', flexShrink: 0 })
+const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
 </script>
 
 <template>
@@ -189,11 +198,11 @@ const colLabel = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default'
   </Teleport>
 
   <!-- ═════ Stage content ═════ -->
-  <MpFlex direction="column" gap="4" width="full" style="min-width:0;">
+  <MpFlex direction="column" gap="4" width="full" minWidth="0">
 
     <!-- 1) Summary cards -->
     <div :class="summaryGrid">
-      <div v-for="s in summary" :key="s.label" :class="summaryCard" :style="{ borderTopColor: s.top }">
+      <div v-for="s in summary" :key="s.label" :class="[summaryCard, topBorders[s.top]]">
         <span :class="summaryLabel">{{ s.label }}</span>
         <span :class="summaryValue">{{ s.value }}</span>
       </div>
@@ -209,7 +218,7 @@ const colLabel = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default'
     </div>
 
     <!-- 3) Toolbar -->
-    <MpFlex align="center" justify="space-between" gap="3" style="flex-wrap:wrap;">
+    <MpFlex align="center" justify="space-between" gap="3" wrap="wrap">
       <MpFlex align="center" gap="2">
         <MpButton variant="secondary" size="sm" right-icon="caret-down">All accounts</MpButton>
         <MpButton variant="secondary" size="sm" right-icon="caret-down">This month</MpButton>
@@ -217,7 +226,7 @@ const colLabel = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default'
       <MpFlex align="center" gap="2">
         <MpButton variant="secondary" size="sm" right-icon="caret-down">Sort: Oldest first</MpButton>
         <MpButton variant="secondary" size="sm">Export</MpButton>
-        <MpInputGroup style="width:260px;flex-shrink:0;">
+        <MpInputGroup :class="searchGroup">
           <MpInputLeftAddon>
             <PxIcon name="search" :size="16" color="icon.subtle" />
           </MpInputLeftAddon>
@@ -252,7 +261,7 @@ const colLabel = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default'
             <th v-if="isVisible('name')" :class="th">NAME</th>
             <th v-if="isVisible('account')" :class="th">ACCOUNT</th>
             <th v-if="isVisible('status')" :class="th">STATUS</th>
-            <th v-if="isVisible('amount')" :class="th" style="text-align:right;">AMOUNT</th>
+            <th v-if="isVisible('amount')" :class="[th, alignRight]">AMOUNT</th>
           </tr>
         </thead>
         <tbody>
@@ -264,11 +273,11 @@ const colLabel = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default'
             <td v-if="isVisible('account')" :class="td"><span :class="secondaryCell">{{ r.account }}</span></td>
             <td v-if="isVisible('status')" :class="td">
               <span :class="statusCell">
-                <span :class="dot" :style="{ background: DOT[r.statusKind] }" />
+                <span :class="[dot, dotClass[r.statusKind]]" />
                 {{ r.status }}
               </span>
             </td>
-            <td v-if="isVisible('amount')" :class="td" style="text-align:right;"><span :class="amountCell">{{ r.amount }}</span></td>
+            <td v-if="isVisible('amount')" :class="[td, alignRight]"><span :class="amountCell">{{ r.amount }}</span></td>
           </tr>
         </tbody>
       </table>
@@ -295,7 +304,7 @@ const colLabel = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default'
       <MpDrawerOverlay />
       <MpDrawerContent>
         <MpDrawerHeader>
-          <MpText weight="semiBold" style="font-size:16px; line-height:24px;">Edit columns</MpText>
+          <MpText weight="semiBold" :class="drawerHeading">Edit columns</MpText>
           <MpDrawerCloseButton />
         </MpDrawerHeader>
 

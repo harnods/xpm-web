@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { MpFlex, MpText } from '@mekari/pixel3'
+import { MpFlex, MpText, css } from '@mekari/pixel3'
+
+const tabsSlot = css({ lineHeight: '0' })
 
 const route = useRoute()
 const pageTitle = computed(() => (route.meta.title as string) || 'Page Title')
@@ -70,7 +72,7 @@ if (import.meta.client) {
 
         <!-- Optional tabs strip (filled via Teleport from pages) -->
         <!-- line-height:0 collapses the anonymous block box created by empty text nodes from Teleport -->
-        <div id="layout-tabs" style="line-height: 0;" />
+        <div id="layout-tabs" :class="tabsSlot" />
 
         <!-- Stage: white sheet, rounded top-left, top + left border only. -->
         <MpFlex

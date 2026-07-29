@@ -26,7 +26,7 @@ import {
   MpSelect, MpDatePicker, MpUpload, MpRadio,
   MpDrawer, MpDrawerOverlay, MpDrawerContent, MpDrawerHeader,
   MpDrawerCloseButton, MpDrawerBody, MpDrawerFooter,
-  css,
+  css, token,
 } from '@mekari/pixel3'
 
 definePageMeta({ title: 'Good morning, Nata', navKey: 'home' })
@@ -64,9 +64,9 @@ const digest = [
 ]
 
 const DOT: Record<string, string> = {
-  warning: 'var(--mp-colors-icon-warning)',
-  neutral: 'var(--mp-colors-icon-default)',
-  danger:  'var(--mp-colors-icon-danger)',
+  warning: token.var('colors.icon.warning'),
+  neutral: token.var('colors.icon.default'),
+  danger:  token.var('colors.icon.danger'),
 }
 
 // ─── Static option lists (reference-consistent) ───────────────────────
@@ -144,17 +144,17 @@ const rowAmount = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBol
 
 const digestCard = css({
   bg: 'background.brand', borderWidth: '1px', borderStyle: 'solid',
-  borderColor: 'var(--mp-colors-indigo-200)', borderRadius: 'lg',
+  borderColor: 'border.brand', borderRadius: 'lg',
   display: 'flex', flexDirection: 'column',
 })
 const digestHead = css({ display: 'flex', alignItems: 'center', gap: '2', px: '4', pt: '4', pb: '2' })
 const digestItem = css({
   px: '4', py: '3', fontFamily: 'body', fontSize: 'md', lineHeight: 'md', color: 'text.default',
-  borderTopWidth: '1px', borderTopStyle: 'solid', borderTopColor: 'var(--mp-colors-indigo-200)',
+  borderTopWidth: '1px', borderTopStyle: 'solid', borderTopColor: 'border.brand',
 })
 const digestFoot = css({
   px: '4', py: '3', fontFamily: 'body', fontSize: 'sm', color: 'text.secondary',
-  borderTopWidth: '1px', borderTopStyle: 'solid', borderTopColor: 'var(--mp-colors-indigo-200)',
+  borderTopWidth: '1px', borderTopStyle: 'solid', borderTopColor: 'border.brand',
 })
 const dateEyebrow = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary', whiteSpace: 'nowrap' })
 
@@ -184,8 +184,8 @@ const optPill = css({
 })
 const optPillOn = css({
   display: 'inline-flex', alignItems: 'center', gap: '1', px: '3', py: '1.5',
-  borderWidth: '1px', borderStyle: 'solid', borderColor: 'var(--mp-colors-indigo-200)', borderRadius: 'full',
-  fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'var(--mp-colors-indigo-600)',
+  borderWidth: '1px', borderStyle: 'solid', borderColor: 'border.brand', borderRadius: 'full',
+  fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'text.link',
   cursor: 'pointer', bg: 'background.brand',
 })
 const capRow = css({
@@ -213,13 +213,13 @@ const reviewMeta = css({
   </Teleport>
 
   <!-- ═════ Stage content ═════ -->
-  <MpFlex direction="column" gap="4" width="full" style="min-width:0;">
+  <MpFlex direction="column" gap="4" width="full" minWidth="0">
 
     <!-- Quick actions -->
     <div :class="quickGrid">
       <button v-for="a in quickActions" :key="a.title" type="button" :class="quickCard" @click="openDrawer(a.key)">
         <span :class="iconChip"><PxIcon :name="a.icon" :size="20" color="icon.brand" /></span>
-        <div style="display:flex;flex-direction:column;gap:2px;">
+        <div :class="css({ display: 'flex', flexDirection: 'column', gap: '0.5' })">
           <span :class="cardTitle">{{ a.title }}</span>
           <span :class="cardSub">{{ a.sub }}</span>
         </div>
@@ -297,7 +297,7 @@ const reviewMeta = css({
 
           <MpFormControl id="claim-amount" isRequired>
             <MpFormLabel>Amount</MpFormLabel>
-            <MpInputGroup style="width:100%;">
+            <MpInputGroup w="full">
               <MpInputLeftAddon has-background><MpText size="body" weight="semiBold">Rp</MpText></MpInputLeftAddon>
               <MpInput id="claim-amount-input" placeholder="0" :is-full-width="true" />
             </MpInputGroup>
@@ -358,7 +358,7 @@ const reviewMeta = css({
           <MpFlex direction="column" gap="3">
             <span :class="sectionNum">1 · WHO &amp; WHERE</span>
             <span :class="sectionDesc">Combine zone, organization, branch and people — add OR groups for either/or scopes, e.g. Zone 2 for Sales, or Zone 3 for Dana</span>
-            <MpFlex direction="column" gap="3" style="border:1px solid var(--mp-colors-border-default); border-radius:8px; padding:16px;">
+            <MpFlex direction="column" gap="3" borderWidth="1px" borderStyle="solid" borderColor="border.default" borderRadius="lg" p="4">
               <span :class="footnote">CRITERIA 1 — leave a row empty for any</span>
               <MpFlex v-for="r in ['Zone', 'Organization', 'Branch', 'Job level', 'People']" :key="r" align="center" justify="space-between" gap="3">
                 <span :class="rowLabel">{{ r }}</span>
@@ -368,7 +368,7 @@ const reviewMeta = css({
                 </MpFlex>
               </MpFlex>
             </MpFlex>
-            <span :class="addPill" style="align-self:flex-start;">+ Add OR group</span>
+            <span :class="[addPill, css({ alignSelf: 'flex-start' })]">+ Add OR group</span>
           </MpFlex>
 
           <!-- 2 · RATES -->
@@ -377,14 +377,14 @@ const reviewMeta = css({
             <span :class="sectionDesc">Rates per component — what each part of a trip request is costed and capped at</span>
             <MpFlex v-for="c in ['Lodging', 'Transport', 'Meals & incidentals']" :key="c" :class="capRow">
               <span :class="capName">{{ c }}</span>
-              <MpInputGroup style="flex:1 1 auto; min-width:160px;">
+              <MpInputGroup flex="1 1 auto" minW="160px">
                 <MpInputLeftAddon has-background><MpText size="body" weight="semiBold">Rp</MpText></MpInputLeftAddon>
                 <MpInput :id="`trip-rate-${c}`" placeholder="0" :is-full-width="true" />
               </MpInputGroup>
               <span :class="optPill">per day</span>
             </MpFlex>
-            <span :class="addPill" style="align-self:flex-start;">+ Item rate</span>
-            <MpFlex align="flex-start" gap="2" style="margin-top:4px;">
+            <span :class="[addPill, css({ alignSelf: 'flex-start' })]">+ Item rate</span>
+            <MpFlex align="flex-start" gap="2" mt="1">
               <MpRadio id="trip-over" name="trip-over" value="allow">Allow submission outside budget</MpRadio>
             </MpFlex>
             <span :class="footnote">Requests above these rates can still be submitted; approvers see an over-rate flag. Unchecked, they are blocked at submission.</span>
@@ -424,7 +424,7 @@ const reviewMeta = css({
 
           <MpFormControl id="pr-amount" isRequired>
             <MpFormLabel>Amount</MpFormLabel>
-            <MpInputGroup style="width:100%;">
+            <MpInputGroup w="full">
               <MpInputLeftAddon has-background><MpText size="body" weight="semiBold">Rp</MpText></MpInputLeftAddon>
               <MpInput id="pr-amount-input" placeholder="0" :is-full-width="true" />
             </MpInputGroup>
@@ -486,7 +486,7 @@ const reviewMeta = css({
 
           <MpFormControl id="card-limit" isRequired>
             <MpFormLabel>Spend limit</MpFormLabel>
-            <MpInputGroup style="width:100%;">
+            <MpInputGroup w="full">
               <MpInputLeftAddon has-background><MpText size="body" weight="semiBold">Rp</MpText></MpInputLeftAddon>
               <MpInput id="card-limit-input" placeholder="0" :is-full-width="true" />
             </MpInputGroup>
@@ -553,7 +553,7 @@ const reviewMeta = css({
             <span :class="sectionDesc">Amount per period — pooled for the whole scope, or per person so it scales with headcount</span>
             <MpFlex :class="capRow">
               <span :class="capName">All spend</span>
-              <MpInputGroup style="flex:1 1 auto; min-width:160px;">
+              <MpInputGroup flex="1 1 auto" minW="160px">
                 <MpInputLeftAddon has-background><MpText size="body" weight="semiBold">Rp</MpText></MpInputLeftAddon>
                 <MpInput id="budget-cap-input" placeholder="0" :is-full-width="true" />
               </MpInputGroup>
@@ -609,13 +609,13 @@ const reviewMeta = css({
 
           <MpFlex align="center" justify="space-between" gap="3">
             <span :class="cardSub">Amount</span>
-            <span :class="statValue" style="font-size:20px;">{{ reviewRow.amount }}</span>
+            <span :class="[statValue, css({ fontSize: 'xl' })]">{{ reviewRow.amount }}</span>
           </MpFlex>
         </MpFlex>
       </MpDrawerBody>
       <MpDrawerFooter>
         <MpFlex justify="flex-end" gap="2" width="full">
-          <MpButton variant="secondary" @click="closeReview">Decline</MpButton>
+          <MpButton variant="secondary" @click="closeReview">Reject</MpButton>
           <MpButton variant="primary" @click="closeReview">Approve</MpButton>
         </MpFlex>
       </MpDrawerFooter>

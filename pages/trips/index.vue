@@ -11,7 +11,7 @@ import {
   MpFlex, MpButton, MpText, MpTextlink,
   MpDrawer, MpDrawerOverlay, MpDrawerContent, MpDrawerHeader,
   MpDrawerCloseButton, MpDrawerBody, MpDrawerFooter,
-  css,
+  css, token,
 } from '@mekari/pixel3'
 
 definePageMeta({
@@ -70,10 +70,10 @@ const rows: TripRow[] = [
 ]
 
 const DOT: Record<StatusKind, string> = {
-  pending:   'var(--mp-colors-icon-warning)',
-  awaiting:  'var(--mp-colors-blue-600)',
-  completed: 'var(--mp-colors-icon-default)',
-  booked:    'var(--mp-colors-icon-success)',
+  pending:   token.var('colors.icon.warning'),
+  awaiting:  token.var('colors.icon.information'),
+  completed: token.var('colors.icon.default'),
+  booked:    token.var('colors.icon.success'),
 }
 
 // ─── CSS ─────────────────────────────────────────────────────────────
@@ -106,6 +106,7 @@ const td = css({
   borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
   verticalAlign: 'middle',
 })
+const tdActions = css({ textAlign: 'right', whiteSpace: 'nowrap' })
 
 const cellMain = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.default', whiteSpace: 'nowrap' })
 const cellLink = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'text.link', textDecoration: 'none', whiteSpace: 'nowrap', _hover: { textDecoration: 'underline' } })
@@ -132,8 +133,8 @@ const pillOff = css({
 })
 const pillOn = css({
   display: 'inline-flex', alignItems: 'center', px: '3', py: '1.5',
-  borderWidth: '1px', borderStyle: 'solid', borderColor: 'var(--mp-colors-indigo-200)', borderRadius: 'full',
-  fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'var(--mp-colors-indigo-600)',
+  borderWidth: '1px', borderStyle: 'solid', borderColor: 'background.brand.selected', borderRadius: 'full',
+  fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'text.link',
   cursor: 'pointer', bg: 'background.brand',
 })
 
@@ -150,10 +151,10 @@ const policyBox  = css({ borderWidth: '1px', borderStyle: 'solid', borderColor: 
   </Teleport>
 
   <!-- ═════ Stage content ═════ -->
-  <MpFlex direction="column" gap="4" width="full" style="min-width:0;">
+  <MpFlex direction="column" gap="4" width="full" min-width="0">
 
     <!-- ═════ Toolbar ═════ -->
-    <MpFlex align="center" justify="space-between" gap="3" style="flex-wrap:wrap;">
+    <MpFlex align="center" justify="space-between" gap="3" wrap="wrap">
       <div :class="toolbarBtnRow">
         <MpButton variant="secondary" size="sm" right-icon="caret-down">All trip type</MpButton>
         <MpButton variant="secondary" size="sm" right-icon="caret-down">All status</MpButton>
@@ -216,7 +217,7 @@ const policyBox  = css({ borderWidth: '1px', borderStyle: 'solid', borderColor: 
               </span>
             </td>
             <!-- Actions -->
-            <td :class="td" style="text-align:right; white-space:nowrap;">
+            <td :class="[td, tdActions]">
               <MpButton variant="ghost" size="sm" left-icon="menu-meatball" aria-label="Row actions" />
             </td>
           </tr>
@@ -264,7 +265,7 @@ const policyBox  = css({ borderWidth: '1px', borderStyle: 'solid', borderColor: 
       </MpDrawerBody>
       <MpDrawerFooter>
         <MpFlex align="center" justify="space-between" gap="2" width="full">
-          <MpTextlink size="body" style="cursor:pointer;" @click="resetFilters">Reset filter</MpTextlink>
+          <MpTextlink size="body" @click="resetFilters">Reset filter</MpTextlink>
           <MpFlex gap="2">
             <MpButton variant="ghost" @click="filtersOpen = false">Cancel</MpButton>
             <MpButton variant="primary" @click="filtersOpen = false">Apply</MpButton>

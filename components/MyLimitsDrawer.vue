@@ -17,7 +17,7 @@ import {
   MpFlex, MpText, MpIcon, MpTextlink,
   MpDrawer, MpDrawerOverlay, MpDrawerContent, MpDrawerHeader,
   MpDrawerCloseButton, MpDrawerBody,
-  css,
+  css, cx,
 } from '@mekari/pixel3'
 
 defineProps<{ isOpen: boolean }>()
@@ -129,15 +129,8 @@ const categories = ref<LimitCategory[]>([
 const expanded = ref<Record<number, boolean>>({ 0: false, 1: false, 2: true, 3: true })
 function toggle(i: number) { expanded.value[i] = !expanded.value[i] }
 
-// Progress-bar fills use Pixel chart-bold tokens (matching the Figma source)
-const BAR_COLOR: Record<string, string> = {
-  green:  'var(--mp-colors-chart-cat02-bold, #119E8F)',
-  orange: 'var(--mp-colors-chart-cat04-bold, #E46910)',
-  red:    'var(--mp-colors-chart-cat06-bold, #E2483D)',
-}
-const BAR_TRACK = 'var(--mp-colors-background-neutral-subtle, #F0F1F3)'
-
 // ─── Styles ───────────────────────────────────────────────────────
+const drawerTitle = css({ fontSize: 'md', lineHeight: 'lg' })
 const catHeader = css({
   display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '4',
   width: 'full', paddingBlock: '3', background: 'transparent', border: 'none',
@@ -154,13 +147,23 @@ const cardGrid = css({
   paddingBottom: '4',
 })
 const card = css({
-  border: '1px solid var(--mp-colors-border-default, #DCDFE4)', borderRadius: 'lg',
+  borderWidth: '1px', borderStyle: 'solid', borderColor: 'border.default', borderRadius: 'lg',
   padding: '4', display: 'flex', flexDirection: 'column', gap: '3',
 })
 const cardTitle = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', lineHeight: 'lg', color: 'dark' })
 const maxLabel = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', lineHeight: 'lg', color: 'dark' })
 const limitAmount = css({ fontFamily: 'body', fontSize: 'md', lineHeight: 'lg', color: 'dark', whiteSpace: 'nowrap' })
 const limitPeriod = css({ fontFamily: 'body', fontSize: 'sm', lineHeight: 'lg', color: 'gray.600' })
+
+const cardGridSingle = css({ gridTemplateColumns: '1fr' })
+const morePointer = css({ cursor: 'pointer' })
+const barTrack = css({ height: '8px', borderRadius: 'full', background: 'background.neutral.subtle', overflow: 'hidden', width: 'full' })
+const barFillBase = css({ height: 'full', borderRadius: 'full' })
+const barFillGreen = css({ background: 'background.success.bold' })
+const barFillOrange = css({ background: 'background.warning.bold' })
+const barFillRed = css({ background: 'background.danger.bold' })
+const BAR_FILL: Record<string, string> = { green: barFillGreen, orange: barFillOrange, red: barFillRed }
+const limitRow = css({ display: 'flex', flexWrap: 'wrap', gap: '4' })
 </script>
 
 <template>
@@ -175,7 +178,7 @@ const limitPeriod = css({ fontFamily: 'body', fontSize: 'sm', lineHeight: 'lg', 
     <MpDrawerOverlay />
     <MpDrawerContent>
       <MpDrawerHeader>
-        <MpText weight="semiBold" style="font-size:16px; line-height:24px;">My limits</MpText>
+        <MpText weight="semiBold" :class="drawerTitle">My limits</MpText>
         <MpDrawerCloseButton />
       </MpDrawerHeader>
 
@@ -185,26 +188,26 @@ const limitPeriod = css({ fontFamily: 'body', fontSize: 'sm', lineHeight: 'lg', 
 
             <!-- Category header (accordion trigger) -->
             <button :class="catHeader" @click="toggle(i)">
-              <MpFlex align="flex-start" gap="2" style="min-width:0;">
+              <MpFlex align="flex-start" gap="2" minWidth="0">
                 <MpIcon :name="expanded[i] ? 'caret-down' : 'caret-right'" size="sm" :class="chevron" />
-                <MpFlex direction="column" gap="0.5" style="min-width:0;">
+                <MpFlex direction="column" gap="0.5" minWidth="0">
                   <span :class="catName">{{ cat.name }}</span>
                   <span :class="catDesc">{{ cat.description }}</span>
                 </MpFlex>
               </MpFlex>
 
               <!-- Collapsed summary on the right -->
-              <MpFlex v-if="!expanded[i]" direction="column" align="flex-end" gap="0.5" style="flex-shrink:0;">
+              <MpFlex v-if="!expanded[i]" direction="column" align="flex-end" gap="0.5" flexShrink="0">
                 <span :class="availLabel">Available to spend</span>
                 <MpFlex align="center" gap="1">
                   <span :class="availAmount">{{ cat.summary }}</span>
-                  <MpTextlink v-if="cat.summaryMore" size="body" style="cursor:pointer;">+{{ cat.summaryMore }} more</MpTextlink>
+                  <MpTextlink v-if="cat.summaryMore" size="body" :class="morePointer">+{{ cat.summaryMore }} more</MpTextlink>
                 </MpFlex>
               </MpFlex>
             </button>
 
             <!-- Expanded: per-currency cards -->
-            <div v-if="expanded[i]" :class="cardGrid" :style="cat.international ? '' : 'grid-template-columns:1fr;'">
+            <div v-if="expanded[i]" :class="cx(cardGrid, cat.international ? '' : cardGridSingle)">
               <div v-for="cur in cat.currencies" :key="cur.code" :class="card">
                 <span v-if="cur.code !== 'Rp'" :class="cardTitle">{{ cur.code }} - {{ cur.name }}</span>
 
@@ -214,10 +217,11 @@ const limitPeriod = css({ fontFamily: 'body', fontSize: 'sm', lineHeight: 'lg', 
                     <span :class="availLabel">Available to spend</span>
                     <span :class="availAmount">{{ cur.available }}</span>
                   </MpFlex>
-                  <div :style="`height:8px; border-radius:999px; background:${BAR_TRACK}; overflow:hidden; width:100%;`">
+                  <div :class="barTrack">
                     <div
                       v-if="!cur.unlimited && cur.barPct"
-                      :style="`height:100%; width:${cur.barPct}%; border-radius:999px; background:${BAR_COLOR[cur.barColor || 'green']};`"
+                      :class="cx(barFillBase, BAR_FILL[cur.barColor || 'green'])"
+                      :style="{ width: `${cur.barPct}%` }"
                     />
                   </div>
                 </MpFlex>
@@ -225,13 +229,14 @@ const limitPeriod = css({ fontFamily: 'body', fontSize: 'sm', lineHeight: 'lg', 
                 <!-- Maximum limit per period -->
                 <MpFlex direction="column" gap="2">
                   <span :class="maxLabel">Maximum limit</span>
-                  <div style="display:flex; flex-wrap:wrap; gap:16px;">
+                  <div :class="limitRow">
                     <MpFlex
                       v-for="(lim, li) in cur.limits"
                       :key="li"
                       direction="column"
                       gap="0"
-                      style="min-width:120px; flex:1 1 0;"
+                      minWidth="120px"
+                      flex="1 1 0"
                     >
                       <span :class="limitAmount">{{ lim.amount }}</span>
                       <span :class="limitPeriod">{{ lim.period }}</span>
