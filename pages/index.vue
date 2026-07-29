@@ -44,22 +44,22 @@ const quickActions: { key: DrawerKey; icon: string; title: string; sub: string }
 
 const stats = [
   { label: 'Needs review',           value: '13',            unit: 'items', sub: '6 flagged by policy' },
-  { label: 'Awaiting your approval', value: 'Rp 18.297.890', unit: '',      sub: 'oldest waiting 4 days' },
-  { label: 'To disburse',            value: 'Rp 8.120.000',  unit: '',      sub: '14 approved items · runs Fri' },
-  { label: 'Spend this month',       value: 'Rp 46,2 jt',    unit: '',      sub: '+12% vs June · on budget' },
+  { label: 'Awaiting your approval', value: 'Rp18.297.890', unit: '',      sub: 'oldest waiting 4 days' },
+  { label: 'To disburse',            value: 'Rp8.120.000',  unit: '',      sub: '14 approved items · runs Fri' },
+  { label: 'Spend this month',       value: 'Rp46.200.000', unit: '',      sub: '+12% vs June · on budget' },
 ]
 
 interface WaitingRow { name: string; memo: string; flag: string; kind: string; amount: string }
 const waiting: WaitingRow[] = [
-  { name: 'Maya Chen',    memo: 'Client dinner — Nobu Downtown',   flag: 'Missing itemization', kind: 'warning', amount: 'Rp 184.000' },
-  { name: 'Daniel Reyes', memo: 'Flight SFO → JFK, onsite week',   flag: 'In policy',           kind: 'neutral', amount: 'Rp 412.500' },
-  { name: 'Priya Sharma', memo: 'Adobe Creative Cloud renewal',    flag: 'Possible duplicate',  kind: 'danger',  amount: 'Rp 59.990' },
-  { name: 'Tom Okafor',   memo: 'Team offsite venue deposit',      flag: 'Over limit +Rp 250K', kind: 'warning', amount: 'Rp 1.250.000' },
+  { name: 'Maya Chen',    memo: 'Client dinner — Nobu Downtown',   flag: 'Missing itemization', kind: 'warning', amount: 'Rp184.000' },
+  { name: 'Daniel Reyes', memo: 'Flight SFO → JFK, onsite week',   flag: 'In policy',           kind: 'neutral', amount: 'Rp412.500' },
+  { name: 'Priya Sharma', memo: 'Adobe Creative Cloud renewal',    flag: 'Possible duplicate',  kind: 'danger',  amount: 'Rp59.990' },
+  { name: 'Tom Okafor',   memo: 'Team offsite venue deposit',      flag: 'Over limit +Rp250.000', kind: 'warning', amount: 'Rp1.250.000' },
 ]
 
 const digest = [
   'Sales · Transport is at 98% of its hard cap — blocks new claims in ~4 days at current pace',
-  '3 software renewals hit cards this week — Rp 5,1jt; one card lacks the balance',
+  '3 software renewals hit cards this week — Rp5.100.000; one card lacks the balance',
   '2 claims look like duplicates (same vendor, same amount, 1 day apart) — review those first',
 ]
 
@@ -144,11 +144,11 @@ const row  = css({
   bg: 'background.neutral', transition: 'background-color 120ms ease',
   _hover: { bg: 'background.neutral.hovered' },
 })
-const rowName   = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default', whiteSpace: 'nowrap', width: '132px', flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis' })
-const rowMemo   = css({ fontFamily: 'body', fontSize: 'md', color: 'text.secondary', flex: '1 1 auto', minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' })
-const rowFlag   = css({ display: 'inline-flex', alignItems: 'center', gap: '1.5', fontFamily: 'body', fontSize: 'md', color: 'text.secondary', whiteSpace: 'nowrap', flexShrink: 0 })
+const rowName   = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default', whiteSpace: 'nowrap', width: '132px', flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis' })
+const rowMemo   = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default', flex: '1 1 auto', minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' })
+const rowFlag   = css({ display: 'inline-flex', alignItems: 'center', gap: '1.5', fontFamily: 'body', fontSize: 'md', color: 'text.default', whiteSpace: 'nowrap', flexShrink: 0 })
 const dot       = css({ w: '6px', h: '6px', borderRadius: 'full', flexShrink: 0 })
-const rowAmount = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default', whiteSpace: 'nowrap', textAlign: 'right', width: '104px', flexShrink: 0 })
+const rowAmount = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default', whiteSpace: 'nowrap', textAlign: 'right', width: '104px', flexShrink: 0 })
 
 const digestCard = css({
   bg: 'background.brand', borderWidth: '1px', borderStyle: 'solid',
@@ -215,8 +215,8 @@ const reviewMeta = css({
   </Teleport>
   <Teleport to="#layout-header-actions">
     <MpFlex align="center" gap="2">
-      <MpButton variant="secondary" size="md" left-icon="download">Export</MpButton>
-      <MpButton variant="primary" size="md" @click="navigateTo('/inbox')">Review queue</MpButton>
+      <MpButton variant="secondary" left-icon="download">Export</MpButton>
+      <MpButton variant="primary" @click="navigateTo('/inbox')">Review queue</MpButton>
     </MpFlex>
   </Teleport>
 
@@ -253,7 +253,7 @@ const reviewMeta = css({
       <div :class="card">
         <div :class="sectionHead">
           <span :class="sectionTitle">Waiting on you</span>
-          <MpButton variant="textLink" size="sm" right-icon="arrows-right" @click="navigateTo('/inbox')">Open inbox</MpButton>
+          <MpButton variant="textLink" right-icon="arrows-right" @click="navigateTo('/inbox')">Open inbox</MpButton>
         </div>
         <div :class="list">
           <div v-for="r in waiting" :key="r.name" :class="row">
@@ -262,7 +262,7 @@ const reviewMeta = css({
             <span :class="rowMemo">{{ r.memo }}</span>
             <MpBadge for="tableStatus" :type="flagType(r.kind)">{{ r.flag }}</MpBadge>
             <span :class="rowAmount">{{ r.amount }}</span>
-            <MpButton variant="secondary" size="sm" @click="openReview(r)">Review</MpButton>
+            <MpButton variant="secondary" @click="openReview(r)">Review</MpButton>
           </div>
         </div>
       </div>

@@ -55,9 +55,9 @@ const PERIODS = ['This month', 'Last month', 'Last 90 days', 'This year', 'Custo
 // Travel-policy drawer content (inferred — no reference wiring existed;
 // kept reference-consistent with the New-trip-policy drawer on the home page)
 const perDiemZones = [
-  { zone: 'Zone 1 — Jabodetabek', rate: 'Rp 350.000 / day' },
-  { zone: 'Zone 2 — Java (non-Jabodetabek)', rate: 'Rp 300.000 / day' },
-  { zone: 'Zone 3 — Outer islands', rate: 'Rp 400.000 / day' },
+  { zone: 'Zone 1 — Jabodetabek', rate: 'Rp350.000 / day' },
+  { zone: 'Zone 2 — Java (non-Jabodetabek)', rate: 'Rp300.000 / day' },
+  { zone: 'Zone 3 — Outer islands', rate: 'Rp400.000 / day' },
   { zone: 'Zone 4 — International', rate: 'USD 75 / day' },
 ]
 
@@ -103,9 +103,9 @@ const searchInput = css({
   _placeholder: { color: 'text.secondary' },
 })
 
-const cellMain = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.default', whiteSpace: 'nowrap' })
-const cellLink = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'text.link', textDecoration: 'none', whiteSpace: 'nowrap', _hover: { textDecoration: 'underline' } })
-const cellSub  = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.secondary', whiteSpace: 'nowrap' })
+const cellMain = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default', whiteSpace: 'nowrap' })
+const cellLink = css({ fontFamily: 'body', fontSize: 'md', color: 'text.link', textDecoration: 'none', whiteSpace: 'nowrap', _hover: { textDecoration: 'underline' } })
+const cellSub  = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary', whiteSpace: 'nowrap' })
 
 const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
 
@@ -149,7 +149,7 @@ const policyBox  = css({ borderWidth: '1px', borderStyle: 'solid', borderColor: 
       <div :class="toolbarBtnRow">
         <MpPopover id="trips-type" placement="bottom-start" is-close-on-select>
           <MpPopoverTrigger>
-            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ tripType }}</MpButton>
+            <MpButton variant="secondary" size="md" right-icon="caret-down">{{ tripType }}</MpButton>
           </MpPopoverTrigger>
           <MpPopoverContent :class="css({ minWidth: '180px' })">
             <MpPopoverList>
@@ -159,7 +159,7 @@ const policyBox  = css({ borderWidth: '1px', borderStyle: 'solid', borderColor: 
         </MpPopover>
         <MpPopover id="trips-status" placement="bottom-start" is-close-on-select>
           <MpPopoverTrigger>
-            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ statusFilter }}</MpButton>
+            <MpButton variant="secondary" size="md" right-icon="caret-down">{{ statusFilter }}</MpButton>
           </MpPopoverTrigger>
           <MpPopoverContent :class="css({ minWidth: '180px' })">
             <MpPopoverList>
@@ -167,12 +167,12 @@ const policyBox  = css({ borderWidth: '1px', borderStyle: 'solid', borderColor: 
             </MpPopoverList>
           </MpPopoverContent>
         </MpPopover>
-        <MpButton variant="secondary" size="sm" left-icon="filter" @click="filtersOpen = true">Filters</MpButton>
+        <MpButton variant="secondary" left-icon="filter" @click="filtersOpen = true">Filters</MpButton>
       </div>
       <div :class="toolbarBtnRow">
         <MpPopover id="trips-sort" placement="bottom-start" is-close-on-select>
           <MpPopoverTrigger>
-            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ sortBy }}</MpButton>
+            <MpButton variant="secondary" size="md" right-icon="caret-down">{{ sortBy }}</MpButton>
           </MpPopoverTrigger>
           <MpPopoverContent :class="css({ minWidth: '180px' })">
             <MpPopoverList>
@@ -180,7 +180,7 @@ const policyBox  = css({ borderWidth: '1px', borderStyle: 'solid', borderColor: 
             </MpPopoverList>
           </MpPopoverContent>
         </MpPopover>
-        <MpButton variant="secondary" size="sm" left-icon="download">Export</MpButton>
+        <MpButton variant="secondary" left-icon="download">Export</MpButton>
         <label :class="searchBox">
           <PxIcon name="search" :size="16" color="icon.default" />
           <input :class="searchInput" type="text" placeholder="Search employee name…" />
@@ -235,7 +235,7 @@ const policyBox  = css({ borderWidth: '1px', borderStyle: 'solid', borderColor: 
             </MpTableCell>
             <!-- Actions -->
             <MpTableCell as="td" scope="row" :class="css({ textAlign: 'right' })">
-              <MpButton variant="ghost" size="sm" left-icon="menu-meatball" aria-label="Row actions" />
+              <MpButton variant="ghost" left-icon="menu-meatball" aria-label="Row actions" />
             </MpTableCell>
           </MpTableRow>
         </MpTableBody>
@@ -316,7 +316,7 @@ const policyBox  = css({ borderWidth: '1px', borderStyle: 'solid', borderColor: 
           <!-- Hotel nightly cap -->
           <MpFlex direction="column" gap="1">
             <span :class="fieldLabel">Hotel nightly cap</span>
-            <MpText size="body" color="secondary">Rp 1.200.000 domestic · USD 180 international, per night.</MpText>
+            <MpText size="body" color="secondary">Rp1.200.000 domestic · USD 180 international, per night.</MpText>
           </MpFlex>
           <!-- Per-diem rates by zone -->
           <MpFlex direction="column" gap="3">

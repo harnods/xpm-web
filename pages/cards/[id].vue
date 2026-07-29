@@ -24,9 +24,9 @@ definePageMeta({
 
 // ─── Data ────────────────────────────────────────────────────────────
 const balanceCells = [
-  { label: 'Remaining balance', value: 'Rp 100.000.000', sub: '' },
-  { label: 'Loaded to card',    value: 'Rp 250.000.000', sub: '' },
-  { label: 'Spent',             value: 'Rp 150.000.000', sub: '3 transactions' },
+  { label: 'Remaining balance', value: 'Rp100.000.000', sub: '' },
+  { label: 'Loaded to card',    value: 'Rp250.000.000', sub: '' },
+  { label: 'Spent',             value: 'Rp150.000.000', sub: '3 transactions' },
   { label: 'Funded from',       value: 'Main account',   sub: 'wallet' },
 ]
 
@@ -41,11 +41,11 @@ interface Activity {
   amount: string; positive: boolean
 }
 const activity: Activity[] = [
-  { title: 'Tokopedia — test order',   sub: '20260630012 · 30 Jun 2026',        badge: 'Debit',   badgeType: 'neutral',   amount: '−Rp 100.000', positive: false },
-  { title: 'DANA QR — refund test',    sub: '20260628008 · 28 Jun 2026',        badge: 'Credit',  badgeType: 'completed', amount: '+Rp 25.000',  positive: true  },
-  { title: 'DANA QR',                  sub: '20260628007 · 28 Jun 2026',        badge: 'Debit',   badgeType: 'neutral',   amount: '−Rp 75.000',  positive: false },
-  { title: 'QR payment fee',           sub: '20260628007 · 28 Jun 2026',        badge: 'Fee',     badgeType: 'neutral',   amount: '−Rp 700',     positive: false },
-  { title: 'Card activation top-up',   sub: '15 Jun 2026 · from Main account',  badge: 'Success', badgeType: 'completed', amount: '+Rp 250.000', positive: true  },
+  { title: 'Tokopedia — test order',   sub: '20260630012 · 30 Jun 2026',        badge: 'Debit',   badgeType: 'neutral',   amount: '−Rp100.000', positive: false },
+  { title: 'DANA QR — refund test',    sub: '20260628008 · 28 Jun 2026',        badge: 'Credit',  badgeType: 'completed', amount: '+Rp25.000',  positive: true  },
+  { title: 'DANA QR',                  sub: '20260628007 · 28 Jun 2026',        badge: 'Debit',   badgeType: 'neutral',   amount: '−Rp75.000',  positive: false },
+  { title: 'QR payment fee',           sub: '20260628007 · 28 Jun 2026',        badge: 'Fee',     badgeType: 'neutral',   amount: '−Rp700',     positive: false },
+  { title: 'Card activation top-up',   sub: '15 Jun 2026 · from Main account',  badge: 'Success', badgeType: 'completed', amount: '+Rp250.000', positive: true  },
 ]
 
 const cardInfo = [
@@ -73,9 +73,9 @@ function deactivate() { status.value = 'Inactive' }
 // ─── Top up balance drawer ─────────────────────────────────────────────
 interface Wallet { id: string; name: string; balance: string }
 const wallets: Wallet[] = [
-  { id: 'main',   name: 'Main account',       balance: 'Rp 0' },
-  { id: 'reimb',  name: 'Reimbursement pool',  balance: 'Rp 6.773.797' },
-  { id: 'float',  name: 'Card float',          balance: 'Rp 2.180.000' },
+  { id: 'main',   name: 'Main account',       balance: 'Rp0' },
+  { id: 'reimb',  name: 'Reimbursement pool',  balance: 'Rp6.773.797' },
+  { id: 'float',  name: 'Card float',          balance: 'Rp2.180.000' },
 ]
 const isTopUpOpen = ref(false)
 const selectedWallet = ref('float')
@@ -107,7 +107,7 @@ const balanceCell = css({
 })
 const cellLabel = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
 const cellBig   = css({ fontFamily: 'body', fontSize: '2xl', fontWeight: 'bold', color: 'text.default', lineHeight: 'xs' })
-const cellMed   = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default' })
+const cellMed   = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default' })
 const cellSub   = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
 
 const progressWrap = css({ display: 'flex', alignItems: 'center', gap: '3', px: '5', py: '4' })
@@ -145,10 +145,10 @@ const actRow = css({
   _last: { borderBottomWidth: '0' },
 })
 const actMeta  = css({ display: 'flex', flexDirection: 'column', gap: '0.5', minWidth: '0', flex: '1 1 auto' })
-const actTitle = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default' })
+const actTitle = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default' })
 const actSub   = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
-const actAmount = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', whiteSpace: 'nowrap', textAlign: 'right', flexShrink: 0, width: '112px' })
-const actAmountPos = css({ color: 'text.success' })
+const actAmount = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default', whiteSpace: 'nowrap', textAlign: 'right', flexShrink: 0, width: '112px' })
+const actAmountPos = css({ color: 'text.default' })
 const actAmountNeg = css({ color: 'text.default' })
 
 // Card visual
@@ -206,9 +206,9 @@ const walletBalance = css({ fontFamily: 'body', fontSize: 'md', color: 'text.sec
   <!-- ═════ Header CTAs ═════ -->
   <Teleport to="#layout-header-actions">
     <MpFlex align="center" gap="2">
-      <MpButton variant="secondary" size="md" @click="toggleFreeze">{{ isFrozen ? 'Unfreeze' : 'Freeze' }}</MpButton>
-      <MpButton variant="ghost" size="md" color="text.danger" @click="deactivate">Deactivate</MpButton>
-      <MpButton variant="primary" size="md" @click="openTopUp">Top up balance</MpButton>
+      <MpButton variant="secondary" @click="toggleFreeze">{{ isFrozen ? 'Unfreeze' : 'Freeze' }}</MpButton>
+      <MpButton variant="ghost" color="text.danger" @click="deactivate">Deactivate</MpButton>
+      <MpButton variant="primary" @click="openTopUp">Top up balance</MpButton>
     </MpFlex>
   </Teleport>
 
@@ -349,7 +349,7 @@ const walletBalance = css({ fontFamily: 'body', fontSize: 'md', color: 'text.sec
               <MpInput :modelValue="topUpAmount" placeholder="0" :isFullWidth="true"
                 @input="(e: Event) => (topUpAmount = formatThousands((e.target as HTMLInputElement).value))" />
             </MpInputGroup>
-            <MpFormHelpText>New card balance after top-up: Rp 100.000.000</MpFormHelpText>
+            <MpFormHelpText>New card balance after top-up: Rp100.000.000</MpFormHelpText>
           </MpFormControl>
 
           <!-- Reason -->
@@ -362,8 +362,8 @@ const walletBalance = css({ fontFamily: 'body', fontSize: 'md', color: 'text.sec
 
       <MpDrawerFooter>
         <MpFlex align="center" justify="flex-end" gap="3" width="full">
-          <MpButton variant="ghost" size="md" @click="isTopUpOpen = false">Cancel</MpButton>
-          <MpButton variant="primary" size="md" @click="proceedTopUp">Proceed</MpButton>
+          <MpButton variant="ghost" @click="isTopUpOpen = false">Cancel</MpButton>
+          <MpButton variant="primary" @click="proceedTopUp">Proceed</MpButton>
         </MpFlex>
       </MpDrawerFooter>
     </MpDrawerContent>

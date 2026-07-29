@@ -47,25 +47,25 @@ interface Row {
 // Each tab shows a DIFFERENT dataset ──────────────────────────────────
 const DATASETS: Record<Tab, Row[]> = {
   Invoice: [
-    { doc: 'PI-64401', primary: 'Manna Jaya Trading',  sub: '1 line item',  date: 'Jul 15', due: 'Aug 15', status: 'Overdue',          total: 'Rp 3.210.000'  },
-    { doc: 'PI-64432', primary: 'Movus Technologies',  sub: '2 line items', date: 'Jul 18', due: 'Aug 18', status: 'Paid',             total: 'Rp 12.400.000' },
-    { doc: 'PI-64470', primary: 'Brassica Supply Co.', sub: '2 line items', date: 'Jul 20', due: 'Aug 20', status: 'Awaiting payment', total: 'Rp 6.050.000'  },
-    { doc: 'PI-64469', primary: 'Integrity Partners',  sub: '1 line item',  date: 'Jul 20', due: 'Aug 20', status: 'Awaiting review',  total: 'Rp 6.050.000'  },
-    { doc: 'PI-64468', primary: 'AJN Solutions',       sub: '2 line items', date: 'Jul 20', due: 'Aug 20', status: 'Awaiting review',  total: 'Rp 6.050.000'  },
+    { doc: 'PI-64401', primary: 'Manna Jaya Trading',  sub: '1 line item',  date: 'Jul 15', due: 'Aug 15', status: 'Overdue',          total: 'Rp3.210.000'  },
+    { doc: 'PI-64432', primary: 'Movus Technologies',  sub: '2 line items', date: 'Jul 18', due: 'Aug 18', status: 'Paid',             total: 'Rp12.400.000' },
+    { doc: 'PI-64470', primary: 'Brassica Supply Co.', sub: '2 line items', date: 'Jul 20', due: 'Aug 20', status: 'Awaiting payment', total: 'Rp6.050.000'  },
+    { doc: 'PI-64469', primary: 'Integrity Partners',  sub: '1 line item',  date: 'Jul 20', due: 'Aug 20', status: 'Awaiting review',  total: 'Rp6.050.000'  },
+    { doc: 'PI-64468', primary: 'AJN Solutions',       sub: '2 line items', date: 'Jul 20', due: 'Aug 20', status: 'Awaiting review',  total: 'Rp6.050.000'  },
   ],
   Order: [
-    { doc: 'PO-2211', primary: 'Krakatau Steel Trading', sub: '2 line items', date: 'Jul 15', due: 'Aug 10', status: 'Draft',    total: 'Rp 22.900.000' },
-    { doc: 'PO-2213', primary: 'Movus Technologies',     sub: '2 line items', date: 'Jul 18', due: 'Jul 30', status: 'Received', total: 'Rp 5.150.000'  },
-    { doc: 'PO-2214', primary: 'Brassica Supply Co.',    sub: '2 line items', date: 'Jul 21', due: 'Aug 02', status: 'Sent',     total: 'Rp 8.400.000'  },
+    { doc: 'PO-2211', primary: 'Krakatau Steel Trading', sub: '2 line items', date: 'Jul 15', due: 'Aug 10', status: 'Draft',    total: 'Rp22.900.000' },
+    { doc: 'PO-2213', primary: 'Movus Technologies',     sub: '2 line items', date: 'Jul 18', due: 'Jul 30', status: 'Received', total: 'Rp5.150.000'  },
+    { doc: 'PO-2214', primary: 'Brassica Supply Co.',    sub: '2 line items', date: 'Jul 21', due: 'Aug 02', status: 'Sent',     total: 'Rp8.400.000'  },
   ],
   Quote: [
-    { doc: 'QT-0339', primary: 'Integrity Partners', sub: '1 line item', date: 'Jul 16', due: 'Aug 16', status: 'Accepted',  total: 'Rp 4.200.000' },
-    { doc: 'QT-0341', primary: 'AJN Solutions',      sub: '1 line item', date: 'Jul 19', due: 'Aug 19', status: 'Comparing', total: 'Rp 7.850.000' },
+    { doc: 'QT-0339', primary: 'Integrity Partners', sub: '1 line item', date: 'Jul 16', due: 'Aug 16', status: 'Accepted',  total: 'Rp4.200.000' },
+    { doc: 'QT-0341', primary: 'AJN Solutions',      sub: '1 line item', date: 'Jul 19', due: 'Aug 19', status: 'Comparing', total: 'Rp7.850.000' },
   ],
   Request: [
-    { doc: 'PR-1105', primary: 'Priya Sharma',  sub: 'Marketing',   date: 'Jul 15', due: 'Jul 29', status: 'Rejected',          total: 'Rp 2.100.000' },
-    { doc: 'PR-1107', primary: 'Daniel Reyes',  sub: 'Operations',  date: 'Jul 19', due: 'Aug 01', status: 'Approved',          total: 'Rp 578.000'   },
-    { doc: 'PR-1108', primary: 'Citra Lestari', sub: 'Procurement', date: 'Jul 21', due: 'Aug 05', status: 'Awaiting approval', total: 'Rp 1.396.000' },
+    { doc: 'PR-1105', primary: 'Priya Sharma',  sub: 'Marketing',   date: 'Jul 15', due: 'Jul 29', status: 'Rejected',          total: 'Rp2.100.000' },
+    { doc: 'PR-1107', primary: 'Daniel Reyes',  sub: 'Operations',  date: 'Jul 19', due: 'Aug 01', status: 'Approved',          total: 'Rp578.000'   },
+    { doc: 'PR-1108', primary: 'Citra Lestari', sub: 'Procurement', date: 'Jul 21', due: 'Aug 05', status: 'Awaiting approval', total: 'Rp1.396.000' },
   ],
 }
 
@@ -159,7 +159,7 @@ const searchInput = css({
 
 const docLink   = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'medium', color: 'text.link', cursor: 'pointer' })
 const vendorSub = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
-const totalText = css({ fontWeight: 'semiBold', textAlign: 'right' })
+const totalText = css({ textAlign: 'right' })
 
 const footer = css({
   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -191,7 +191,7 @@ const pillActive = css({
 <template>
   <!-- ═════ Header CTAs ═════ -->
   <Teleport to="#layout-header-actions">
-    <MpButton variant="primary" size="md" @click="createOpen = true">Create purchase</MpButton>
+    <MpButton variant="primary" @click="createOpen = true">Create purchase</MpButton>
   </Teleport>
 
   <!-- ═════ Primary tabs (into layout tab-slot) ═════ -->
@@ -215,7 +215,7 @@ const pillActive = css({
       <MpFlex align="center" gap="2" wrap="wrap">
         <MpPopover id="flt-status" placement="bottom-start" is-close-on-select>
           <MpPopoverTrigger>
-            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ statusSel }}</MpButton>
+            <MpButton variant="secondary" right-icon="caret-down">{{ statusSel }}</MpButton>
           </MpPopoverTrigger>
           <MpPopoverContent :class="css({ minWidth: '180px' })">
             <MpPopoverList>
@@ -225,7 +225,7 @@ const pillActive = css({
         </MpPopover>
         <MpPopover id="flt-account" placement="bottom-start" is-close-on-select>
           <MpPopoverTrigger>
-            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ accountSel }}</MpButton>
+            <MpButton variant="secondary" right-icon="caret-down">{{ accountSel }}</MpButton>
           </MpPopoverTrigger>
           <MpPopoverContent :class="css({ minWidth: '180px' })">
             <MpPopoverList>
@@ -235,7 +235,7 @@ const pillActive = css({
         </MpPopover>
         <MpPopover id="flt-month" placement="bottom-start" is-close-on-select>
           <MpPopoverTrigger>
-            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ monthSel }}</MpButton>
+            <MpButton variant="secondary" right-icon="caret-down">{{ monthSel }}</MpButton>
           </MpPopoverTrigger>
           <MpPopoverContent :class="css({ minWidth: '180px' })">
             <MpPopoverList>
@@ -243,13 +243,13 @@ const pillActive = css({
             </MpPopoverList>
           </MpPopoverContent>
         </MpPopover>
-        <MpButton variant="secondary" size="sm" left-icon="filter" @click="filtersOpen = true">Filters</MpButton>
+        <MpButton variant="secondary" left-icon="filter" @click="filtersOpen = true">Filters</MpButton>
       </MpFlex>
 
       <MpFlex align="center" gap="2" wrap="wrap">
         <MpPopover id="flt-sort" placement="bottom-start" is-close-on-select>
           <MpPopoverTrigger>
-            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ sortSel }}</MpButton>
+            <MpButton variant="secondary" right-icon="caret-down">{{ sortSel }}</MpButton>
           </MpPopoverTrigger>
           <MpPopoverContent :class="css({ minWidth: '180px' })">
             <MpPopoverList>
@@ -257,7 +257,7 @@ const pillActive = css({
             </MpPopoverList>
           </MpPopoverContent>
         </MpPopover>
-        <MpButton variant="secondary" size="sm">Export</MpButton>
+        <MpButton variant="secondary">Export</MpButton>
         <label :class="searchWrap">
           <PxIcon name="search" :size="16" color="icon.subtle" />
           <input :class="searchInput" type="text" placeholder="Search document or vendor…" />
@@ -297,7 +297,7 @@ const pillActive = css({
             </MpTableCell>
             <MpTableCell as="td" :class="css({ textAlign: 'right' })"><span :class="totalText">{{ r.total }}</span></MpTableCell>
             <MpTableCell as="td" :class="css({ textAlign: 'right' })">
-              <MpButton variant="ghost" size="sm" left-icon="menu-meatball" aria-label="More" />
+              <MpButton variant="ghost" left-icon="menu-meatball" aria-label="More" />
             </MpTableCell>
           </MpTableRow>
         </MpTableBody>

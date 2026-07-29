@@ -45,12 +45,12 @@ const CHIP_TYPE: Record<string, string> = {
 
 // ─── Approvals data ──────────────────────────────────────────────────
 const needsAttention = [
-  { name: 'Maya Chen',           type: 'Claim',   category: 'Meals',        vendor: 'Nobu Downtown',      age: '4 days', risk: 'Missing itemization', amount: 'Rp 184.000' },
-  { name: 'Priya Sharma',        type: 'Claim',   category: 'Software',     vendor: 'Adobe Systems',      age: '3 days', risk: 'Possible duplicate',  amount: 'Rp 59.990' },
-  { name: 'Tom Okafor',          type: 'Claim',   category: 'Events',       vendor: 'The Assembly Hall',  age: '3 days', risk: 'Over limit +Rp 250K', amount: 'Rp 1.250.000' },
-  { name: 'Ethan Cole',          type: 'Advance', category: 'Cash advance', vendor: '—',                  age: '3 days', risk: 'No linked trip',      amount: 'Rp 750.000' },
-  { name: 'Brassica Supply Co.', type: 'Invoice', category: 'Vendor bill',  vendor: 'Brassica Supply Co.', age: '2 days', risk: 'PO amount mismatch',  amount: 'Rp 6.050.000' },
-  { name: 'Daniel Reyes',        type: 'Trip',    category: 'New York',     vendor: 'New York, US',       age: '1 day',  risk: 'Hotel above cap',     amount: 'Rp 1.480.000' },
+  { name: 'Maya Chen',           type: 'Claim',   category: 'Meals',        vendor: 'Nobu Downtown',      age: '4 days', risk: 'Missing itemization', amount: 'Rp184.000' },
+  { name: 'Priya Sharma',        type: 'Claim',   category: 'Software',     vendor: 'Adobe Systems',      age: '3 days', risk: 'Possible duplicate',  amount: 'Rp59.990' },
+  { name: 'Tom Okafor',          type: 'Claim',   category: 'Events',       vendor: 'The Assembly Hall',  age: '3 days', risk: 'Over limit +Rp250.000', amount: 'Rp1.250.000' },
+  { name: 'Ethan Cole',          type: 'Advance', category: 'Cash advance', vendor: '—',                  age: '3 days', risk: 'No linked trip',      amount: 'Rp750.000' },
+  { name: 'Brassica Supply Co.', type: 'Invoice', category: 'Vendor bill',  vendor: 'Brassica Supply Co.', age: '2 days', risk: 'PO amount mismatch',  amount: 'Rp6.050.000' },
+  { name: 'Daniel Reyes',        type: 'Trip',    category: 'New York',     vendor: 'New York, US',       age: '1 day',  risk: 'Hotel above cap',     amount: 'Rp1.480.000' },
 ]
 
 // Filter "Needs your attention" by the active chip's row type
@@ -61,13 +61,13 @@ const filteredNeeds = computed(() =>
 )
 
 const autoApprove = ref([
-  { name: 'Tom Okafor',          type: 'Trip',    category: 'Austin',       vendor: 'Austin, US',          age: '4 days', check: 'In policy · risk 12',      amount: 'Rp 3.400.000', checked: true },
-  { name: 'Daniel Reyes',        type: 'Claim',   category: 'Travel',       vendor: 'United Airlines',     age: '2 days', check: 'In policy · risk 12',      amount: 'Rp 412.500',   checked: true },
-  { name: 'Maya Chen',           type: 'Trip',    category: 'London',       vendor: 'London, UK',          age: '2 days', check: 'In policy · risk 12',      amount: 'Rp 2.150.000', checked: true },
-  { name: 'Lena Bauer',          type: 'Claim',   category: 'Events',       vendor: 'SaaStr Inc.',         age: '1 day',  check: 'In policy · risk 12',      amount: 'Rp 899.000',   checked: true },
-  { name: 'Sofia Martins',       type: 'Advance', category: 'Cash advance', vendor: '—',                   age: '1 day',  check: 'In policy · risk 12',      amount: 'Rp 400.000',   checked: true },
-  { name: 'Movus Technologies',  type: 'Invoice', category: 'Vendor bill',  vendor: 'Movus Technologies',  age: '1 day',  check: 'Matches PO · risk 12',     amount: 'Rp 1.240.000', checked: true },
-  { name: 'Sofia Martins',       type: 'Claim',   category: 'Transport',    vendor: 'Uber',                age: '6 hrs',  check: 'Auto-approve fit · risk 7', amount: 'Rp 22.400',    checked: true },
+  { name: 'Tom Okafor',          type: 'Trip',    category: 'Austin',       vendor: 'Austin, US',          age: '4 days', check: 'In policy · risk 12',      amount: 'Rp3.400.000', checked: true },
+  { name: 'Daniel Reyes',        type: 'Claim',   category: 'Travel',       vendor: 'United Airlines',     age: '2 days', check: 'In policy · risk 12',      amount: 'Rp412.500',   checked: true },
+  { name: 'Maya Chen',           type: 'Trip',    category: 'London',       vendor: 'London, UK',          age: '2 days', check: 'In policy · risk 12',      amount: 'Rp2.150.000', checked: true },
+  { name: 'Lena Bauer',          type: 'Claim',   category: 'Events',       vendor: 'SaaStr Inc.',         age: '1 day',  check: 'In policy · risk 12',      amount: 'Rp899.000',   checked: true },
+  { name: 'Sofia Martins',       type: 'Advance', category: 'Cash advance', vendor: '—',                   age: '1 day',  check: 'In policy · risk 12',      amount: 'Rp400.000',   checked: true },
+  { name: 'Movus Technologies',  type: 'Invoice', category: 'Vendor bill',  vendor: 'Movus Technologies',  age: '1 day',  check: 'Matches PO · risk 12',     amount: 'Rp1.240.000', checked: true },
+  { name: 'Sofia Martins',       type: 'Claim',   category: 'Transport',    vendor: 'Uber',                age: '6 hrs',  check: 'Auto-approve fit · risk 7', amount: 'Rp22.400',    checked: true },
 ])
 
 // Clear the auto-approve queue (prototype "Approve all")
@@ -179,10 +179,10 @@ const dot = css({ w: '6px', h: '6px', borderRadius: 'full', flexShrink: 0 })
 
 // Table cell content (DT2.4 semantic tokens)
 const cellName = css({ display: 'inline-flex', alignItems: 'center', gap: '2.5' })
-const nameText = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default' })
-const secondaryText = css({ fontFamily: 'body', fontSize: 'md', color: 'text.secondary' })
-const riskCell = css({ display: 'inline-flex', alignItems: 'center', gap: '2', fontFamily: 'body', fontSize: 'md', color: 'text.secondary' })
-const amountCell = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default', textAlign: 'right', whiteSpace: 'nowrap' })
+const nameText = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default' })
+const secondaryText = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default' })
+const riskCell = css({ display: 'inline-flex', alignItems: 'center', gap: '2', fontFamily: 'body', fontSize: 'md', color: 'text.default' })
+const amountCell = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default', textAlign: 'right', whiteSpace: 'nowrap' })
 const checkbox = css({ w: '16px', h: '16px', cursor: 'pointer', accentColor: 'background.brand.bold' })
 
 // List rows (to-do / notifications)
@@ -198,7 +198,7 @@ const listRow = css({
   _hover: { bg: 'background.neutral.hovered' },
 })
 const rowBody = css({ display: 'flex', flexDirection: 'column', gap: '0.5', flex: '1 1 auto', minWidth: 0 })
-const rowTitle = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' })
+const rowTitle = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' })
 const rowSub = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' })
 const rowAge = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary', whiteSpace: 'nowrap', flexShrink: 0 })
 const iconChip = css({
@@ -265,7 +265,7 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
             <span :class="[dot, css({ background: 'icon.warning' })]" />8
           </span>
           <span :class="sectionRight">
-            <span :class="sectionSub">Rp 9.773.990 waiting · flagged by policy or AI</span>
+            <span :class="sectionSub">Rp9.773.990 waiting · flagged by policy or AI</span>
           </span>
         </div>
 
@@ -300,7 +300,7 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
                 </MpTableCell>
                 <MpTableCell as="td" :class="css({ textAlign: 'right' })"><span :class="amountCell">{{ r.amount }}</span></MpTableCell>
                 <MpTableCell as="td" :class="css({ textAlign: 'right' })">
-                  <MpButton variant="secondary" size="sm" @click="openReview(r, 'needs')">Review</MpButton>
+                  <MpButton variant="secondary" @click="openReview(r, 'needs')">Review</MpButton>
                 </MpTableCell>
               </MpTableRow>
               <MpTableRow v-if="filteredNeeds.length === 0">
@@ -320,8 +320,8 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
           </span>
           <span :class="sectionSub">in policy, clean receipts, low AI risk</span>
           <span :class="[sectionRight, css({ display: 'inline-flex', alignItems: 'center', gap: '2' })]">
-            <span v-if="autoApprove.length" :class="sectionSub">Rp 8.523.900</span>
-            <MpButton v-if="autoApprove.length" variant="primary" size="sm" @click="approveAll">Approve all</MpButton>
+            <span v-if="autoApprove.length" :class="sectionSub">Rp8.523.900</span>
+            <MpButton v-if="autoApprove.length" variant="primary" @click="approveAll">Approve all</MpButton>
           </span>
         </div>
 
@@ -358,7 +358,7 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
                 </MpTableCell>
                 <MpTableCell as="td" :class="css({ textAlign: 'right' })"><span :class="amountCell">{{ r.amount }}</span></MpTableCell>
                 <MpTableCell as="td" :class="css({ textAlign: 'right' })">
-                  <MpButton variant="secondary" size="sm" @click="openReview(r, 'auto')">Review</MpButton>
+                  <MpButton variant="secondary" @click="openReview(r, 'auto')">Review</MpButton>
                 </MpTableCell>
               </MpTableRow>
               <MpTableRow v-if="autoApprove.length === 0">
@@ -384,7 +384,7 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
               <span :class="rowSub">{{ r.sub }}</span>
             </div>
             <span :class="rowAge">{{ r.age }}</span>
-            <MpButton variant="secondary" size="sm">{{ r.action }}</MpButton>
+            <MpButton variant="secondary">{{ r.action }}</MpButton>
           </div>
         </div>
       </MpFlex>
@@ -399,7 +399,7 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
               <span :class="rowSub">{{ r.sub }}</span>
             </div>
             <span :class="rowAge">{{ r.age }}</span>
-            <MpButton variant="secondary" size="sm">{{ r.action }}</MpButton>
+            <MpButton variant="secondary">{{ r.action }}</MpButton>
           </div>
         </div>
       </MpFlex>
@@ -422,7 +422,7 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
                 <span :class="notifMeta">· {{ n.meta }}</span>
               </span>
             </div>
-            <MpButton variant="textLink" size="sm">{{ n.action }}</MpButton>
+            <MpButton variant="textLink">{{ n.action }}</MpButton>
           </div>
         </div>
       </MpFlex>
@@ -438,7 +438,7 @@ const footNote = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondar
                 <span :class="notifMeta">· {{ n.meta }}</span>
               </span>
             </div>
-            <MpButton variant="textLink" size="sm">{{ n.action }}</MpButton>
+            <MpButton variant="textLink">{{ n.action }}</MpButton>
           </div>
         </div>
       </MpFlex>

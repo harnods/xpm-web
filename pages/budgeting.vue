@@ -41,27 +41,27 @@ interface Row {
 
 // ─── Data ────────────────────────────────────────────────────────────
 const rows: Row[] = [
-  { key: 'total', level: 0, caret: '▾', name: 'Company total', bold: true, owner: '—', period: '—', budget: 'Rp 575jt', spent: 'Rp 394,2jt', pct: 69, right: { pct: 69 } },
+  { key: 'total', level: 0, caret: '▾', name: 'Company total', bold: true, owner: '—', period: '—', budget: 'Rp575.000.000', spent: 'Rp394.200.000', pct: 69, right: { pct: 69 } },
 
-  { key: 'company', level: 1, caret: '▸', name: 'Company', bold: true, owner: 'Adit Nugroho', period: 'monthly', budget: 'Rp 300jt', spent: 'Rp 236jt', pct: 79, right: { pct: 79 } },
+  { key: 'company', level: 1, caret: '▸', name: 'Company', bold: true, owner: 'Adit Nugroho', period: 'monthly', budget: 'Rp300.000.000', spent: 'Rp236.000.000', pct: 79, right: { pct: 79 } },
 
-  { key: 'sales', level: 1, caret: '▾', name: 'Sales', bold: true, owner: 'Maya Chen', period: 'monthly', budget: 'Rp 35jt', spent: 'Rp 23,9jt', pct: 68, right: { pct: 68 } },
+  { key: 'sales', level: 1, caret: '▾', name: 'Sales', bold: true, owner: 'Maya Chen', period: 'monthly', budget: 'Rp35.000.000', spent: 'Rp23.900.000', pct: 68, right: { pct: 68 } },
 
-  { key: 'orgwide', level: 2, name: 'Organization-wide', muted: true, period: 'monthly', budget: 'Rp 24jt', spent: 'Rp 16,4jt', pct: 74, right: { link: 'Adjust' } },
-  { key: 'ow-meals', level: 3, name: 'Meals', tag: 'FLAG', note: '! branches allocate Rp 1ljt — over by Rp 1jt', budget: 'Rp 10jt', spent: 'Rp 7,4jt', pct: 74, right: { pct: 74 } },
-  { key: 'ow-transport', level: 3, name: 'Transport', tag: 'HARD CAP', budget: 'Rp 6jt', spent: 'Rp 5,9jt', pct: 98, right: { pct: 98 } },
-  { key: 'ow-accom', level: 3, name: 'Accommodation', tag: 'TRACK', budget: 'Rp 8jt', spent: 'Rp 3,1jt', pct: 39, right: { pct: 39 } },
-  { key: 'ow-software', level: 3, name: 'Software', tag: 'NOT SET', budget: '—', spent: 'Rp 5,1jt', pct: null, right: { link: 'Set' } },
-  { key: 'ow-recruit', level: 3, name: 'Recruitment', tag: 'NOT SET', budget: '—', spent: 'Rp 5,0jt', pct: null, right: { link: 'Set' } },
-  { key: 'ow-golf', level: 3, name: 'Golf & entertainment', tag: 'NOT SET', budget: '—', spent: 'Rp 6,9jt', pct: null, right: { link: 'Set' } },
+  { key: 'orgwide', level: 2, name: 'Organization-wide', muted: true, period: 'monthly', budget: 'Rp24.000.000', spent: 'Rp16.400.000', pct: 74, right: { link: 'Adjust' } },
+  { key: 'ow-meals', level: 3, name: 'Meals', tag: 'FLAG', note: '! branches allocate Rp11.000.000 — over by Rp1.000.000', budget: 'Rp10.000.000', spent: 'Rp7.400.000', pct: 74, right: { pct: 74 } },
+  { key: 'ow-transport', level: 3, name: 'Transport', tag: 'HARD CAP', budget: 'Rp6.000.000', spent: 'Rp5.900.000', pct: 98, right: { pct: 98 } },
+  { key: 'ow-accom', level: 3, name: 'Accommodation', tag: 'TRACK', budget: 'Rp8.000.000', spent: 'Rp3.100.000', pct: 39, right: { pct: 39 } },
+  { key: 'ow-software', level: 3, name: 'Software', tag: 'NOT SET', budget: '—', spent: 'Rp5.100.000', pct: null, right: { link: 'Set' } },
+  { key: 'ow-recruit', level: 3, name: 'Recruitment', tag: 'NOT SET', budget: '—', spent: 'Rp5.000.000', pct: null, right: { link: 'Set' } },
+  { key: 'ow-golf', level: 3, name: 'Golf & entertainment', tag: 'NOT SET', budget: '—', spent: 'Rp6.900.000', pct: null, right: { link: 'Set' } },
 
-  { key: 'jkt', level: 2, name: 'Jakarta branch', muted: true, period: 'monthly', budget: 'Rp 6jt', spent: 'Rp 4,2jt', pct: null, right: { link: 'Adjust' } },
-  { key: 'jkt-meals', level: 3, name: 'Meals', tag: 'FLAG', budget: 'Rp 6jt', spent: 'Rp 4,2jt', pct: 70, right: { pct: 70 } },
-  { key: 'jkt-transport', level: 3, name: 'Transport', tag: 'NOT SET', budget: '—', spent: 'Rp 5,8jt', pct: null, right: { link: 'Set' } },
-  { key: 'jkt-accom', level: 3, name: 'Accommodation', tag: 'NOT SET', budget: '—', spent: 'Rp 810rb', pct: null, right: { link: 'Set' } },
+  { key: 'jkt', level: 2, name: 'Jakarta branch', muted: true, period: 'monthly', budget: 'Rp6.000.000', spent: 'Rp4.200.000', pct: null, right: { link: 'Adjust' } },
+  { key: 'jkt-meals', level: 3, name: 'Meals', tag: 'FLAG', budget: 'Rp6.000.000', spent: 'Rp4.200.000', pct: 70, right: { pct: 70 } },
+  { key: 'jkt-transport', level: 3, name: 'Transport', tag: 'NOT SET', budget: '—', spent: 'Rp5.800.000', pct: null, right: { link: 'Set' } },
+  { key: 'jkt-accom', level: 3, name: 'Accommodation', tag: 'NOT SET', budget: '—', spent: 'Rp810.000', pct: null, right: { link: 'Set' } },
 
-  { key: 'sby', level: 2, name: 'Surabaya branch', muted: true, period: 'monthly', budget: 'Rp 5jt', spent: 'Rp 3,3jt', pct: null, right: { link: 'Adjust' } },
-  { key: 'sby-meals', level: 3, name: 'Meals', tag: 'TRACK', budget: 'Rp 5jt', spent: 'Rp 3,3jt', pct: 66, right: { pct: 66 } },
+  { key: 'sby', level: 2, name: 'Surabaya branch', muted: true, period: 'monthly', budget: 'Rp5.000.000', spent: 'Rp3.300.000', pct: null, right: { link: 'Adjust' } },
+  { key: 'sby-meals', level: 3, name: 'Meals', tag: 'TRACK', budget: 'Rp5.000.000', spent: 'Rp3.300.000', pct: 66, right: { pct: 66 } },
 ]
 
 const periods = ['All periods', 'Weekly', 'Monthly', 'Quarterly', 'Yearly']
@@ -81,12 +81,12 @@ const bgdCatChips = ['All spend', 'Meals', 'Transport', 'Accommodation', 'Softwa
 // ─── Configured budgets (derived from utilization data) ──────────────
 interface ConfigRow { scope: string; period: string; category: string; cap: string; type: Tag }
 const configRows: ConfigRow[] = [
-  { scope: 'Company',           period: 'monthly', category: 'All spend',     cap: 'Rp 300jt', type: 'TRACK' },
-  { scope: 'Sales',             period: 'monthly', category: 'All spend',     cap: 'Rp 35jt',  type: 'TRACK' },
-  { scope: 'Organization-wide', period: 'monthly', category: 'Meals',         cap: 'Rp 10jt',  type: 'FLAG' },
-  { scope: 'Organization-wide', period: 'monthly', category: 'Transport',     cap: 'Rp 6jt',   type: 'HARD CAP' },
-  { scope: 'Organization-wide', period: 'monthly', category: 'Accommodation', cap: 'Rp 8jt',   type: 'TRACK' },
-  { scope: 'Jakarta branch',    period: 'monthly', category: 'Meals',         cap: 'Rp 6jt',   type: 'FLAG' },
+  { scope: 'Company',           period: 'monthly', category: 'All spend',     cap: 'Rp300.000.000', type: 'TRACK' },
+  { scope: 'Sales',             period: 'monthly', category: 'All spend',     cap: 'Rp35.000.000',  type: 'TRACK' },
+  { scope: 'Organization-wide', period: 'monthly', category: 'Meals',         cap: 'Rp10.000.000',  type: 'FLAG' },
+  { scope: 'Organization-wide', period: 'monthly', category: 'Transport',     cap: 'Rp6.000.000',   type: 'HARD CAP' },
+  { scope: 'Organization-wide', period: 'monthly', category: 'Accommodation', cap: 'Rp8.000.000',   type: 'TRACK' },
+  { scope: 'Jakarta branch',    period: 'monthly', category: 'Meals',         cap: 'Rp6.000.000',   type: 'FLAG' },
 ]
 
 const groups = ['Organization', 'Location', 'Category']
@@ -148,7 +148,7 @@ const barTrack = css({ position: 'relative', width: '96px', height: '6px', borde
 const barFill  = css({ position: 'absolute', left: '0', top: '0', bottom: '0', borderRadius: 'full' })
 const barBrand = css({ background: 'background.brand.bold' })
 const barWarn  = css({ background: 'background.warning.bold' })
-const setLink  = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.link', cursor: 'pointer', _hover: { textDecoration: 'underline' } })
+const setLink  = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'regular', color: 'text.link', cursor: 'pointer', _hover: { textDecoration: 'underline' } })
 const pctText  = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default' })
 
 // Footnote under the table
@@ -167,7 +167,7 @@ const drawerFootnote = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.se
 <template>
   <!-- ═════ Header CTA ═════ -->
   <Teleport to="#layout-header-actions">
-    <MpButton variant="primary" size="md" @click="openDrawer">Set budget</MpButton>
+    <MpButton variant="primary" @click="openDrawer">Set budget</MpButton>
   </Teleport>
 
   <!-- ═════ Tabs strip (into layout title bar area) ═════ -->
@@ -198,7 +198,7 @@ const drawerFootnote = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.se
       <MpFlex align="center" gap="2">
         <MpPopover id="filter-org" use-portal placement="bottom-end" is-close-on-select>
           <MpPopoverTrigger>
-            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ orgFilter }}</MpButton>
+            <MpButton variant="secondary" right-icon="caret-down">{{ orgFilter }}</MpButton>
           </MpPopoverTrigger>
           <MpPopoverContent :class="css({ marginTop: '2px', minWidth: '200px' })">
             <MpPopoverList>
@@ -251,8 +251,8 @@ const drawerFootnote = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.se
                 <MpText
                   as="span"
                   size="body"
-                  :weight="row.bold ? 'semiBold' : 'regular'"
-                  :color="row.muted ? 'text.secondary' : 'text.default'"
+                  weight="regular"
+                  color="text.default"
                 >{{ row.name }}</MpText>
                 <MpBadge v-if="row.tag" for="tableStatus" :type="TAG_BADGE[row.tag]">{{ row.tag }}</MpBadge>
                 <span v-if="row.note" :class="flagNote">{{ row.note }}</span>
@@ -261,17 +261,17 @@ const drawerFootnote = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.se
 
             <!-- OWNER -->
             <td :class="td">
-              <MpText v-if="row.owner" as="span" size="body" color="text.secondary">{{ row.owner }}</MpText>
+              <MpText v-if="row.owner" as="span" size="body" color="text.default">{{ row.owner }}</MpText>
             </td>
 
             <!-- PERIOD -->
             <td :class="td">
-              <MpText v-if="row.period" as="span" size="body" color="text.secondary">{{ row.period }}</MpText>
+              <MpText v-if="row.period" as="span" size="body" color="text.default">{{ row.period }}</MpText>
             </td>
 
             <!-- BUDGET -->
             <td :class="tdNum">
-              <MpText v-if="row.budget" as="span" size="body" :color="row.budget === '—' ? 'text.secondary' : 'text.default'">{{ row.budget }}</MpText>
+              <MpText v-if="row.budget" as="span" size="body" color="text.default">{{ row.budget }}</MpText>
             </td>
 
             <!-- SPENT -->
@@ -320,8 +320,8 @@ const drawerFootnote = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.se
           </thead>
           <tbody>
             <tr v-for="(b, i) in configRows" :key="i" :class="tr">
-              <td :class="td"><MpText as="span" size="body" weight="semiBold" color="text.default">{{ b.scope }}</MpText></td>
-              <td :class="td"><MpText as="span" size="body" color="text.secondary">{{ b.period }}</MpText></td>
+              <td :class="td"><MpText as="span" size="body" weight="regular" color="text.default">{{ b.scope }}</MpText></td>
+              <td :class="td"><MpText as="span" size="body" color="text.default">{{ b.period }}</MpText></td>
               <td :class="td"><MpText as="span" size="body" color="text.default">{{ b.category }}</MpText></td>
               <td :class="tdNum"><MpText as="span" size="body" color="text.default">{{ b.cap }}</MpText></td>
               <td :class="td">

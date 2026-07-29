@@ -23,10 +23,10 @@ definePageMeta({
 
 // ─── Summary cards ───────────────────────────────────────────────────
 const summary = [
-  { label: 'Total out · Jul', value: 'Rp 457,4 jt',     top: 'default' },
-  { label: 'Card spend',      value: 'Rp 44.664.000',   top: 'brand'   },
-  { label: 'Reimbursed',      value: 'Rp 12.513.585',   top: 'success' },
-  { label: 'Bills paid',      value: 'Rp 380.462.009',  top: 'warning' },
+  { label: 'Total out · Jul', value: 'Rp457.400.000',   top: 'default' },
+  { label: 'Card spend',      value: 'Rp44.664.000',   top: 'brand'   },
+  { label: 'Reimbursed',      value: 'Rp12.513.585',   top: 'success' },
+  { label: 'Bills paid',      value: 'Rp380.462.009',  top: 'warning' },
 ]
 
 // ─── Filter tabs ──────────────────────────────────────────────────────
@@ -95,13 +95,13 @@ interface TxRow {
 }
 
 const rows: TxRow[] = [
-  { date: '22 Jul', source: 'Card',          description: 'Grab — ride to airport',              name: 'XM punya 3',          account: 'Main account', status: 'Cleared',            statusKind: 'green', amount: 'Rp 84.000'     },
-  { date: '22 Jul', source: 'Card',          description: 'Meta Ads — July campaign',            name: 'ads meta',            account: 'Main account', status: 'Cleared',            statusKind: 'green', amount: 'Rp 2.400.000'  },
-  { date: '22 Jul', source: 'Reimbursement', description: 'Client lunch',                        name: 'Maya Chen',           account: 'Main account', status: 'Awaiting disburse',  statusKind: 'amber', amount: 'Rp 58.708'     },
-  { date: '20 Jul', source: 'Cash advance',  description: 'Roadshow per diem',                   name: 'Sofia Martins',       account: 'Main account', status: 'Disbursed',          statusKind: 'green', amount: 'Rp 400.000'    },
-  { date: '21 Jul', source: 'Bill',          description: 'PI20260764927 · Batuta Chemical',     name: 'PT Batuta',           account: 'Main account', status: 'Awaiting approval',  statusKind: 'amber', amount: 'Rp 60.500'     },
-  { date: '19 Jul', source: 'Bill',          description: 'PI20260764432 · Movus',               name: 'Movus Technologies',  account: 'Main account', status: 'Paid',               statusKind: 'green', amount: 'Rp 12.400.000' },
-  { date: '20 Jul', source: 'Travel',        description: 'Trip Bandung · BT20260751072',        name: 'XM punya 3',          account: 'Main account', status: 'Booked',             statusKind: 'green', amount: 'Rp 1.250.000'  },
+  { date: '22 Jul', source: 'Card',          description: 'Grab — ride to airport',              name: 'XM punya 3',          account: 'Main account', status: 'Cleared',            statusKind: 'green', amount: 'Rp84.000'     },
+  { date: '22 Jul', source: 'Card',          description: 'Meta Ads — July campaign',            name: 'ads meta',            account: 'Main account', status: 'Cleared',            statusKind: 'green', amount: 'Rp2.400.000'  },
+  { date: '22 Jul', source: 'Reimbursement', description: 'Client lunch',                        name: 'Maya Chen',           account: 'Main account', status: 'Awaiting disburse',  statusKind: 'amber', amount: 'Rp58.708'     },
+  { date: '20 Jul', source: 'Cash advance',  description: 'Roadshow per diem',                   name: 'Sofia Martins',       account: 'Main account', status: 'Disbursed',          statusKind: 'green', amount: 'Rp400.000'    },
+  { date: '21 Jul', source: 'Bill',          description: 'PI20260764927 · Batuta Chemical',     name: 'PT Batuta',           account: 'Main account', status: 'Awaiting approval',  statusKind: 'amber', amount: 'Rp60.500'     },
+  { date: '19 Jul', source: 'Bill',          description: 'PI20260764432 · Movus',               name: 'Movus Technologies',  account: 'Main account', status: 'Paid',               statusKind: 'green', amount: 'Rp12.400.000' },
+  { date: '20 Jul', source: 'Travel',        description: 'Trip Bandung · BT20260751072',        name: 'XM punya 3',          account: 'Main account', status: 'Booked',             statusKind: 'green', amount: 'Rp1.250.000'  },
 ]
 
 // ─── Tab filtering ─────────────────────────────────────────────────────
@@ -170,8 +170,8 @@ const segItemActive = css({
   fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'text.default',
 })
 
-// Table — main cell text inherits MpTable default; amount is semiBold only
-const amountCell = css({ fontWeight: 'semiBold', textAlign: 'right', whiteSpace: 'nowrap' })
+// Table — main cell text inherits MpTable default; amount is right-aligned
+const amountCell = css({ textAlign: 'right', whiteSpace: 'nowrap' })
 
 const footText = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
 
@@ -196,7 +196,7 @@ const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
 <template>
   <!-- ═════ Header CTAs ═════ -->
   <Teleport to="#layout-header-actions">
-    <MpButton variant="primary" size="md">Export ledger</MpButton>
+    <MpButton variant="primary">Export ledger</MpButton>
   </Teleport>
 
   <!-- ═════ Primary tabs (into layout tab-slot) ═════ -->
@@ -226,7 +226,7 @@ const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
       <MpFlex align="center" gap="2">
         <MpPopover id="flt-account" placement="bottom-start" is-close-on-select>
           <MpPopoverTrigger>
-            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ accountSel }}</MpButton>
+            <MpButton variant="secondary" right-icon="caret-down">{{ accountSel }}</MpButton>
           </MpPopoverTrigger>
           <MpPopoverContent :class="css({ minWidth: '180px' })">
             <MpPopoverList>
@@ -236,7 +236,7 @@ const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
         </MpPopover>
         <MpPopover id="flt-month" placement="bottom-start" is-close-on-select>
           <MpPopoverTrigger>
-            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ monthSel }}</MpButton>
+            <MpButton variant="secondary" right-icon="caret-down">{{ monthSel }}</MpButton>
           </MpPopoverTrigger>
           <MpPopoverContent :class="css({ minWidth: '180px' })">
             <MpPopoverList>
@@ -248,7 +248,7 @@ const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
       <MpFlex align="center" gap="2">
         <MpPopover id="flt-sort" placement="bottom-start" is-close-on-select>
           <MpPopoverTrigger>
-            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ sortSel }}</MpButton>
+            <MpButton variant="secondary" right-icon="caret-down">{{ sortSel }}</MpButton>
           </MpPopoverTrigger>
           <MpPopoverContent :class="css({ minWidth: '180px' })">
             <MpPopoverList>
@@ -256,7 +256,7 @@ const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
             </MpPopoverList>
           </MpPopoverContent>
         </MpPopover>
-        <MpButton variant="secondary" size="sm">Export</MpButton>
+        <MpButton variant="secondary">Export</MpButton>
         <MpInputGroup :class="searchGroup">
           <MpInputLeftAddon>
             <PxIcon name="search" :size="16" color="icon.subtle" />
@@ -278,7 +278,7 @@ const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
           >Default</button>
         </div>
       </MpFlex>
-      <MpButton variant="secondary" size="sm" @click="colsOpen = true">Edit columns</MpButton>
+      <MpButton variant="secondary" @click="colsOpen = true">Edit columns</MpButton>
     </MpFlex>
 
     <!-- 5) Table -->

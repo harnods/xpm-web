@@ -64,16 +64,16 @@ const wallets: Wallet[] = [
     updated: '20 Jul 2026',
     currencies: ['IDR', 'USD'],
     lines: [
-      { amt: 'Rp 0', cur: 'IDR' },
+      { amt: 'Rp0', cur: 'IDR' },
       { amt: '$930.00', cur: 'USD' },
     ],
     data: {
       IDR: {
-        balance: 'Rp 0', pending: 'Rp 551.435.464', moneyIn: 'Rp 25.000.000', moneyOut: 'Rp 19.173.797', zero: true,
+        balance: 'Rp0', pending: 'Rp551.435.464', moneyIn: 'Rp25.000.000', moneyOut: 'Rp19.173.797', zero: true,
         txns: [
-          { date: '22 Jul 2026', desc: 'Reimbursement payout',   in: '',              out: 'Rp 6.773.797',  balance: 'Rp 0' },
-          { date: '20 Jul 2026', desc: 'Top up · bank transfer', in: 'Rp 25.000.000', out: '',              balance: 'Rp 6.773.797' },
-          { date: '18 Jul 2026', desc: 'Bill payment · Movus',   in: '',              out: 'Rp 12.400.000', balance: 'Rp -18.226.203' },
+          { date: '22 Jul 2026', desc: 'Reimbursement payout',   in: '',              out: 'Rp6.773.797',  balance: 'Rp0' },
+          { date: '20 Jul 2026', desc: 'Top up · bank transfer', in: 'Rp25.000.000', out: '',              balance: 'Rp6.773.797' },
+          { date: '18 Jul 2026', desc: 'Bill payment · Movus',   in: '',              out: 'Rp12.400.000', balance: '-Rp18.226.203' },
         ],
       },
       USD: {
@@ -102,15 +102,15 @@ const wallets: Wallet[] = [
     updated: '22 Jul 2026',
     currencies: ['IDR'],
     lines: [
-      { amt: 'Rp 6.773.797', cur: 'IDR' },
+      { amt: 'Rp6.773.797', cur: 'IDR' },
     ],
     data: {
       IDR: {
-        balance: 'Rp 6.773.797', pending: 'Rp 0', moneyIn: 'Rp 25.000.000', moneyOut: 'Rp 18.226.203',
+        balance: 'Rp6.773.797', pending: 'Rp0', moneyIn: 'Rp25.000.000', moneyOut: 'Rp18.226.203',
         txns: [
-          { date: '20 Jul 2026', desc: 'Transfer from Main account', in: 'Rp 25.000.000', out: '',              balance: 'Rp 6.773.797' },
-          { date: '19 Jul 2026', desc: 'Reimbursement · A. Wibowo',  in: '',              out: 'Rp 5.826.203',  balance: 'Rp -18.226.203' },
-          { date: '12 Jul 2026', desc: 'Reimbursement · L. Sari',    in: '',              out: 'Rp 12.400.000', balance: 'Rp -12.400.000' },
+          { date: '20 Jul 2026', desc: 'Transfer from Main account', in: 'Rp25.000.000', out: '',              balance: 'Rp6.773.797' },
+          { date: '19 Jul 2026', desc: 'Reimbursement · A. Wibowo',  in: '',              out: 'Rp5.826.203',  balance: '-Rp18.226.203' },
+          { date: '12 Jul 2026', desc: 'Reimbursement · L. Sari',    in: '',              out: 'Rp12.400.000', balance: '-Rp12.400.000' },
         ],
       },
     },
@@ -131,16 +131,16 @@ const wallets: Wallet[] = [
     updated: '17 Jul 2026',
     currencies: ['IDR', 'SGD'],
     lines: [
-      { amt: 'Rp 2.180.000', cur: 'IDR' },
+      { amt: 'Rp2.180.000', cur: 'IDR' },
       { amt: 'S$120.00', cur: 'SGD' },
     ],
     data: {
       IDR: {
-        balance: 'Rp 2.180.000', pending: 'Rp 0', moneyIn: 'Rp 5.000.000', moneyOut: 'Rp 2.820.000',
+        balance: 'Rp2.180.000', pending: 'Rp0', moneyIn: 'Rp5.000.000', moneyOut: 'Rp2.820.000',
         txns: [
-          { date: '17 Jul 2026', desc: 'Card spend · Grab',           in: '',             out: 'Rp 320.000',    balance: 'Rp 2.180.000' },
-          { date: '14 Jul 2026', desc: 'Top up · from Main account',  in: 'Rp 5.000.000', out: '',              balance: 'Rp 2.500.000' },
-          { date: '10 Jul 2026', desc: 'Card spend · AWS',            in: '',             out: 'Rp 2.500.000',  balance: 'Rp -2.500.000' },
+          { date: '17 Jul 2026', desc: 'Card spend · Grab',           in: '',             out: 'Rp320.000',    balance: 'Rp2.180.000' },
+          { date: '14 Jul 2026', desc: 'Top up · from Main account',  in: 'Rp5.000.000', out: '',              balance: 'Rp2.500.000' },
+          { date: '10 Jul 2026', desc: 'Card spend · AWS',            in: '',             out: 'Rp2.500.000',  balance: '-Rp2.500.000' },
         ],
       },
       SGD: {
@@ -430,8 +430,6 @@ const statColors: Record<string, string> = {
   'text.warning': css({ color: 'text.warning' }),
   'text.success': css({ color: 'text.success' }),
 }
-// Money-in cell (positive)
-const moneyIn = css({ color: 'text.success' })
 // Drawer heading (16px / 24px)
 const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
 </script>
@@ -440,9 +438,9 @@ const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
   <!-- ═════ Header CTAs ═════ -->
   <Teleport to="#layout-header-actions">
     <MpFlex align="center" gap="2">
-      <MpButton variant="secondary" size="md" @click="openEdit">Edit wallet</MpButton>
-      <MpButton variant="secondary" size="md" left-icon="transfer" @click="openMove">Move money</MpButton>
-      <MpButton variant="primary" size="md" @click="openTop">Top up</MpButton>
+      <MpButton variant="secondary" @click="openEdit">Edit wallet</MpButton>
+      <MpButton variant="secondary" left-icon="transfer" @click="openMove">Move money</MpButton>
+      <MpButton variant="primary" @click="openTop">Top up</MpButton>
     </MpFlex>
   </Teleport>
 
@@ -450,7 +448,7 @@ const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
   <MpFlex direction="column" gap="4" width="full" minWidth="0">
 
     <!-- All-wallets total -->
-    <span :class="mutedLine">All wallets ≈ Rp 25.572.177</span>
+    <span :class="mutedLine">All wallets ≈ Rp25.572.177</span>
 
     <!-- Zero-balance warning banner -->
     <div v-if="showBanner" :class="banner">
@@ -458,7 +456,7 @@ const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
         <span :class="bannerDot" />
         <span :class="bannerText">{{ selectedWallet.name }} is at zero — top up to release pending payouts.</span>
       </div>
-      <MpButton variant="primary" size="sm" @click="openTop">Top up now</MpButton>
+      <MpButton variant="primary" @click="openTop">Top up now</MpButton>
     </div>
 
     <!-- Two-column layout -->
@@ -484,7 +482,7 @@ const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
           </button>
         </div>
         <div :class="addWalletWrap">
-          <MpButton variant="textLink" size="md" left-icon="add">Add wallet</MpButton>
+          <MpButton variant="textLink" left-icon="add">Add wallet</MpButton>
         </div>
       </div>
 
@@ -559,7 +557,7 @@ const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
                   <MpTableCell as="td" scope="row">{{ r.date }}</MpTableCell>
                   <MpTableCell as="td">{{ r.desc }}</MpTableCell>
                   <MpTableCell as="td" :class="alignRight">
-                    <span v-if="r.in" :class="moneyIn">{{ r.in }}</span>
+                    <span v-if="r.in">{{ r.in }}</span>
                     <span v-else :class="dashCell">—</span>
                   </MpTableCell>
                   <MpTableCell as="td" :class="alignRight">
@@ -582,7 +580,7 @@ const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
                 <span :class="settingsTitle">Wallet details</span>
                 <span :class="settingsSub">Name, purpose and the people accountable for this wallet</span>
               </MpFlex>
-              <MpButton variant="secondary" size="sm" @click="openEdit">Edit</MpButton>
+              <MpButton variant="secondary" @click="openEdit">Edit</MpButton>
             </div>
             <div :class="settingsBody">
               <div :class="settingsRow">
@@ -632,7 +630,7 @@ const drawerHeading = css({ fontSize: 'lg', lineHeight: 'xl' })
                 <span :class="settingsTitle">Funding rules</span>
                 <span :class="settingsSub">Which spend this wallet pays for — by branch, type and policy</span>
               </MpFlex>
-              <MpButton variant="secondary" size="sm" left-icon="add">Add rule</MpButton>
+              <MpButton variant="secondary" left-icon="add">Add rule</MpButton>
             </div>
             <div :class="settingsBody">
               <div v-for="(r, i) in selectedWallet.rules" :key="i" :class="ruleRow">

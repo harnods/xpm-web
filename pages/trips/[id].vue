@@ -88,13 +88,13 @@ const th  = css({
 })
 const thR = css({ textAlign: 'right' })
 const td  = css({
-  fontFamily: 'body', fontSize: 'sm', color: 'text.default',
+  fontFamily: 'body', fontSize: 'md', color: 'text.default',
   paddingInline: '3', paddingBlock: '3',
   borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: 'border.default',
 })
 const tdR = css({ textAlign: 'right', whiteSpace: 'nowrap' })
 const tdMuted = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary', paddingInline: '3', paddingBlock: '3' })
-const totalCell = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.default', paddingInline: '3', paddingBlock: '3' })
+const totalCell = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default', paddingInline: '3', paddingBlock: '3' })
 
 const emptyState = css({
   fontFamily: 'body', fontSize: 'sm', color: 'text.secondary',
@@ -184,8 +184,8 @@ const cardBodyPadTop = css({ paddingTop: '4' })
                 </div>
               </div>
               <div :class="rowBtns">
-                <MpButton variant="secondary" size="sm" right-icon="newtab">Book via OTA</MpButton>
-                <MpButton variant="textLink" size="sm" left-icon="add">Attach document</MpButton>
+                <MpButton variant="secondary" right-icon="newtab">Book via OTA</MpButton>
+                <MpButton variant="textLink" left-icon="add">Attach document</MpButton>
               </div>
             </div>
           </div>
@@ -214,8 +214,8 @@ const cardBodyPadTop = css({ paddingTop: '4' })
                 </div>
               </div>
               <div :class="rowBtns">
-                <MpButton variant="secondary" size="sm" right-icon="newtab">Book via OTA</MpButton>
-                <MpButton variant="textLink" size="sm" left-icon="add">Attach document</MpButton>
+                <MpButton variant="secondary" right-icon="newtab">Book via OTA</MpButton>
+                <MpButton variant="textLink" left-icon="add">Attach document</MpButton>
               </div>
             </div>
           </div>
@@ -241,12 +241,12 @@ const cardBodyPadTop = css({ paddingTop: '4' })
                 <tr>
                   <td :class="td">Per diem</td>
                   <td :class="td">testing · Meals</td>
-                  <td :class="[td, tdR]">Rp 50.000</td>
-                  <td :class="[td, tdR]">Rp 50.000</td>
+                  <td :class="[td, tdR]">Rp50.000</td>
+                  <td :class="[td, tdR]">Rp50.000</td>
                 </tr>
                 <tr>
                   <td :class="totalCell" colspan="3">Total cash advance</td>
-                  <td :class="[totalCell, tdR]">Rp 50.000</td>
+                  <td :class="[totalCell, tdR]">Rp50.000</td>
                 </tr>
               </tbody>
             </table>

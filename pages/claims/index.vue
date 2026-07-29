@@ -51,18 +51,18 @@ interface ClaimRow {
 
 // ─── Mock rows ──────────────────────────────────────────────────────
 const rows: ClaimRow[] = [
-  { id: '2026070210', date: '9 Jul 2026',  type: 'Cash advance',   category: 'Cash advance', categorySub: 'Event cash float — roadshow',       status: 'Settled',            amount: 'Rp 516.000' },
-  { id: '2026072042', date: '12 Jul 2026', type: 'Reimbursement',  category: 'Transport',    categorySub: 'Grab to client office',            status: 'Disbursed',          amount: 'Rp 64.500' },
-  { id: '2026072064', date: '14 Jul 2026', type: 'Reimbursement',  category: 'Travel',       categorySub: 'Hotel minibar',                    status: 'Declined',           amount: 'Rp 41.300' },
-  { id: '2026072071', date: '15 Jul 2026', type: 'Reimbursement',  category: 'Equipment',    categorySub: 'Monitor for home office',           status: 'Awaiting disburse',  amount: 'Rp 249.000' },
-  { id: '2026072088', date: '18 Jul 2026', type: 'Reimbursement',  category: 'Software',     categorySub: 'Adobe Creative Cloud renewal',     status: 'Awaiting approval',  amount: 'Rp 59.990',    flagged: true },
-  { id: '2026072086', date: '18 Jul 2026', type: 'Reimbursement',  category: 'Events',       categorySub: 'Team offsite venue deposit',       status: 'Awaiting approval',  amount: 'Rp 1.250.000', flagged: true },
-  { id: '2026070219', date: '18 Jul 2026', type: 'Cash advance',   category: 'Cash advance', categorySub: 'Trade show cash float',            status: 'Awaiting approval',  amount: 'Rp 750.000',   flagged: true },
-  { id: '2026072093', date: '19 Jul 2026', type: 'Reimbursement',  category: 'Meals',        categorySub: 'Client dinner — Nobu Downtown',    status: 'Awaiting approval',  amount: 'Rp 184.000',   flagged: true },
-  { id: '2026072094', date: '19 Jul 2026', type: 'Reimbursement',  category: 'Travel',       categorySub: 'Flight SFO → JFK, onsite week',    status: 'Awaiting approval',  amount: 'Rp 412.500' },
-  { id: '2026072097', date: '20 Jul 2026', type: 'Reimbursement',  category: 'Events',       categorySub: 'Conference pass — SaaStr Annual',  status: 'Awaiting approval',  amount: 'Rp 899.000' },
-  { id: '2026070221', date: '20 Jul 2026', type: 'Cash advance',   category: 'Cash advance', categorySub: 'Per diem — client roadshow',       status: 'Awaiting approval',  amount: 'Rp 400.000' },
-  { id: '2026072101', date: '22 Jul 2026', type: 'Reimbursement',  category: 'Transport',    categorySub: 'Ride share — client visit',        status: 'Awaiting approval',  amount: 'Rp 22.400' },
+  { id: '2026070210', date: '9 Jul 2026',  type: 'Cash advance',   category: 'Cash advance', categorySub: 'Event cash float — roadshow',       status: 'Settled',            amount: 'Rp516.000' },
+  { id: '2026072042', date: '12 Jul 2026', type: 'Reimbursement',  category: 'Transport',    categorySub: 'Grab to client office',            status: 'Disbursed',          amount: 'Rp64.500' },
+  { id: '2026072064', date: '14 Jul 2026', type: 'Reimbursement',  category: 'Travel',       categorySub: 'Hotel minibar',                    status: 'Declined',           amount: 'Rp41.300' },
+  { id: '2026072071', date: '15 Jul 2026', type: 'Reimbursement',  category: 'Equipment',    categorySub: 'Monitor for home office',           status: 'Awaiting disburse',  amount: 'Rp249.000' },
+  { id: '2026072088', date: '18 Jul 2026', type: 'Reimbursement',  category: 'Software',     categorySub: 'Adobe Creative Cloud renewal',     status: 'Awaiting approval',  amount: 'Rp59.990',    flagged: true },
+  { id: '2026072086', date: '18 Jul 2026', type: 'Reimbursement',  category: 'Events',       categorySub: 'Team offsite venue deposit',       status: 'Awaiting approval',  amount: 'Rp1.250.000', flagged: true },
+  { id: '2026070219', date: '18 Jul 2026', type: 'Cash advance',   category: 'Cash advance', categorySub: 'Trade show cash float',            status: 'Awaiting approval',  amount: 'Rp750.000',   flagged: true },
+  { id: '2026072093', date: '19 Jul 2026', type: 'Reimbursement',  category: 'Meals',        categorySub: 'Client dinner — Nobu Downtown',    status: 'Awaiting approval',  amount: 'Rp184.000',   flagged: true },
+  { id: '2026072094', date: '19 Jul 2026', type: 'Reimbursement',  category: 'Travel',       categorySub: 'Flight SFO → JFK, onsite week',    status: 'Awaiting approval',  amount: 'Rp412.500' },
+  { id: '2026072097', date: '20 Jul 2026', type: 'Reimbursement',  category: 'Events',       categorySub: 'Conference pass — SaaStr Annual',  status: 'Awaiting approval',  amount: 'Rp899.000' },
+  { id: '2026070221', date: '20 Jul 2026', type: 'Cash advance',   category: 'Cash advance', categorySub: 'Per diem — client roadshow',       status: 'Awaiting approval',  amount: 'Rp400.000' },
+  { id: '2026072101', date: '22 Jul 2026', type: 'Reimbursement',  category: 'Transport',    categorySub: 'Ride share — client visit',        status: 'Awaiting approval',  amount: 'Rp22.400' },
 ]
 
 // ─── Interactivity: state ───────────────────────────────────────────
@@ -99,10 +99,10 @@ function resetFilters() { fClaimType.value = null; fStatus.value = null; fPeriod
 // "Claim policy" drawer — inferred, reference-consistent (static demo data).
 const receiptRequired  = ref(true)
 const policyCaps = [
-  { name: 'Meals',         cap: 'Rp 200.000 / day' },
-  { name: 'Transport',     cap: 'Rp 500.000 / week' },
-  { name: 'Accommodation', cap: 'Rp 1.500.000 / night' },
-  { name: 'Software',      cap: 'Rp 5.000.000 / month' },
+  { name: 'Meals',         cap: 'Rp200.000 / day' },
+  { name: 'Transport',     cap: 'Rp500.000 / week' },
+  { name: 'Accommodation', cap: 'Rp1.500.000 / night' },
+  { name: 'Software',      cap: 'Rp5.000.000 / month' },
 ]
 
 // ─── CSS ────────────────────────────────────────────────────────────
@@ -119,10 +119,10 @@ const searchInput = css({
   _placeholder: { color: 'text.secondary' },
 })
 
-const link      = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.link', whiteSpace: 'nowrap' })
-const catMain    = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.default' })
-const catSub     = css({ fontFamily: 'body', fontSize: 'xs', color: 'text.secondary' })
-const amount     = css({ fontFamily: 'body', fontSize: 'sm', fontWeight: 'semiBold', color: 'text.default', whiteSpace: 'nowrap', textAlign: 'right' })
+const link      = css({ fontFamily: 'body', fontSize: 'md', color: 'text.link', whiteSpace: 'nowrap' })
+const catMain    = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default' })
+const catSub     = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
+const amount     = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default', whiteSpace: 'nowrap', textAlign: 'right' })
 const footText   = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary', whiteSpace: 'nowrap' })
 
 // Drawer section blocks
@@ -170,7 +170,7 @@ const policyInput = css({
       <MpFlex align="center" gap="2" wrap="wrap">
         <MpPopover id="claims-month" placement="bottom-start" is-close-on-select>
           <MpPopoverTrigger>
-            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ monthSel }}</MpButton>
+            <MpButton variant="secondary" size="md" right-icon="caret-down">{{ monthSel }}</MpButton>
           </MpPopoverTrigger>
           <MpPopoverContent :class="css({ minWidth: '180px' })">
             <MpPopoverList>
@@ -182,7 +182,7 @@ const policyInput = css({
         <!-- Working status filter -->
         <MpPopover id="claims-status" placement="bottom-start" is-close-on-select>
           <MpPopoverTrigger>
-            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ statusFilter }}</MpButton>
+            <MpButton variant="secondary" size="md" right-icon="caret-down">{{ statusFilter }}</MpButton>
           </MpPopoverTrigger>
           <MpPopoverContent :class="css({ minWidth: '180px' })">
             <MpPopoverList>
@@ -191,14 +191,14 @@ const policyInput = css({
           </MpPopoverContent>
         </MpPopover>
 
-        <MpButton variant="secondary" size="sm" left-icon="filter" @click="filtersOpen = true">Filters</MpButton>
+        <MpButton variant="secondary" left-icon="filter" @click="filtersOpen = true">Filters</MpButton>
       </MpFlex>
 
       <!-- Right -->
       <MpFlex align="center" gap="2" wrap="wrap">
         <MpPopover id="claims-sort" placement="bottom-start" is-close-on-select>
           <MpPopoverTrigger>
-            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ sortBy }}</MpButton>
+            <MpButton variant="secondary" size="md" right-icon="caret-down">{{ sortBy }}</MpButton>
           </MpPopoverTrigger>
           <MpPopoverContent :class="css({ minWidth: '180px' })">
             <MpPopoverList>
@@ -206,7 +206,7 @@ const policyInput = css({
             </MpPopoverList>
           </MpPopoverContent>
         </MpPopover>
-        <MpButton variant="secondary" size="sm" left-icon="download">Export</MpButton>
+        <MpButton variant="secondary" left-icon="download">Export</MpButton>
         <label :class="searchWrap">
           <PxIcon name="search" :size="16" color="icon.subtle" />
           <input :class="searchInput" type="text" placeholder="Search transaction id…" />
@@ -384,7 +384,7 @@ const policyInput = css({
               <span :class="fieldLabel">Auto-approve threshold</span>
               <span :class="helpText">Claims below this amount skip approval.</span>
             </MpFlex>
-            <input :class="policyInput" type="text" value="Rp 100.000" />
+            <input :class="policyInput" type="text" value="Rp100.000" />
           </MpFlex>
 
           <!-- Approval routing note -->

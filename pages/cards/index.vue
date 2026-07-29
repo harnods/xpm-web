@@ -24,9 +24,9 @@ definePageMeta({
 
 // ─── Data ────────────────────────────────────────────────────────────
 const summary = [
-  { label: 'Active cards',          badge: '12', value: 'Rp 1.240.000', top: 'success' as const },
-  { label: 'Inactive',              badge: '8',  value: 'Rp 620.000',   top: 'default' as const },
-  { label: 'Card creation credit',  badge: null, value: '20',           top: 'brand'   as const },
+  { label: 'Active cards',          badge: '12', value: 'Rp1.240.000', top: 'success' as const },
+  { label: 'Inactive',              badge: '8',  value: 'Rp620.000',   top: 'default' as const },
+  { label: 'Card creation credit',  badge: null, value: '20',          top: 'brand'   as const },
 ]
 
 const tabs = [
@@ -45,17 +45,17 @@ interface CardRow {
 
 // Virtual cards — existing dataset (unchanged)
 const virtualRows: CardRow[] = [
-  { id: 'c1', name: 'Nabila MNC Test VCC',   nameSub: 'Testing refund and reversal', holder: 'XM punya 3',              holderSub: 'BUATXM3',   exp: '30 Jun 2026', balance: 'Rp 100.000', account: 'Main account', status: 'Inactive' },
-  { id: 'c2', name: 'ads meta',              nameSub: 'iklan',                       holder: 'Trial Aeon',             holderSub: 'PRMT-0081', exp: '01 Jul 2026', balance: 'Rp 50.000',  account: 'Main account', status: 'Inactive' },
-  { id: 'c3', name: 'Nabila MNC Test VCC 3', nameSub: 'Testing Dana QR',             holder: 'XM punya 3',             holderSub: 'BUATXM3',   exp: '01 Aug 2026', balance: 'Rp 50.000',  account: 'Main account', status: 'Active' },
-  { id: 'c4', name: 'VCC untuk Meta',        nameSub: 'Untuk pembayaran WABA',       holder: 'Test XPM - Abdul',       holderSub: 'PRMT-0028', exp: '31 Dec 2026', balance: 'Rp 50.000',  account: 'Main account', status: 'Active' },
-  { id: 'c5', name: 'Grab Activation',       nameSub: 'testing',                     holder: 'Activation Specialist',  holderSub: 'PRMT-0031', exp: '25 Jun 2028', balance: 'Rp 440.000', account: 'Main account', status: 'Active' },
+  { id: 'c1', name: 'Nabila MNC Test VCC',   nameSub: 'Testing refund and reversal', holder: 'XM punya 3',              holderSub: 'BUATXM3',   exp: '30 Jun 2026', balance: 'Rp100.000', account: 'Main account', status: 'Inactive' },
+  { id: 'c2', name: 'ads meta',              nameSub: 'iklan',                       holder: 'Trial Aeon',             holderSub: 'PRMT-0081', exp: '01 Jul 2026', balance: 'Rp50.000',  account: 'Main account', status: 'Inactive' },
+  { id: 'c3', name: 'Nabila MNC Test VCC 3', nameSub: 'Testing Dana QR',             holder: 'XM punya 3',             holderSub: 'BUATXM3',   exp: '01 Aug 2026', balance: 'Rp50.000',  account: 'Main account', status: 'Active' },
+  { id: 'c4', name: 'VCC untuk Meta',        nameSub: 'Untuk pembayaran WABA',       holder: 'Test XPM - Abdul',       holderSub: 'PRMT-0028', exp: '31 Dec 2026', balance: 'Rp50.000',  account: 'Main account', status: 'Active' },
+  { id: 'c5', name: 'Grab Activation',       nameSub: 'testing',                     holder: 'Activation Specialist',  holderSub: 'PRMT-0031', exp: '25 Jun 2028', balance: 'Rp440.000', account: 'Main account', status: 'Active' },
 ]
 
 // Physical cards — separate dataset
 const physicalRows: CardRow[] = [
-  { id: 'p1', name: 'Marketing card',     nameSub: 'field team', holder: 'Hiraya Araniya', holderSub: 'PRMT-0062', exp: '18 May 2028', balance: 'Rp 51.000',    account: 'Main account', status: 'Active' },
-  { id: 'p2', name: 'Ops corporate card', nameSub: 'operations', holder: 'Dewi Lestari',   holderSub: 'PRMT-0344', exp: '02 Feb 2029', balance: 'Rp 1.000.000', account: 'Main account', status: 'Active' },
+  { id: 'p1', name: 'Marketing card',     nameSub: 'field team', holder: 'Hiraya Araniya', holderSub: 'PRMT-0062', exp: '18 May 2028', balance: 'Rp51.000',    account: 'Main account', status: 'Active' },
+  { id: 'p2', name: 'Ops corporate card', nameSub: 'operations', holder: 'Dewi Lestari',   holderSub: 'PRMT-0344', exp: '02 Feb 2029', balance: 'Rp1.000.000', account: 'Main account', status: 'Active' },
 ]
 
 const rows = computed(() => (activeTab.value === 'virtual' ? virtualRows : physicalRows))
@@ -130,7 +130,7 @@ const tabBtn = css({
 const tabActive   = css({ color: 'text.default', fontWeight: 'semiBold', borderBottomColor: 'border.brand' })
 const tabInactive = css({ color: 'text.secondary' })
 
-const cellName = css({ fontFamily: 'body', fontSize: 'md', fontWeight: 'semiBold', color: 'text.link', textDecoration: 'none', cursor: 'pointer', _hover: { textDecoration: 'underline' } })
+const cellName = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default', textDecoration: 'none', cursor: 'pointer', _hover: { textDecoration: 'underline' } })
 const cellPrimary = css({ fontFamily: 'body', fontSize: 'md', color: 'text.default' })
 const cellSub  = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary' })
 
@@ -144,7 +144,7 @@ const footer = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary'
 <template>
   <!-- ═════ Header CTA ═════ -->
   <Teleport to="#layout-header-actions">
-    <MpButton variant="primary" size="md" left-icon="add" @click="openCreate">Create card</MpButton>
+    <MpButton variant="primary" left-icon="add" @click="openCreate">Create card</MpButton>
   </Teleport>
 
   <!-- ═════ Tabs strip (into layout title bar area) ═════ -->
@@ -177,7 +177,7 @@ const footer = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary'
       <MpFlex align="center" gap="2" wrap="wrap">
         <MpPopover id="filter-status" use-portal placement="bottom-start" is-close-on-select>
           <MpPopoverTrigger>
-            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ statusFilter }}</MpButton>
+            <MpButton variant="secondary" right-icon="caret-down">{{ statusFilter }}</MpButton>
           </MpPopoverTrigger>
           <MpPopoverContent :class="css({ marginTop: '2px', minWidth: '180px' })">
             <MpPopoverList>
@@ -187,7 +187,7 @@ const footer = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary'
         </MpPopover>
         <MpPopover id="filter-account" use-portal placement="bottom-start" is-close-on-select>
           <MpPopoverTrigger>
-            <MpButton variant="secondary" size="sm" right-icon="caret-down">{{ accountFilter }}</MpButton>
+            <MpButton variant="secondary" right-icon="caret-down">{{ accountFilter }}</MpButton>
           </MpPopoverTrigger>
           <MpPopoverContent :class="css({ marginTop: '2px', minWidth: '200px' })">
             <MpPopoverList>
@@ -199,7 +199,7 @@ const footer = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary'
       <MpFlex align="center" gap="2" wrap="wrap">
         <MpPopover id="filter-sort" use-portal placement="bottom-end" is-close-on-select>
           <MpPopoverTrigger>
-            <MpButton variant="ghost" size="sm" right-icon="caret-down">Sort: {{ sortOrder }}</MpButton>
+            <MpButton variant="ghost" right-icon="caret-down">Sort: {{ sortOrder }}</MpButton>
           </MpPopoverTrigger>
           <MpPopoverContent :class="css({ marginTop: '2px', minWidth: '200px' })">
             <MpPopoverList>
@@ -207,7 +207,7 @@ const footer = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary'
             </MpPopoverList>
           </MpPopoverContent>
         </MpPopover>
-        <MpButton variant="secondary" size="sm" left-icon="download">Export</MpButton>
+        <MpButton variant="secondary" left-icon="download">Export</MpButton>
         <MpInputGroup width="260px" flex-shrink="0">
           <MpInputLeftAddon>
             <PxIcon name="search" :size="16" color="icon.default" />
@@ -318,8 +318,8 @@ const footer = css({ fontFamily: 'body', fontSize: 'sm', color: 'text.secondary'
 
       <MpDrawerFooter>
         <MpFlex align="center" justify="flex-end" gap="3" width="full">
-          <MpButton variant="ghost" size="md" @click="isCreateOpen = false">Cancel</MpButton>
-          <MpButton variant="primary" size="md" @click="createCard">Create card</MpButton>
+          <MpButton variant="ghost" @click="isCreateOpen = false">Cancel</MpButton>
+          <MpButton variant="primary" @click="createCard">Create card</MpButton>
         </MpFlex>
       </MpDrawerFooter>
     </MpDrawerContent>
